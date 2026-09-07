@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% load static %} {% block title %}Spa Deseo | Inicio{% endblock %}
+
+{% block content %}
+<style>
+    /* --- HERO PRINCIPAL --- */
+    .hero-section {
+        position: relative;
+        margin-top: 0 !important;
+        padding-top: 60px;
+        height: 75vh;
+        overflow: hidden;
+        left: 0;
+        width: 100%;
+        z-index: 1;
+
+    }
+
+    .hero-bg-image {
+        position: absolute;
+        z-index: -1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.65);
+        /* Oscurece la imagen para leer el texto blanco */
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        max-width: 800px;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: 2px;
+        color: var(--rosa-banner);
+    }
+
+    .btn-rosa {
+        background-color: var(--rosa-banner);
+        color: white !important;
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 12px 35px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(241, 149, 178, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-rosa:hover {
+        background-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    /* --- ESTILOS SECCIONES --- */
+    .seccion-padding {
+        padding: 80px 0;
+    }
+
+    .titulo-seccion {
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 2.2rem;
+    }
+
+    /* Imagen estilo marco Polaroid */
+    .marco-polaroid {
+        background-color: white;
+        padding: 15px 15px 30px 15px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        transform: rotate(-2deg);
+        transition: transform 0.3s ease;
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    .marco-polaroid:hover {
+        transform: rotate(0deg) scale(1.02);
+    }
+
+    /* Cards de Servicios */
+    .card-servicio {
+        background: #ffffff;
+        border: none;
+        border-radius: 25px;
+        padding: 40px 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+    }
+
+    .card-servicio:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(241, 149, 178, 0.15);
+    }
+
+    .icono-circulo {
+        width: 70px;
+        height: 70px;
+        background-color: var(--rosa-suave);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        color: var(--rosa-banner);
+        font-size: 1.8rem;
+    }
+
+    /* Cards de Reseñas */
+    .card-resena {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        border-top: 4px solid var(--rosa-banner);
+        transition: all 0.3s ease;
+    }
+
+    .card-resena:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(241, 149, 178, 0.15);
+    }
+
+    .avatar-cliente {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    /* --- SECCIÓN CONTACTO --- */
+    .contacto-section {
+        background: linear-gradient(135deg, #fff5f8 0%, #f8e8eb 100%);
+        padding: 80px 0;
+    }
+
+    .contacto-card {
+        background: #ffffff;
+        border-radius: 30px;
+        padding: 45px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+    }
+
+    .contacto-info {
+        padding-right: 30px;
+    }
+
+    .contacto-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .contacto-icono {
+        width: 55px;
+        height: 55px;
+        min-width: 55px;
+        background-color: var(--rosa-suave);
+        color: var(--rosa-banner);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-right: 15px;
+    }
+
+    .contacto-item h6 {
+        margin: 0 0 4px;
+        font-weight: 700;
+        color: var(--negro-suave);
+    }
+
+    .contacto-item p {
+        margin: 0;
+        color: #777;
+        font-size: 0.95rem;
+    }
+
+    .form-contacto .form-control {
+        border: 1px solid #f0d9df;
+        border-radius: 15px;
+        padding: 13px 18px;
+        background-color: #fffafb;
+        transition: all 0.3s ease;
+    }
+
+    .form-contacto .form-control:focus {
+        border-color: var(--rosa-banner);
+        box-shadow: 0 0 0 0.2rem rgba(241, 149, 178, 0.15);
+        background-color: white;
+    }
+
+    .form-contacto textarea {
+        min-height: 140px;
+        resize: none;
+    }
+
+    .btn-contacto {
+        background-color: var(--rosa-banner);
+        color: white !important;
+        border: none;
+        border-radius: 30px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-contacto:hover {
+        background-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(241, 149, 178, 0.3);
+    }
+
+    .redes-contacto {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .redes-contacto a {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background-color: var(--rosa-suave);
+        color: var(--rosa-banner);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+    }
+
+    .redes-contacto a:hover {
+        background-color: var(--rosa-banner);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .btn-contacto{
+        background-color: var(--rosa-banner);
+        color: white !important;
+        font-weight: 600;
+        border-radius: 30px;
+        padding: 12px 35px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(241, 149, 178, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-contacto:hover {
+        background-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .contacto-card {
+            padding: 30px 20px;
+        }
+
+        .contacto-info {
+            padding-right: 0;
+            margin-bottom: 35px;
+        }
+    }
+</style>
+
+<section class="hero-section">
+    <img src="{% static 'img/manicura_profesional.jpg' %}" class="hero-bg-image" alt="Manicura profesional">
+    <div class="hero-overlay">
+        <div class="container">
+            <span class="hero-subtitle text-uppercase mb-2 d-block">✨ Belleza & Estilo</span>
+            <h1 class="hero-title mx-auto mb-4">Uñas perfectas que reflejan tu esencia</h1>
+            <a href="#servicios" class="btn btn-rosa text-uppercase">Ver Servicios</a>
+        </div>
+    </div>
+</section>
+
+<section id="nosotros" class="container seccion-padding">
+    <div class="row align-items-center g-5 text-center text-md-start">
+        <div class="col-md-5">
+            <div class="marco-polaroid">
+                <img src="{% static 'img/uña.jpg' %}" class="img-fluid" alt="Diseño de Uñas">
+            </div>
+        </div>
+        <div class="col-md-7">
+            <span class="text-muted text-uppercase small fw-bold tracking-2">Sobre Spa Deseo</span>
+            <h2 class="titulo-seccion mt-1 mb-3">Transformamos tus uñas en arte</h2>
+            <p class="text-muted lead" style="line-height: 1.7;">
+                En Spa Deseo nos apasiona resaltar tu esencia y estilo único a través de detalles perfectos. Ofrecemos
+                una experiencia completamente relajante donde consentimos tus manos y pies con altos estándares de
+                calidad y las últimas tendencias en diseño.
+            </p>
+            <p class="text-muted mb-4">
+                Cada servicio incluye una evaluación minuciosa para asegurar que tus uñas no solo luzcan espectaculares,
+                sino que se mantengan fuertes y saludables.
+            </p>
+            <a href="#servicios" class="btn btn-rosa">Conocer Servicios</a>
+        </div>
+    </div>
+</section>
+
+<section id="servicios" class="w-100 seccion-padding text-center" style="background-color: #f8e8ebe6;">
+    <div class="container">
+        <h2 class="titulo-seccion mb-2">Nuestros Servicios</h2>
+        <p class="text-muted mb-5">Cuidado profesional diseñado especialmente para ti</p>
+
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="card-servicio">
+                    <div class="icono-circulo">
+                        <i class="fa-solid fa-pump-soap"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-3">Manicure</h4>
+                    <p class="text-muted small px-2 mb-0">Cuidado profesional e hidratación profunda para que tus manos
+                        luzcan siempre impecables y suaves.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-servicio">
+                    <div class="icono-circulo">
+                        <i class="fa-solid fa-spa"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-3">Pedicure</h4>
+                    <p class="text-muted small px-2 mb-0">Pies perfectos, descanso profundo y exfoliación con masajes
+                        relajantes que renuevan tu energía.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-servicio">
+                    <div class="icono-circulo">
+                        <i class="fa-solid fa-paint-brush"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-3">Diseño de Uñas</h4>
+                    <p class="text-muted small px-2 mb-0">Arte único, efectos en tendencia, pedrería y acabados
+                        acrílicos o semipermanentes personalizados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="resenas" class="container seccion-padding">
+    <h2 class="titulo-seccion text-center mb-2">Reseñas</h2>
+    <p class="text-muted text-center mb-5">Lo que dicen nuestras clientas felices</p>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card-resena">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar-cliente me-3"
+                        alt="Cliente">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Ana María P.</h6>
+                        <small class="text-muted">@ana.maria</small>
+                    </div>
+                </div>
+                <div class="text-warning small mb-2">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-muted small mb-0">"Excelente servicio, mis uñas quedaron hermosas. ¡El diseño
+                    semipermanente es increíble y dura muchísimo!"</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-resena">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://randomuser.me/api/portraits/women/50.jpg" class="avatar-cliente me-3"
+                        alt="Cliente">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Laura S.</h6>
+                        <small class="text-muted">@laura.style</small>
+                    </div>
+                </div>
+                <div class="text-warning small mb-2">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-muted small mb-0">"Muy profesionales, súper recomendado. La manicurista tiene mucha
+                    paciencia y el ambiente del spa es súper relajante."</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-resena">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://randomuser.me/api/portraits/women/22.jpg" class="avatar-cliente me-3"
+                        alt="Cliente">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Camila R.</h6>
+                        <small class="text-muted">@kami.nailart</small>
+                    </div>
+                </div>
+                <div class="text-warning small mb-2">
+                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                </div>
+                <p class="text-muted small mb-0">"¡El mejor spa de uñas! La duración del acrílico es excelente y usan
+                    productos de primera calidad. ¡Volveré siempre!"</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto" class="contacto-section">
+    <div class="container">
+
+        <!-- Título -->
+        <div class="text-center mb-5">
+            <h2 class="titulo-seccion mb-2">Contáctanos</h2>
+            <p class="text-muted">
+                Estamos aquí para ayudarte a vivir una experiencia de belleza única
+            </p>
+        </div>
+
+        <div class="contacto-card">
+            <div class="row align-items-center">
+
+                <!-- INFORMACIÓN -->
+                <div class="col-lg-5">
+                    <div class="contacto-info">
+
+                        <span class="text-uppercase small fw-bold"
+                            style="color: var(--rosa-banner); letter-spacing: 2px;">
+                            Hablemos
+                        </span>
+
+                        <h3 class="fw-bold mt-2 mb-3">
+                            ¿Tienes alguna pregunta?
+                        </h3>
+
+                        <p class="text-muted mb-4">
+                            Escríbenos y estaremos encantadas de atenderte.
+                            Reserva tu cita o pregúntanos sobre nuestros servicios.
+                        </p>
+
+                        <!-- Dirección -->
+                        <div class="contacto-item">
+                            <div class="contacto-icono">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+
+                            <div>
+                                <h6>Ubicación</h6>
+                                <p>Bello, Antioquia</p>
+                            </div>
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="contacto-item">
+                            <div class="contacto-icono">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+
+                            <div>
+                                <h6>Teléfono</h6>
+                                <p>+57 300 000 0000</p>
+                            </div>
+                        </div>
+
+                        <!-- Correo -->
+                        <div class="contacto-item">
+                            <div class="contacto-icono">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+
+                            <div>
+                                <h6>Correo electrónico</h6>
+                                <p>contacto@spadeseo.com</p>
+                            </div>
+                        </div>
+
+                        <!-- Horario -->
+                        <div class="contacto-item">
+                            <div class="contacto-icono">
+                                <i class="fa-regular fa-clock"></i>
+                            </div>
+
+                            <div>
+                                <h6>Horario de atención</h6>
+                                <p>Lunes a sábado · 9:00 AM - 7:00 PM</p>
+                            </div>
+                        </div>
+
+                        <!-- Redes sociales -->
+                        <div class="redes-contacto">
+                            <a href="https://www.facebook.com/" aria-label="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+
+                            <a href="https://www.instagram.com/" aria-label="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+
+                            <a href="https://wa.me/573000000000" aria-label="WhatsApp">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- FORMULARIO -->
+                <div class="col-lg-7">
+                    <form class="form-contacto">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Nombre y Apellido
+                                </label>
+
+                                <input type="text" class="form-control" placeholder="Nombre y Apellido" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Correo Electrónico
+                                </label>
+
+                                <input type="email" class="form-control" placeholder="tu@correo.com" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    Asunto
+                                </label>
+
+                                <input type="text" class="form-control" placeholder="¿En qué podemos ayudarte?"
+                                    required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    Mensaje
+                                </label>
+
+                                <textarea class="form-control" placeholder="Escribe tu mensaje aquí..."
+                                    required></textarea>
+                            </div>
+
+                            <div class="col-12 text-center mt-3">
+                                <button type="submit" class="btn btn-contacto">
+                                    Enviar mensaje
+                                    <i class="fa-solid fa-paper-plane ms-2"></i>
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

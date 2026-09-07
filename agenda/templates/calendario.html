@@ -1,0 +1,534 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<!-- FullCalendar 6 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
+
+<style>
+    /* 1. Variables y estructura general */
+    .fc {
+        font-family: inherit;
+        --fc-border-color: #f3f4f6;
+        --fc-today-bg-color: #fdf2f8;
+        --fc-event-bg-color: #db2777;
+        --fc-event-border-color: #db2777;
+        --fc-page-bg-color: transparent;
+        --fc-neutral-bg-color: transparent;
+    }
+    .dark .fc {
+        --fc-border-color: #374151;
+        --fc-today-bg-color: rgba(219, 39, 119, 0.2);
+        --fc-neutral-bg-color: #1f2937;
+        --fc-list-event-hover-bg-color: #374151;
+    }
+
+    /* Reducción de espacio en la cabecera */
+    .fc-header-toolbar {
+        gap: 12px;
+        margin-top: 0 !important;
+        margin-bottom: 0.35rem !important;
+        padding-top: 0 !important;
+    }
+
+    /* 2. Corrección estricta para Celdas y Fondos */
+    .fc-theme-standard .fc-scrollgrid {
+        border: none !important;
+    }
+    .fc-theme-standard td, 
+    .fc-theme-standard th {
+        border-color: #f3f4f6 !important;
+    }
+    
+    .fc-scrollgrid-section-header,
+    .fc-scrollgrid-section-header > td,
+    .fc-scrollgrid-section-header th {
+        background: transparent !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .fc-scrollgrid-sync-table {
+        border-collapse: collapse !important;
+    }
+
+    /* Cabecera Fucsia de los Días */
+    .fc .fc-col-header {
+        width: 100% !important;
+    }
+    .fc .fc-col-header-cell {
+        background-color: #db2777 !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .fc .fc-col-header-cell-cushion {
+        display: block !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        padding: 6px 0 !important;
+        text-transform: capitalize;
+        text-decoration: none !important;
+        width: 100%;
+    }
+
+    /* 3. Efecto Hover por Columna */
+    .fc-daygrid-day:hover {
+        background-color: rgba(219, 39, 119, 0.04) !important;
+        transition: background-color 0.15s ease-in-out;
+    }
+
+    /* 4. Título del Mes */
+    .fc .fc-toolbar-title {
+        font-size: 1.25rem !important;
+        font-weight: 500 !important;
+        font-style: normal !important;
+        color: #111827;
+        text-transform: capitalize;
+        line-height: 1 !important;
+    }
+
+    /* 5. Números de las celdas */
+    .fc .fc-daygrid-day-number {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4b5563;
+        padding: 4px 8px !important;
+        text-decoration: none !important;
+    }
+    .fc .fc-day-today .fc-daygrid-day-number {
+        background-color: #db2777;
+        color: #ffffff !important;
+        border-radius: 9999px;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 4px;
+    }
+
+    /* 6. Eventos unificados */
+    .fc-daygrid-event-dot {
+        display: none !important;
+    }
+    .fc-daygrid-event-harness {
+        margin: 2px 4px !important;
+    }
+    .fc-daygrid-event, .fc-timegrid-event {
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+    .fc-daygrid-event:hover, .fc-timegrid-event:hover {
+        opacity: 0.9;
+    }
+    .fc-event-main {
+        color: #ffffff !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+    .fc-event-time, .fc-event-title {
+        color: #ffffff !important;
+    }
+
+    /* 7. Vista Agenda */
+    .fc-list {
+        border: none !important;
+    }
+    .fc-list-day-cushion {
+        background-color: #db2777 !important;
+    }
+    .fc-list-day-text, .fc-list-day-side-text {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        text-transform: capitalize;
+    }
+    .fc-list-event {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    .fc-list-event-dot {
+        border-color: #db2777 !important;
+    }
+
+    /* 8. Botones de Control */
+    .fc .fc-button-group {
+        gap: 6px !important;
+    }
+    .fc .fc-button-group > .fc-button,
+    .fc .fc-prev-button, 
+    .fc .fc-next-button, 
+    .fc .fc-today-button {
+        border-radius: 0.6rem !important;
+        border: 1px solid #e5e7eb !important;
+        background-color: #ffffff !important;
+        color: #374151 !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        padding: 0.35rem 0.8rem !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        text-transform: capitalize;
+        transition: all 0.2s ease;
+    }
+    .fc .fc-button-group > .fc-button-active,
+    .fc .fc-button:active,
+    .fc .fc-button:focus {
+        background-color: #db2777 !important;
+        border-color: #db2777 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3) !important;
+    }
+    .fc-timegrid-divider {
+        display: none !important;
+    }
+    .fc-theme-standard .fc-scrollgrid {
+        border-top: none !important;
+        border-left: 1px solid #f3f4f6 !important;
+    }
+    .fc-scrollgrid-section-body {
+        background-color: transparent !important;
+    }
+    .fc-daygrid-body {
+        margin-top: 0 !important;
+    }
+    .fc-scroller-harness, 
+    .fc-scroller {
+        overflow: visible !important;
+    }
+    .fc-daygrid-body table {
+        margin-top: -1px !important;
+    }
+    .fc-timegrid-slots {
+        margin-top: -16px !important;
+    }
+    .fc-timegrid-slots tr:first-child td {
+        border-top: 1px solid #e0e0e0 !important;
+    }
+    .fc-timegrid-all-day {
+        border-bottom: none !important;
+    }
+    .fc-list-event-graphic {
+        display: none !important;
+    }
+    .fc-list-event:hover td,
+    .fc-list-event:hover .fc-list-event-time,
+    .fc-list-event:hover .fc-list-event-title,
+    .fc-list-event:hover .fc-list-event-title a,
+    .fc-list-event:hover a {
+        color: #db2777 !important;
+        font-weight: 600 !important;
+    }
+    .fc-list-event:hover td {
+        background-color: #fdf2f8 !important;
+    }
+    .fc-list-event td {
+        border-left: 1px solid #e5e7eb !important;
+        border-right: 1px solid #e5e7eb !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        transition: background-color 0.15s ease;
+    }
+    .fc-list-table {
+        border-top: 1px solid #e5e7eb !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+    th.fc-timegrid-axis {
+        background-color: #db2777 !important;
+    }
+    .fc-timegrid-all-day td.fc-timegrid-axis,
+    .fc-timegrid-all-day {
+        border: none !important;
+        background-color: #fafafa !important;
+    }
+    .fc .fc-button-group > .fc-button:hover,
+    .fc .fc-prev-button:hover, 
+    .fc .fc-next-button:hover, 
+    .fc .fc-today-button:hover {
+        background-color: #fdf2f8 !important;
+        border-color: #f472b6 !important;
+        color: #db2777 !important;
+        transition: all 0.2s ease-in-out;
+    }
+    .fc .fc-button-group > .fc-button-active:hover,
+    .fc .fc-button:active:hover {
+        background-color: #be185d !important;
+        border-color: #be185d !important;
+        color: #ffffff !important;
+    }
+
+    /* ==========================================================
+       SECCIÓN AISLADA: MODO OSCURO (CORREGIDO Y LIMPIO)
+       ========================================================== */
+    .dark .fc-theme-standard td, 
+    .dark .fc-theme-standard th {
+        border-color: #374151 !important;
+        background-color: #1f2937 !important;
+    }
+    .dark .fc .fc-timegrid-slot,
+    .dark .fc .fc-timegrid-axis,
+    .dark .fc .fc-scrollgrid-section > td {
+        background-color: #1f2937 !important;
+    }
+    .dark .fc-daygrid-day:hover {
+        background-color: rgba(219, 39, 119, 0.12) !important;
+    }
+    .dark .fc .fc-toolbar-title {
+        color: #ffffff !important;
+    }
+    .dark .fc .fc-daygrid-day-number {
+        color: #d1d5db;
+    }
+    .dark .fc-list {
+        background-color: #1f2937 !important;
+    }
+    .dark .fc-list-event td {
+        background-color: #1f2937 !important;
+        color: #f3f4f6 !important;
+    }
+    .dark .fc .fc-button-group > .fc-button,
+    .dark .fc .fc-prev-button, 
+    .dark .fc .fc-next-button, 
+    .dark .fc .fc-today-button {
+        background-color: #1f2937 !important;
+        border-color: #374151 !important;
+        color: #f3f4f6 !important;
+    }
+    .dark .fc .fc-button-group > .fc-button:hover,
+    .dark .fc .fc-prev-button:hover, 
+    .dark .fc .fc-next-button:hover, 
+    .dark .fc .fc-today-button:hover {
+        background-color: #371d32 !important; 
+        border-color: #db2777 !important;     
+        color: #f472b6 !important;            
+        transition: all 0.2s ease-in-out;
+    }
+    .dark .fc .fc-button-group > .fc-button-active,
+    .dark .fc .fc-button.fc-button-active {
+        background-color: #db2777 !important;
+        border-color: #db2777 !important;
+        color: #ffffff !important;
+    }
+    .dark .fc .fc-button-group > .fc-button-active:hover,
+    .dark .fc .fc-button:active {
+        background-color: #be185d !important; 
+        border-color: #be185d !important;
+        color: #ffffff !important;
+    }
+    .dark .fc-theme-standard .fc-scrollgrid-section-header,
+    .dark .fc-theme-standard .fc-scrollgrid-section-header td,
+    .dark .fc-theme-standard .fc-scrollgrid-section-header th,
+    .dark .fc .fc-col-header {
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    .dark .fc-daygrid-day:nth-child(-n+7),
+    .dark .fc-timegrid-col,
+    .dark .fc-scrollgrid-section-body td {
+        border-top: none !important;
+    }
+    .dark .fc-theme-standard .fc-scrollgrid {
+        border-left: 1px solid #374151 !important;
+    }
+</style>
+
+<!-- Cabecera de la página -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mt-0 pt-0 mb-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Agenda de Citas
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Consulta interactiva de servicios programados</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <button id="btnRefrescar" class="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold shadow-sm transition">
+            <i class="fa-solid fa-rotate text-pink-600" id="iconRefrescar"></i> Sincronizar
+        </button>
+    </div>
+</div>
+
+<!-- Contenedor del Calendario -->
+<div class="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+    <div id="calendar"></div>
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Modal Detalle Cita -->
+<div id="modalDetalleCita" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transform transition-all">
+        
+        <!-- Header -->
+        <div class="bg-pink-600 p-4 text-white flex justify-between items-center">
+            <h3 class="font-bold text-lg flex items-center gap-2" id="modalTitulo">
+                <i class="fa-regular fa-clock"></i> Detalle Cita
+            </h3>
+            <button type="button" onclick="cerrarModal()" class="text-white/80 hover:text-white text-xl font-bold focus:outline-none transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="p-6 space-y-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Servicio Contratado</span>
+                    <p class="text-lg font-bold text-pink-600 dark:text-pink-400 mt-0.5" id="modalServicio"></p>
+                </div>
+                <!-- Badge de Estado -->
+                <span id="modalEstadoBadge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300">Pendiente</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-y border-gray-100 dark:border-gray-800 py-3">
+                <div>
+                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">📅 Fecha y Hora</span>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-0.5" id="modalFechaHora"></p>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">⏳ Duración</span>
+                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-0.5" id="modalDuracion"></p>
+                </div>
+            </div>
+
+            <!-- Bloques Dinámicos -->
+            <div id="bloqueCliente" class="p-3 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-800">
+                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-user text-pink-600"></i> Datos del Cliente
+                </span>
+                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1" id="modalClienteNombre"></p>
+                <p class="text-xs text-gray-500 font-medium mt-0.5" id="modalClienteTel"></p>
+            </div>
+
+            <div id="bloqueManicurista" class="p-3 bg-pink-50/50 dark:bg-pink-950/20 rounded-xl border border-pink-100/60 dark:border-pink-900/30">
+                <span class="text-xs text-pink-600 dark:text-pink-400 uppercase font-bold tracking-wider flex items-center gap-1">
+                    <i class="fa-solid fa-hand-sparkles"></i> Manicurista Asignada
+                </span>
+                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1" id="modalManicuristaNombre"></p>
+                <p class="text-xs text-gray-500 font-medium mt-0.5" id="modalManicuristaTel"></p>
+            </div>
+
+            <div>
+                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">💰 Valor Total</span>
+                <p class="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5" id="modalTotal"></p>
+            </div>
+
+            <!-- Recordatorio -->
+            <div class="bg-pink-50 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/40 rounded-xl p-3 text-pink-900 dark:text-pink-300 text-xs space-y-1">
+                <p class="font-bold flex items-center gap-1.5 text-pink-700 dark:text-pink-400">
+                    <i class="fa-solid fa-circle-info"></i> Recordatorio importante:
+                </p>
+                <ul class="list-disc list-inside space-y-0.5 text-pink-800 dark:text-pink-300">
+                    <li>Por favor llegar 10 minutos antes de la hora programada.</li>
+                    <li>Notificar si requiere retiro de acrílico o semipermanente.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer Modal -->
+        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-3.5 flex justify-end items-center">
+            <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var calendar;
+    var userRol = "{{ rol }}".trim().toUpperCase();
+
+    function cerrarModal() {
+        document.getElementById('modalDetalleCita').classList.add('hidden');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'es',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            },
+            buttonText: {
+                today:    'Hoy',
+                month:    'Mes',
+                week:     'Semana',
+                day:      'Día',
+                list:     'Agenda'
+            },
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: false,
+                hour12: false
+            },
+            height: 'auto',
+            aspectRatio: 1.75,
+            events: "{% url 'agenda:obtener_citas_json' %}",
+            noEventsContent: 'No hay citas registradas.',
+            eventClick: function(info) {
+                var props = info.event.extendedProps;
+                
+                document.getElementById('modalTitulo').innerText = "Cita #" + info.event.id;
+                document.getElementById('modalServicio').innerText = props.servicio;
+                document.getElementById('modalEstadoBadge').innerText = props.estado || 'Pendiente';
+                document.getElementById('modalFechaHora').innerText = info.event.start.toLocaleString('es-CO', { 
+                    dateStyle: 'medium', 
+                    timeStyle: 'short' 
+                });
+                document.getElementById('modalDuracion').innerText = props.duracion;
+                document.getElementById('modalTotal').innerText = props.total;
+
+                var bloqueCliente = document.getElementById('bloqueCliente');
+                var bloqueManicurista = document.getElementById('bloqueManicurista');
+
+                if (userRol === 'CLIENTE') {
+                    bloqueCliente.classList.add('hidden');
+                    bloqueManicurista.classList.remove('hidden');
+                    document.getElementById('modalManicuristaNombre').innerText = props.manicurista || 'Por asignar';
+                    document.getElementById('modalManicuristaTel').innerText = props.telefono_manicurista ? '📱 ' + props.telefono_manicurista : '📱 Sin teléfono';
+                } else {
+                    bloqueCliente.classList.remove('hidden');
+                    document.getElementById('modalClienteNombre').innerText = props.cliente || 'Cliente';
+                    document.getElementById('modalClienteTel').innerText = props.telefono_cliente ? '📱 ' + props.telefono_cliente : '📱 Sin teléfono';
+
+                    bloqueManicurista.classList.remove('hidden');
+                    document.getElementById('modalManicuristaNombre').innerText = props.manicurista || 'Por asignar';
+                    document.getElementById('modalManicuristaTel').innerText = props.telefono_manicurista ? '📱 ' + props.telefono_manicurista : '📱 Sin teléfono';
+                }
+
+                document.getElementById('modalDetalleCita').classList.remove('hidden');
+            }
+        });
+
+        calendar.render();
+
+        // Refresco automático cada 15s
+        setInterval(function() {
+            calendar.refetchEvents();
+        }, 15000);
+
+        // Refresco manual
+        document.getElementById('btnRefrescar').addEventListener('click', function() {
+            var icon = document.getElementById('iconRefrescar');
+            icon.classList.add('fa-spin');
+            calendar.refetchEvents();
+            setTimeout(() => icon.classList.remove('fa-spin'), 600);
+        });
+    });
+</script>
+{% endblock %}

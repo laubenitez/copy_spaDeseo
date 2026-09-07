@@ -1,0 +1,76 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg class="w-8 h-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                Historial de Movimientos
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Registro detallado de todas las entradas (compras) y salidas (usos/mermas).</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'agenda:ver_inventario' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 transition shadow-xs">
+                Volver al Inventario
+            </a>
+            <a href="{% url 'agenda:registrar_movimiento' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 transition shadow-xs">
+                Nuevo Movimiento
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/70 dark:bg-gray-900/20 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <th class="px-6 py-4">Fecha y Hora</th>
+                        <th class="px-6 py-4">Producto</th>
+                        <th class="px-6 py-4">Tipo</th>
+                        <th class="px-6 py-4">Cantidad</th>
+                        <th class="px-6 py-4">Motivo / Descripción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-sm">
+                    {% for mov in movimientos %}
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition">
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">
+                            {{ mov.fecha|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                            {{ mov.producto.nombre }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if mov.tipo == "Entrada" %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Entrada
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Salida
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 font-bold text-gray-700 dark:text-gray-300">
+                            {% if mov.tipo == "Entrada" %}+{% else %}-{% endif %}{{ mov.cantidad }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
+                            {{ mov.motivo }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            No hay movimientos de inventario registrados todavía.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

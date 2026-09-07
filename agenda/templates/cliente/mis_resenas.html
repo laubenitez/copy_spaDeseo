@@ -1,0 +1,248 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+
+
+
+<!-- Encabezado -->
+<div class="mb-6">
+    <div class="flex items-center gap-3 mb-2">
+
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Mis Reseñas
+            </h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Tus experiencias y opiniones en Spa Deseo
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if resenas %}
+
+<!-- Reseñas -->
+<div class="space-y-6">
+
+    {% for resena in resenas %}
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-lg transition duration-300">
+
+        <!-- Parte superior -->
+        <div class="p-6">
+
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
+
+                <!-- Perfil -->
+                <div class="flex items-center gap-4">
+
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-pink-200 dark:border-pink-500/40 bg-pink-100 dark:bg-pink-950/40 flex-shrink-0">
+
+                        {% if request.user.cliente.foto_perfil %}
+
+                            <img src="{{ request.user.cliente.foto_perfil.url }}"
+                                 alt="Foto de perfil"
+                                 class="w-full h-full object-cover">
+
+                        {% elif request.user.manicurista.foto_perfil %}
+
+                            <img src="{{ request.user.manicurista.foto_perfil.url }}"
+                                 alt="Foto de perfil"
+                                 class="w-full h-full object-cover">
+
+                        {% else %}
+
+                            <div class="w-full h-full flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-lg">
+                                {{ request.session.logueado.nombre|slice:":1"|upper }}{{ request.session.logueado.apellido|slice:":1"|upper }}
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div>
+
+                        <h2 class="font-bold text-gray-900 dark:text-white text-lg">
+                            {{ request.session.logueado.nombre }}
+                            {{ request.session.logueado.apellido }}
+                        </h2>
+
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Cliente de Spa Deseo
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <!-- Calificación -->
+                <div class="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-100 dark:border-yellow-900/40 px-4 py-2 rounded-xl">
+
+                    {% for i in "12345" %}
+
+                        {% if forloop.counter <= resena.calificacion %}
+                            <i class="fa-solid fa-star text-yellow-400 text-sm"></i>
+                        {% else %}
+                            <i class="fa-regular fa-star text-gray-300 dark:text-gray-600 text-sm"></i>
+                        {% endif %}
+
+                    {% endfor %}
+
+                    <span class="ml-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                        {{ resena.calificacion }}/5
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- Servicio -->
+            <div class="mt-6 flex items-center gap-3">
+
+                <div class="w-10 h-10 rounded-lg bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
+                    <i class="fa-solid fa-spa text-pink-600 dark:text-pink-400"></i>
+                </div>
+
+                <div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                        Servicio
+                    </p>
+
+                    <p class="font-semibold text-gray-800 dark:text-gray-200">
+                        {{ resena.cita.servicios.nombre }}
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Comentario -->
+            <div class="mt-5 relative bg-gray-50 dark:bg-gray-800/60 rounded-xl p-5">
+
+                <i class="fa-solid fa-quote-left absolute top-4 left-4 text-pink-200 dark:text-pink-900 text-xl"></i>
+
+                <div class="pl-7">
+
+                    {% if resena.comentario %}
+
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {{ resena.comentario }}
+                        </p>
+
+                    {% else %}
+
+                        <p class="text-gray-400 dark:text-gray-500 italic">
+                            No escribiste ningún comentario.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Pie -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <i class="fa-regular fa-calendar"></i>
+
+                {% if resena.fecha_creacion %}
+                    {{ resena.fecha_creacion|date:"d \d\e F \d\e Y" }}
+                {% else %}
+                    Reseña realizada
+                {% endif %}
+            </div>
+
+            <div class="flex items-center gap-2 text-sm text-pink-600 dark:text-pink-400 font-medium">
+                <i class="fa-solid fa-heart"></i>
+                Gracias por compartir tu experiencia
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<!-- Estado sin reseñas -->
+<div class="bg-white dark:bg-darkCard rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+
+    <div class="bg-gradient-to-r from-pink-600 to-fuchsia-600 h-32 relative">
+
+        <div class="absolute -bottom-12 left-1/2 -translate-x-1/2">
+
+            <div class="w-24 h-24 rounded-full border-4 border-white dark:border-darkCard overflow-hidden bg-pink-100 dark:bg-pink-950/40 shadow-lg">
+
+                {% if request.user.cliente.foto_perfil %}
+
+                    <img src="{{ request.user.cliente.foto_perfil.url }}"
+                         alt="Foto de perfil"
+                         class="w-full h-full object-cover">
+
+                {% elif request.user.manicurista.foto_perfil %}
+
+                    <img src="{{ request.user.manicurista.foto_perfil.url }}"
+                         alt="Foto de perfil"
+                         class="w-full h-full object-cover">
+
+                {% else %}
+
+                    <div class="w-full h-full flex items-center justify-center text-pink-600 dark:text-pink-400 font-bold text-2xl">
+                        {{ request.session.logueado.nombre|slice:":1"|upper }}{{ request.session.logueado.apellido|slice:":1"|upper }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="pt-16 pb-10 px-6 text-center">
+
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ request.session.logueado.nombre }}
+            {{ request.session.logueado.apellido }}
+        </h2>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-7">
+            Aún no has realizado ninguna reseña
+        </p>
+
+        <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
+            <i class="fa-regular fa-star text-2xl text-pink-600 dark:text-pink-400"></i>
+        </div>
+
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            ¡Comparte tu experiencia!
+        </h3>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
+            Después de completar una cita puedes dejar una reseña y contar cómo fue tu experiencia en Spa Deseo.
+        </p>
+
+        <a href="{% url 'agenda:mis_citas' %}"
+           class="inline-flex items-center gap-2 px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-semibold shadow-sm hover:shadow-md transition">
+
+            <i class="fa-solid fa-calendar-days"></i>
+            Ver mis citas
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+</div>
+
+{% endblock %}

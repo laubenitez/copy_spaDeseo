@@ -1,0 +1,382 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<!-- Encabezado -->
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Mis Citas
+    </h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Consulta, administra o modifica tus citas agendadas.
+    </p>
+</div>
+
+<!-- Lista de citas -->
+<div class="space-y-5">
+
+    {% for cita in citas %}
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition duration-200">
+
+        <!-- Encabezado de la cita -->
+        <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-pink-500 mb-1">
+                        Servicio
+                    </p>
+
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        {{ cita.servicios.nombre }}
+                    </h3>
+                </div>
+
+                <!-- Estado -->
+                {% if cita.estado == 'programada' %}
+                <span class="inline-flex items-center gap-1.5 w-fit px-3 py-1.5 rounded-full text-xs font-semibold bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+
+                {% elif cita.estado == 'en_proceso' %}
+                <span class="inline-flex items-center gap-1.5 w-fit px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+
+                {% elif cita.estado == 'completada' %}
+                <span class="inline-flex items-center gap-1.5 w-fit px-3 py-1.5 rounded-full text-xs font-semibold bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+
+                {% else %}
+                <span class="inline-flex items-center gap-1.5 w-fit px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- Información -->
+        <div class="px-6 py-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+                <!-- Fecha -->
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                            Fecha
+                        </p>
+                        <p class="mt-1 font-semibold text-gray-800 dark:text-white">
+                            {{ cita.fecha }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Hora -->
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 7v5l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                            Hora
+                        </p>
+                        <p class="mt-1 font-semibold text-gray-800 dark:text-white">
+                            {{ cita.hora }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Manicurista -->
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-pink-600 dark:text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 21a8 8 0 0116 0" />
+                        </svg>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                            Manicurista
+                        </p>
+                        <p class="mt-1 font-semibold text-gray-800 dark:text-white">
+                            {{ cita.manicurista.nombre }} {{ cita.manicurista.apellido }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pagos y Total -->
+                <div class="flex items-start gap-3 bg-pink-50/40 dark:bg-pink-900/10 p-3 rounded-xl border border-pink-100/60 dark:border-pink-900/20">
+                    <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-pink-500 uppercase tracking-wide">Total y Pago</p>
+                        <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white">
+                            ${{ cita.total|floatformat:0 }} COP
+                        </p>
+                        
+                        {% if cita.estado == 'cancelada' %}
+                        <p class="text-xs text-red-500 dark:text-red-400 font-medium mt-0.5">
+                            No aplica (Cancelada)
+                        </p>
+                        {% else %}
+                            {% with pago=cita.pagos.first %}
+                            {% if pago %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                <span class="{% if pago.estado == 'Realizado' %}text-green-600 dark:text-green-400 font-medium{% elif pago.estado == 'Pendiente' %}text-amber-500{% else %}text-red-500{% endif %}">
+                                    {{ pago.estado }}
+                                </span> ({{ pago.metodo_pago }})
+                            </p>
+                            {% else %}
+                            <p class="text-xs text-amber-500">Sin pago registrado</p>
+                            {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Pie de tarjeta -->
+        <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            
+            {% if cita.estado == 'cancelada' %}
+            <div class="w-full text-center md:text-left text-xs font-medium text-red-500 dark:text-red-400 flex items-center justify-center md:justify-start gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Esta cita fue cancelada. No hay acciones disponibles.
+            </div>
+            {% else %}
+
+            <!-- SECCIÓN 1: Control de Pagos (Formulario con select) -->
+            <div class="flex items-center w-full md:w-auto">
+                {% with pago=cita.pagos.first %}
+                {% if not pago or pago.estado != 'Realizado' %}
+                <form method="POST" action="{% url 'agenda:registrar_pago_admin' cita.id %}" class="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-white dark:bg-gray-800/80 p-2 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs w-full sm:w-auto">
+                    {% csrf_token %}
+                    <div class="flex items-center gap-1.5 px-2">
+                        <svg class="w-4 h-4 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Pago:</span>
+                    </div>
+
+                    <select name="metodo_pago" class="text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Bancolombia">Bancolombia</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+
+                    <button type="submit" class="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 transition shadow-xs">
+                        {% if not pago %}Registrar{% else %}Actualizar{% endif %}
+                    </button>
+                </form>
+                {% else %}
+                <div class="inline-flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800/50">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Pago al día ({{ pago.metodo_pago }})
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- SECCIÓN 2: Acciones secundarias (Reprogramar, Cancelar, etc.) -->
+            <div class="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto mt-3 md:mt-0">
+                
+                {% if cita.estado == 'programada' or cita.estado == 'Pendiente' %}
+                <a href="{% url 'agenda:actualizar_citas' cita.id %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Reprogramar
+                </a>
+
+                <button type="button" data-url="{% url 'agenda:eliminar_citas' cita.id %}" class="js-open-modal inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H9a2 2 0 01-2-2V7m3 4v6m4-6v6" />
+                    </svg>
+                    Cancelar
+                </button>
+                {% endif %}
+
+                <!-- Botón de Ver Recibo -->
+                {% with pago=cita.pagos.first %}
+                {% if cita.estado == 'completada' and pago and pago.estado == 'Realizado' %}
+                <a href="{% url 'agenda:recibo' cita.id %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Ver Recibo
+                </a>
+                {% endif %}
+                {% endwith %}
+
+                <!-- Reseña -->
+                {% if cita.estado == 'completada' %}
+                    {% if cita.resena %}
+                    <a href="{% url 'agenda:mis_resenas' %}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
+                        <span>★</span>
+                        Reseña enviada:
+                        <span>{{ cita.resena.calificacion }}/5</span>
+                        <span class="ml-1">→</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'agenda:crear_resena' cita.id %}" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-pink-600 text-white hover:bg-pink-700 transition shadow-sm">
+                        <span>★</span>
+                        Dejar reseña
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <!-- Sin citas -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-10 sm:p-12 text-center">
+        <div class="mx-auto w-16 h-16 rounded-2xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center mb-5">
+            <svg class="w-8 h-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+            No tienes citas todavía
+        </h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            Cuando agendes una cita aparecerá aquí para que puedas consultarla y administrarla fácilmente.
+        </p>
+        <a href="{% url 'agenda:crear_citas' %}" class="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-lg bg-pink-600 text-white text-sm font-semibold hover:bg-pink-700 transition shadow-sm">
+            Agendar una cita
+            <span>→</span>
+        </a>
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}
+
+{% block modals %}
+<!-- Modal de cancelación -->
+<div id="modalEliminar" class="fixed inset-0 hidden items-center justify-center bg-gray-900/60 backdrop-blur-sm z-[9999] px-4">
+    <div id="modalContenido" class="w-full max-w-md bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        
+        <!-- Encabezado -->
+        <div class="px-6 pt-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-11 h-11 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v4m0 4h.01M10.3 3.8l-8 14A2 2 0 004 21h16a2 2 0 001.7-3.2l-8-14a2 2 0 00-3.4 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                        Cancelar cita
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Esta acción cancelará la cita seleccionada.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="px-6 py-5">
+            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                ¿Estás segura de que deseas cancelar esta cita?
+                <span class="font-semibold text-gray-800 dark:text-white">
+                    Esta acción no se puede deshacer.
+                </span>
+            </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+            <button type="button" class="js-close-modal w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                No, conservar
+            </button>
+            <a id="btnConfirmarEliminar" href="#" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-sm">
+                Sí, cancelar cita
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("modalEliminar");
+        const btnConfirmar = document.getElementById("btnConfirmarEliminar");
+        const btnCerrar = document.querySelectorAll(".js-close-modal");
+
+        if (!modal || !btnConfirmar) return;
+
+        function abrirModal(url) {
+            btnConfirmar.href = url;
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.classList.add("overflow-hidden");
+        }
+
+        function cerrarModal() {
+            modal.classList.remove("flex");
+            modal.classList.add("hidden");
+            document.body.classList.remove("overflow-hidden");
+            btnConfirmar.href = "#";
+        }
+
+        document.querySelectorAll(".js-open-modal").forEach(button => {
+            button.addEventListener("click", function () {
+                const url = this.dataset.url;
+                if (url) {
+                    abrirModal(url);
+                }
+            });
+        });
+
+        btnCerrar.forEach(button => {
+            button.addEventListener("click", cerrarModal);
+        });
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                cerrarModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+                cerrarModal();
+            }
+        });
+    });
+</script>
+{% endblock %}

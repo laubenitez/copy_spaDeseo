@@ -1,0 +1,109 @@
+{% extends "login_base.html" %}
+
+
+{% load static %}
+
+
+{% block title %}
+Iniciar Sesión | Spa Deseo
+{% endblock %}
+
+
+{% block content %}
+
+
+<img src="{% static 'img/logo-spa-deseo-fucsia.png' %}" alt="Spa Deseo" class="login-logo">
+
+
+<h1>¡Bienvenida!</h1>
+
+
+<p class="subtitulo">
+   Inicia sesión para continuar
+</p>
+
+
+<form method="POST">
+
+
+   {% csrf_token %}
+
+
+   <div class="form-group">
+
+
+       <label for="user">
+           Correo electrónico
+       </label>
+
+
+       <div class="input-wrapper">
+
+
+
+
+           <span>
+               <i class="fa-solid fa-envelope"></i>
+           </span>
+
+
+           <input type="email" id="user" name="user" placeholder="Correo electrónico" required maxlength="100">
+
+
+       </div>
+
+
+   </div>
+
+
+   <div class="form-group">
+
+
+       <label for="password">
+           Contraseña
+       </label>
+
+
+       <div class="input-wrapper">
+
+
+           <span>
+               <i class="fa-solid fa-lock"></i>
+           </span>
+
+
+           <input type="password" id="password" name="password" placeholder="Contraseña" required minlength="8"
+               maxlength="20">
+
+
+       </div>
+
+
+   </div>
+
+
+   <button type="submit" class="btn-login">
+       Iniciar sesión
+   </button>
+
+
+</form>
+
+
+<p class="registro">
+
+
+   ¿Aún no tienes cuenta?
+
+
+   <a href="{% url 'agenda:register' %}">
+       Regístrate aquí
+   </a>
+
+
+</p>
+
+
+{% endblock %}
+
+

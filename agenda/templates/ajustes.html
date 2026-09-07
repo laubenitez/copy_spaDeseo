@@ -1,0 +1,156 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<!-- Cabecera centrada -->
+<div class="mb-8 text-center max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+        Ajustes de Cuenta
+    </h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Administra las preferencias generales, seguridad y privacidad de tu cuenta en SpaDeseo.
+    </p>
+</div>
+
+<!-- Contenedor principal centrado -->
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- 1. Seguridad -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-shield-halved text-pink-600"></i> Seguridad
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                <div>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">Cambiar contraseña</p>
+                    <p class="text-xs text-gray-400">Actualiza tu clave de acceso regularmente.</p>
+                </div>
+                <a href="#" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 hover:bg-pink-100 transition">
+                    Editar
+                </a>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                <div>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">Verificación de seguridad</p>
+                    <p class="text-xs text-gray-400">Protección adicional en tus inicios de sesión.</p>
+                </div>
+                <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">Activa</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Notificaciones -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-bell text-pink-600"></i> Notificaciones
+        </h3>
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-800 dark:text-white">Recordatorios de citas por WhatsApp</p>
+                <p class="text-xs text-gray-400">Recibe notificaciones automáticas antes de cada servicio en el spa.</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+            </label>
+        </div>
+    </div>
+
+    <!-- 3. Preferencias -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-sliders text-pink-600"></i> Preferencias
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Formato de fecha</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option>DD/MM/AAAA</option>
+                    <option>MM/DD/AAAA</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Formato de hora</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option>12 Horas (AM/PM)</option>
+                    <option>24 Horas</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Idioma</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option selected>Español</option>
+                    <option>English</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Privacidad -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-lock text-pink-600"></i> Privacidad y Datos
+        </h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">Permitir comunicaciones promocionales</p>
+                    <p class="text-xs text-gray-400">Recibe descuentos y ofertas exclusivas de SpaDeseo.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                </label>
+            </div>
+            <div class="flex flex-wrap items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 gap-3">
+                <div>
+                    <p class="text-sm font-medium text-gray-800 dark:text-white">Control de datos personales</p>
+                    <a href="#" class="text-xs text-pink-600 dark:text-pink-400 hover:underline">Ver política de privacidad →</a>
+                </div>
+                <button type="button" class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 transition">
+                    Eliminar cuenta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Accesibilidad -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-universal-access text-pink-600"></i> Accesibilidad
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tamaño del texto</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option>Normal</option>
+                    <option>Grande</option>
+                    <option>Pequeño</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Contraste</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option>Estándar</option>
+                    <option>Alto contraste</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Animaciones</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600">
+                    <option>Habilitadas</option>
+                    <option>Reducir animaciones</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón general para guardar -->
+    <div class="flex justify-end pt-2 pb-6">
+        <button type="button" class="px-6 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium transition shadow-sm"><i class="fa-solid fa-floppy-disk mr-2 text-xs"></i>
+            Guardar cambios
+        </button>
+    </div>
+
+</div>
+{% endblock %}

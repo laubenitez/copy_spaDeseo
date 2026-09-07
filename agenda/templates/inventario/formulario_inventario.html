@@ -1,0 +1,138 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 py-6">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <svg class="w-7 h-7 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            {% if datos %}Editar Producto{% else %}Registrar Nuevo Producto{% endif %}
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Completa los campos para gestionar el stock de materiales del spa.</p>
+    </div>
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 sm:p-8">
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Nombre del Producto *</label>
+                <input type="text" name="nombre" value="{% if datos %}{{ datos.nombre }}{% endif %}" required class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="Ej: Esmaltes semipermanentes fucsia">
+            </div>
+
+            <!-- Desplegable Personalizado con Iconos y Estilo Moderno -->
+            <div class="relative">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Categoría *</label>
+                
+                <input type="hidden" name="categoria" id="inputCategoria" value="{% if datos %}{{ datos.categoria }}{% endif %}" required>
+
+                <button type="button" id="dropdownBtn" onclick="toggleDropdown()" class="w-full flex items-center justify-between rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 transition cursor-pointer">
+                    <span id="dropdownLabel" class="flex items-center gap-2.5 text-gray-700 dark:text-gray-200">
+                        {% if datos and datos.categoria %}
+                            {{ datos.categoria }}
+                        {% else %}
+                            <span class="text-gray-400 dark:text-gray-500">Selecciona una categoría</span>
+                        {% endif %}
+                    </span>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" id="dropdownArrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <div id="dropdownMenu" class="hidden absolute z-50 mt-2 w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden py-1">
+                    <div onclick="seleccionarOpcion('Esmaltes y Geles', this)" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:text-pink-600 dark:hover:text-pink-300 cursor-pointer transition">
+                        <span class="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        </span>
+                        Esmaltes y Geles
+                    </div>
+                    <div onclick="seleccionarOpcion('Sistemas Artificiales', this)" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:text-pink-600 dark:hover:text-pink-300 cursor-pointer transition">
+                        <span class="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </span>
+                        Sistemas Artificiales
+                    </div>
+                    <div onclick="seleccionarOpcion('Herramientas', this)" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:text-pink-600 dark:hover:text-pink-300 cursor-pointer transition">
+                        <span class="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </span>
+                        Herramientas
+                    </div>
+                    <div onclick="seleccionarOpcion('Decoraciones', this)" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:text-pink-600 dark:hover:text-pink-300 cursor-pointer transition">
+                        <span class="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                        </span>
+                        Decoraciones
+                    </div>
+                    <div onclick="seleccionarOpcion('Preparadores', this)" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-pink-950/40 hover:text-pink-600 dark:hover:text-pink-300 cursor-pointer transition">
+                        <span class="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950 text-pink-500">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                        </span>
+                        Preparadores
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Cantidad *</label>
+                    <input type="number" name="cantidad" min="0" value="{% if datos %}{{ datos.cantidad }}{% else %}0{% endif %}" required class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Stock Mínimo *</label>
+                    <input type="number" name="stock_minimo" min="0" value="{% if datos %}{{ datos.stock_minimo }}{% else %}5{% endif %}" required class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1.5">Imagen del Producto</label>
+                <input type="file" name="imagen" accept="image/*" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-700 dark:file:bg-pink-950/50 dark:file:text-pink-300 hover:file:bg-pink-100 transition cursor-pointer">
+                {% if datos and datos.imagen %}
+                    <p class="mt-1 text-xs text-gray-400">Imagen actual cargada correctamente.</p>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <a href="{% url 'agenda:ver_inventario' %}" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 transition">
+                    Cancelar
+                </a>
+                <!-- Botón de Guardar/Registrar actualizado con icono de disquete -->
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 transition shadow-xs flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    {% if datos %}Guardar Cambios{% else %}Registrar Producto{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleDropdown() {
+        const menu = document.getElementById('dropdownMenu');
+        const arrow = document.getElementById('dropdownArrow');
+        menu.classList.toggle('hidden');
+        arrow.classList.toggle('rotate-180');
+    }
+
+    function seleccionarOpcion(valor, elemento) {
+        document.getElementById('inputCategoria').value = valor;
+        const label = document.getElementById('dropdownLabel');
+        label.innerHTML = elemento.innerHTML;
+        toggleDropdown();
+    }
+
+    window.addEventListener('click', function(e) {
+        const btn = document.getElementById('dropdownBtn');
+        const menu = document.getElementById('dropdownMenu');
+        const arrow = document.getElementById('dropdownArrow');
+        
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+            arrow.classList.remove('rotate-180');
+        }
+    });
+</script>
+{% endblock %}

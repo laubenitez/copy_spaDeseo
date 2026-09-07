@@ -1,0 +1,195 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SpaDeseo{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+
+    <style>
+        :root {
+            --primary: #d23369;
+            /* Fucsia de acento */
+            --rosa-banner: #f195b2;
+            /* Rosa del fondo superior */
+            --rosa-suave: #fff0f5;
+            --negro-suave: #444444;
+        }
+
+        body {
+            background-color: #fcfcfc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Barra superior de utilidades --- */
+        .top-bar {
+            background-color: var(--rosa-banner);
+            color: white;
+            font-size: 16px;
+            padding: 10px 0;
+            padding-top: 10px;
+        }
+
+        .top-bar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+            transition: opacity 0.2s;
+        }
+
+        .top-bar a:hover {
+            opacity: 0.8;
+        }
+
+        .social-icons a {
+            margin-top: 35px;
+            margin-left: 15px;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        /* --- Contenedor del Navbar superior para simular el fondo rosa de la captura --- */
+        .header-bg-wrapper {
+            background-color: var(--rosa-banner);
+            padding-bottom: 0;
+            /* Crea el espacio rosa debajo del navbar */
+            margin-bottom: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Estilos del Navbar Flotante --- */
+        .nav-custom {
+            background-color: #ffffff;
+            border-radius: 50px;
+            /* Hace el menú ovalado */
+            padding: 10px 45px !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            margin-top: -5px;
+
+            position: relative;
+            transform: translateY(50%);
+            z-index: 20;
+        }
+
+        .nav-custom .nav-link {
+            color: var(--negro-suave) !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 8px 20px !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-custom .nav-link:hover {
+            color: var(--primary) !important;
+        }
+
+        .navbar-brand h1 {
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        /* Tu diseño original con una pequeña mejora para alineación */
+        /* Botón base */
+        .button_login {
+            display: inline-block !important;
+            background-color: var(--primary) !important;
+            /* Tu color rosa */
+            color: #ffffff !important;
+            padding: 10px 25px !important;
+            border-radius: 25px !important;
+            font-weight: bold !important;
+            text-decoration: none !important;
+            transition: all 0.3s ease !important;
+            position: relative;
+            /* Necesario para el efecto */
+            border: none !important;
+        }
+
+        /* El elemento oculto del brillo */
+        .stars {
+            display: none;
+            /* Oculto por defecto */
+        }
+
+        /* El efecto al pasar el mouse */
+        .button_login:hover {
+            background-color: var(--rosa-banner) !important;
+            /* Aplicamos el brillo aquí directamente al botón */
+            filter: drop-shadow(0 0 10px var(--rosa-banner)) !important;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header-bg-wrapper">
+        <div class="container">
+            <div class="top-bar d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="#">FAQs</a>
+                    <a href="#">Ayuda</a>
+                    <a href="#">Soporte</a>
+                </div>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <nav class="navbar navbar-expand-lg navbar-light nav-custom">
+                <div class="container-fluid px-0">
+
+                    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navItems">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navItems">
+                        <ul class="navbar-nav ms-auto align-items-center text-center">
+                            <li class="nav-item"><a href="#nosotros" class="nav-link">Nosotros</a></li>
+                            <li class="nav-item"><a href="#servicios" class="nav-link">Servicios</a></li>
+                        </ul>
+
+                        <a href="#" class="navbar-brand mx-lg-5 text-center d-block">
+                            <h1 class="m-0 font-weight-bold" style="color: var(--primary);">
+                                SPA<span style="color: var(--rosa-banner); opacity: 0.9;"> DESEO</span>
+                            </h1>
+                        </a>
+
+                        <ul class="navbar-nav me-auto align-items-center text-center">
+                            <li class="nav-item"><a href="#contacto" class="nav-link">Contacto</a></li>
+                            <li class="nav-item">
+                                <a href="{% url 'agenda:login' %}" class="nav-link" style="text-decoration: none;">
+                                    <span class="button_login">Iniciar Sesión</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   
+</body>
+
+</html>

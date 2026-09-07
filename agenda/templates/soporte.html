@@ -1,0 +1,243 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<!-- Cabecera centrada -->
+<div class="mb-8 text-center max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+        Centro de Soporte
+    </h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        ¿Tienes dudas o necesitas ayuda? Encuentra respuestas rápidas o comunícate con nuestro equipo técnico.
+    </p>
+</div>
+
+<!-- Contenedor principal centrado -->
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- 1. Centro de ayuda (Preguntas frecuentes adaptadas por rol) -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-circle-question text-pink-600"></i> Centro de ayuda (Preguntas frecuentes)
+        </h3>
+        
+        <div class="space-y-3" id="faq-container">
+            {% if request.session.logueado.rol == "Cliente" %}
+                <!-- Preguntas exclusivas para CLIENTES -->
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Cómo agendo una cita en el spa?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Dirígete a la sección "Agendar cita" en el menú, selecciona tu servicio de preferencia, el día y la hora disponible, y confirma tu reserva al instante.
+                    </div>
+                </div>
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Cómo cancelo o reprogramo una cita?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Entra en "Mis citas", ubica el servicio reservado y haz clic en la opción de cancelar o modificar según la disponibilidad de la agenda.
+                    </div>
+                </div>
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Cómo actualizo mi foto de perfil y mis datos?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Ve al menú superior en tu foto de usuario o haz clic en "Editar Perfil" para cambiar tu información personal y subir una foto nueva.
+                    </div>
+                </div>
+
+            {% elif request.session.logueado.rol == "Manicurista" %}
+                <!-- Preguntas exclusivas para MANICURISTAS -->
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Cómo visualizo las citas que tengo asignadas?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        En el menú lateral izquierdo, haz clic en la sección "Citas asignadas" para ver tu itinerario completo de servicios diarios y semanales.
+                    </div>
+                </div>
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Dónde puedo consultar el listado de clientes?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Accede a la opción "Clientes" en el panel de navegación para ver el historial y los datos de contacto de las personas atendidas en el spa.
+                    </div>
+                </div>
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                        <span>¿Qué hago si tengo un conflicto de horario en mi agenda?</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                    </button>
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Comunícate de inmediato con la administración del sistema mediante el formulario de soporte inferior o por el canal directo de WhatsApp.
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Pregunta común para ambos roles -->
+            <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+                <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
+                    <span>¿Olvidé mi contraseña, qué pasos debo seguir?</span>
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+                </button>
+                <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    En la pantalla de inicio de sesión, haz clic en la opción de recuperación de contraseña para restablecer tus credenciales de acceso de forma segura.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Contactar soporte (Formulario con opciones adaptadas) -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-comment-dots text-pink-600"></i> Contactar soporte
+        </h3>
+        
+        <form method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
+                    <input type="text" value="{{ request.session.logueado.nombre }} {{ request.session.logueado.apellido }}" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Rol en el sistema</label>
+                    <input type="text" value="{{ request.session.logueado.rol }}" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none" disabled>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Asunto</label>
+                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600" required>
+                    <option value="" disabled selected>Seleccionar...</option>
+                    {% if request.session.logueado.rol == "Cliente" %}
+                        <option>Problema con una cita</option>
+                        <option>Problema con el pago</option>
+                    {% elif request.session.logueado.rol == "Manicurista" %}
+                        <option>Problema con citas asignadas</option>
+                        <option>Problema con el registro de clientes</option>
+                    {% endif %}
+                    <option>Problema con mi cuenta</option>
+                    <option>Problema con el sistema</option>
+                    <option>Otro</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Mensaje</label>
+                <textarea rows="4" placeholder="Describe aquí tu problema detalladamente..." class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600 resize-none" required></textarea>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium transition shadow-sm">
+                    Enviar solicitud
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 3. Información de contacto -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-headset text-pink-600"></i> Información de contacto
+        </h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Canales oficiales de atención interna para el equipo y usuarios de SpaDeseo:</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+                <i class="fa-solid fa-envelope text-pink-600 text-lg"></i>
+                <div>
+                    <p class="text-xs text-gray-400">Correo electrónico</p>
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">soporte@spadeseo.com</p>
+                </div>
+            </div>
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+                <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i>
+                <div>
+                    <p class="text-xs text-gray-400">WhatsApp Oficial</p>
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">+57 300 000 0000</p>
+                </div>
+            </div>
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+                <i class="fa-regular fa-clock text-pink-600 text-lg"></i>
+                <div>
+                    <p class="text-xs text-gray-400">Horario de atención</p>
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">Lunes a sábado — 8 a. m. a 6 p. m.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Mis solicitudes -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <i class="fa-solid fa-ticket text-pink-600"></i> Mis solicitudes de soporte
+        </h3>
+
+        <div class="space-y-3">
+            {% if request.session.logueado.rol == "Cliente" %}
+                <div class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">#0001</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800 dark:text-white">Problema con la cancelación de mi cita</p>
+                            <p class="text-xs text-gray-400">26/08/2026</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">En revisión</span>
+                </div>
+            {% elif request.session.logueado.rol == "Manicurista" %}
+                <div class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">#0105</span>
+                        <div>
+                            <p class="text-sm font-medium text-gray-800 dark:text-white">Actualización de cupos en agenda semanal</p>
+                            <p class="text-xs text-gray-400">25/08/2026</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">Resuelto</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 5. Reportar un problema -->
+    <div class="bg-pink-50/60 dark:bg-pink-950/20 rounded-2xl border border-pink-100 dark:border-pink-900/30 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-triangle-exclamation text-pink-600"></i> ¿Encontraste un error en el sistema?
+            </h3>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Ayúdanos a optimizar SpaDeseo reportando cualquier fallo técnico inesperado.</p>
+        </div>
+        <button type="button" onclick="alert('Formulario de reporte de incidencias abierto.')" class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap">
+            Reportar problema
+        </button>
+    </div>
+
+</div>
+
+<!-- Script interactivo para las preguntas desplegables (Acordeón) -->
+<script>
+    document.querySelectorAll('.faq-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    });
+</script>
+{% endblock %}

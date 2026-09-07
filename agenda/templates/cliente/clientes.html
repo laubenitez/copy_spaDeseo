@@ -1,0 +1,124 @@
+{% extends 'dashboard.html' %}
+
+
+{% block content %}
+
+
+<div>
+   <!-- Encabezado -->
+   <div class="mb-6">
+       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Clientes</h1>
+       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Lista de clientes registrados en el sistema</p>
+   </div>
+
+
+   <!-- Grid de Clientes -->
+   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+
+       {% for i in datos %}
+
+
+       <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+          
+           <div>
+               <!-- Encabezado de la Tarjeta: Avatar / ID -->
+               <div class="flex items-center justify-between mb-4">
+                  
+                   <!-- Foto de Perfil o Iniciales Nombre + Apellido -->
+                   <div class="flex items-center gap-3">
+                       {% if i.foto_perfil %}
+                           <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}" class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
+                       {% else %}
+                           <div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
+                               {{ i.nombre|slice:":1"|upper }}{{ i.apellido|slice:":1"|upper }}
+                           </div>
+                       {% endif %}
+                      
+                       <div>
+                           <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
+                               {{ i.nombre }} {{ i.apellido }}
+                           </h2>
+                           <span class="text-xs text-gray-400">Cliente registrado</span>
+                       </div>
+                   </div>
+
+
+                   <!-- ID Tag -->
+                   <span class="text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
+                       ID: {{ i.id }}
+                   </span>
+               </div>
+
+
+               <!-- Detalle de Contacto -->
+               <div class="space-y-2.5 text-xs border-t border-b border-gray-100 dark:border-gray-700/60 py-3.5 my-3">
+                  
+                   <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                       <span class="flex items-center gap-2 text-gray-400">
+                           <i class="fa-solid fa-phone text-pink-500 w-4"></i> Teléfono:
+                       </span>
+                       <strong class="text-gray-800 dark:text-gray-200">{{ i.telefono }}</strong>
+                   </div>
+
+
+                   <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                       <span class="flex items-center gap-2 text-gray-400">
+                           <i class="fa-solid fa-envelope text-pink-500 w-4"></i> Correo:
+                       </span>
+                       <strong class="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">{{ i.email }}</strong>
+                   </div>
+
+
+               </div>
+           </div>
+
+
+           <!-- Botones de Acción -->
+           <div class="flex items-center gap-2 pt-1">
+              
+               <!-- Botón WhatsApp -->
+               <a href="https://wa.me/{{ i.telefono }}" target="_blank"
+                  class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                   <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+               </a>
+
+
+               <!-- Ver Historial / Detalle -->
+               <a href="#"
+                  class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                   <i class="fa-regular fa-eye"></i> Historial
+               </a>
+
+
+           </div>
+
+
+       </div>
+
+
+       {% empty %}
+
+
+       <!-- Estado Vacío -->
+       <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+           <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+               <i class="fa-solid fa-users"></i>
+           </div>
+           <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay clientes registrados</h3>
+           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cuando se registre un nuevo cliente aparecerá en este listado.</p>
+       </div>
+
+
+       {% endfor %}
+
+
+   </div>
+
+
+</div>
+
+
+{% endblock %}
+
+

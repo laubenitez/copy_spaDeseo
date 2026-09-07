@@ -1,0 +1,247 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<!-- Encabezado -->
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Citas Asignadas
+    </h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Consulta las citas programadas con tus clientes, el estado de los pagos y gestiona su progreso.
+    </p>
+</div>
+
+<!-- Lista de citas -->
+<div class="space-y-6">
+
+    {% for cita in citas %}
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition duration-200">
+
+        <!-- Encabezado de la tarjeta: Servicio y Estado principal -->
+        <div class="px-6 py-4 bg-gray-50/50 dark:bg-gray-900/10 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <span class="text-xs font-semibold uppercase tracking-wider text-pink-500 mb-1 block">
+                    Servicio
+                </span>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ cita.servicios.nombre }}
+                </h3>
+            </div>
+
+            <!-- Etiqueta de Estado -->
+            <div>
+                {% if cita.estado == 'programada' %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+                {% elif cita.estado == 'en_proceso' %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+                {% elif cita.estado == 'completada' %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                    {{ cita.get_estado_display }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Cuerpo de información (3 columnas: Fecha/Hora, Cliente/Contacto, Total/Pago) -->
+        <div class="px-6 py-5">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- 1. Fecha y Hora -->
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-600 dark:text-pink-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Fecha y Hora</p>
+                        <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white">
+                            {{ cita.fecha }} <span class="text-gray-400 font-normal">|</span> {{ cita.hora }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. Cliente y Contacto -->
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-600 dark:text-pink-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM4 21a8 8 0 0116 0" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Cliente y Contacto</p>
+                        <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white truncate">
+                            {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            Tel: {{ cita.cliente.telefono }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 truncate" title="{{ cita.cliente.email }}">
+                            Correo: {{ cita.cliente.email }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. Pagos y Total -->
+                <div class="flex items-start gap-3 bg-pink-50/40 dark:bg-pink-900/10 p-3 rounded-xl border border-pink-100/60 dark:border-pink-900/20">
+                    <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-medium text-pink-500 uppercase tracking-wide">Total y Pago</p>
+                        <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white">
+                            ${{ cita.total|floatformat:0 }} COP
+                        </p>
+                        
+                        {% if cita.estado == 'cancelada' %}
+                        <p class="text-xs text-red-500 dark:text-red-400 font-medium mt-0.5">
+                            No aplica (Cancelada)
+                        </p>
+                        {% else %}
+                            {% with pago=cita.pagos.first %}
+                            {% if pago %}
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                <span class="{% if pago.estado == 'Realizado' %}text-green-600 dark:text-green-400 font-medium{% elif pago.estado == 'Pendiente' %}text-amber-500{% else %}text-red-500{% endif %}">
+                                    {{ pago.estado }}
+                                </span> ({{ pago.metodo_pago }})
+                            </p>
+                            {% else %}
+                            <p class="text-xs text-amber-500">Sin pago registrado</p>
+                            {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Pie de tarjeta: Control de Pagos (Select) y Botones de Acción / WhatsApp -->
+        <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+            {% if cita.estado == 'cancelada' %}
+            <div class="w-full text-center md:text-left text-xs font-medium text-red-500 dark:text-red-400 flex items-center justify-center md:justify-start gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Esta cita fue cancelada. No hay acciones disponibles.
+            </div>
+            {% else %}
+
+            <!-- SECCIÓN 1: Control de Pagos (Formulario con select) -->
+            <div class="flex items-center">
+                {% with pago=cita.pagos.first %}
+                {% if not pago or pago.estado != 'Realizado' %}
+                <form method="POST" action="{% url 'agenda:registrar_pago_cita' cita.id %}" class="flex items-center gap-2 bg-white dark:bg-gray-800/80 p-2 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xs">
+                    {% csrf_token %}
+                    <div class="flex items-center gap-1.5 px-2">
+                        <svg class="w-4 h-4 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Pago:</span>
+                    </div>
+
+                    <select name="metodo_pago" class="text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Bancolombia">Bancolombia</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+
+                    <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-pink-500 text-white hover:bg-pink-600 transition shadow-xs">
+                        {% if not pago %}Registrar{% else %}Actualizar{% endif %}
+                    </button>
+                </form>
+                {% else %}
+                <div class="inline-flex items-center gap-2 text-xs text-green-600 dark:text-green-400 font-medium px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800/50">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Pago al día ({{ pago.metodo_pago }})
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- SECCIÓN 2: Botones de Acción (En Proceso, Cancelar, Completar y WhatsApp) -->
+            <div class="flex flex-wrap items-center gap-2">
+                {% if cita.estado == 'programada' %}
+
+                <!-- En proceso -->
+                <a href="{% url 'agenda:cambiar_estado_cita' cita.id 'en_proceso' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    En proceso
+                </a>
+
+                <!-- Cancelar -->
+                <a href="{% url 'agenda:cambiar_estado_cita' cita.id 'cancelada' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                    Cancelar
+                </a>
+
+                <!-- WhatsApp -->
+                <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition shadow-xs">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    Recordatorio
+                </a>
+
+                {% elif cita.estado == 'en_proceso' %}
+
+                <!-- Completar -->
+                <a href="{% url 'agenda:cambiar_estado_cita' cita.id 'completada' %}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Marcar completada
+                </a>
+
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <!-- Sin citas -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-12 text-center">
+        <div class="mx-auto w-16 h-16 rounded-2xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center mb-5">
+            <svg class="w-8 h-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+            No tienes citas asignadas
+        </h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            Cuando tengas una cita asignada aparecerá aquí con toda la información del cliente y los pagos.
+        </p>
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

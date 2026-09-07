@@ -1,0 +1,117 @@
+{% extends "dashboard.html" %}
+{% load l10n %}  <!-- 1. Cargas las herramientas de localización de Django -->
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            Programa tu Cita
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            Completa el formulario para agendar una cita con tu manicurista favorita.
+        </p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Cliente -->
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Cliente
+                </label>
+                <p class="text-gray-900 dark:text-white font-medium">
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                </p>
+            </div>
+
+            <!-- Manicurista -->
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Manicurista
+                </label>
+                <select name="manicurista"
+                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white appearance-none bg-no-repeat bg-[right_0.5rem_center] focus:ring-2 focus:ring-pink-500 outline-none"
+                    style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;20&quot; height=&quot;20&quot; fill=&quot;gray&quot; viewBox=&quot;0 0 20 20&quot;><path d=&quot;M5 7l5 5 5-5H5z&quot;/></svg>');">
+                    {% for m in manicurista %}
+                    <option value="{{ m.id }}">
+                        {{ m.nombre }} {{ m.apellido }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Servicio -->
+            <div>
+                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Servicio
+                </label>
+                <select name="servicios"
+                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white appearance-none bg-no-repeat bg-[right_0.5rem_center] focus:ring-2 focus:ring-pink-500 outline-none"
+                    style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;20&quot; height=&quot;20&quot; fill=&quot;gray&quot; viewBox=&quot;0 0 20 20&quot;><path d=&quot;M5 7l5 5 5-5H5z&quot;/></svg>');">
+                    {% for s in servicios %}
+                    <option value="{{ s.id }}">
+                        <!-- 2. Usamos el filtro |localize para respetar el formato de es-co -->
+                        {{ s.nombre }} - ${{ s.precio|localize }} COP
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Fecha y Hora en la misma fila -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- Fecha -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Fecha
+                    </label>
+                    <input type="date" name="fecha" id="id_fecha"
+                        class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+
+                <!-- Hora -->
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Hora
+                    </label>
+                    <input type="time" name="hora"
+                        class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+                </div>
+
+            </div>
+
+            <!-- Botón -->
+            <div class="flex justify-end pt-2">
+                <button type="submit"
+                    class="px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition font-semibold shadow-sm">
+                    <i class="fa-solid fa-floppy-disk mr-2 text-xs"></i>
+                    Guardar cita
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Establecer la fecha mínima de hoy de forma segura en formato local yyyy-mm-dd
+        const inputFecha = document.getElementById("id_fecha");
+        if (inputFecha) {
+            const hoy = new Date();
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            inputFecha.min = `${anio}-${mes}-${dia}`;
+        }
+    });
+</script>
+
+{% endblock %}

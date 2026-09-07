@@ -1,0 +1,624 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<!-- CDN de Cropper.js -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 relative -top-6 sm:-top-8 pb-4">
+
+    <!-- TÍTULO -->
+    <div class="mb-4">
+        <h1 class="text-3xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+            Editar Perfil
+        </h1>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Administra tu información personal y foto de perfil.
+        </p>
+    </div>
+
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200/80 dark:border-gray-800 transition-all">
+
+        <form method="POST"
+              enctype="multipart/form-data"
+              id="profile-form"
+              class="divide-y divide-gray-100 dark:divide-gray-800">
+
+            {% csrf_token %}
+
+            <!-- Campo oculto para eliminar foto -->
+            <input type="hidden"
+                   name="eliminar_foto"
+                   id="eliminar_foto_input"
+                   value="false">
+
+
+            <!-- ================================================= -->
+            <!-- FOTO DE PERFIL -->
+            <!-- ================================================= -->
+
+            <div class="p-6 sm:p-8 space-y-6">
+
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+
+                    <!-- FOTO -->
+                    <div class="relative group flex-shrink-0">
+
+                        {% if perfil.foto_perfil %}
+
+                            <!-- Foto actual -->
+                            <img id="preview-avatar"
+                                 src="{{ perfil.foto_perfil.url }}"
+                                 alt="Foto de perfil"
+                                 class="w-24 h-24 rounded-full object-cover border-2 border-pink-500/30 shadow-md">
+
+                            <!-- Placeholder oculto -->
+                            <div id="placeholder-avatar"
+                                 class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center border-2 border-pink-500/20 shadow-inner overflow-hidden hidden">
+
+                                {% if perfil.nombre and perfil.apellido %}
+
+                                    <span class="font-bold text-3xl leading-none tracking-tight">
+                                        {{ perfil.nombre|slice:":1"|upper }}{{ perfil.apellido|slice:":1"|upper }}
+                                    </span>
+
+                                {% else %}
+
+                                    <i class="fa-solid fa-user text-3xl opacity-60"></i>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% else %}
+
+                            <!-- Placeholder -->
+                            <div id="placeholder-avatar"
+                                 class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center border-2 border-pink-500/20 shadow-inner overflow-hidden">
+
+                                {% if perfil.nombre and perfil.apellido %}
+
+                                    <span class="font-bold text-3xl leading-none tracking-tight">
+                                        {{ perfil.nombre|slice:":1"|upper }}{{ perfil.apellido|slice:":1"|upper }}
+                                    </span>
+
+                                {% else %}
+
+                                    <i class="fa-solid fa-user text-3xl opacity-60"></i>
+
+                                {% endif %}
+
+                            </div>
+
+                            <!-- Preview de nueva foto -->
+                            <img id="preview-avatar"
+                                 class="w-24 h-24 rounded-full object-cover border-2 border-pink-500/30 shadow-md hidden">
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ACCIONES DE FOTO -->
+                    <div>
+
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                            Foto de perfil
+                        </h3>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">
+                            Sube y ajusta tu foto o elimina la actual.
+                        </p>
+
+
+                        <!-- Input real -->
+                        <input type="file"
+                               id="input-file"
+                               accept="image/*"
+                               class="hidden">
+
+
+                        <div class="flex items-center gap-3">
+
+                            <!-- Cambiar imagen -->
+                            <label for="input-file"
+                                   class="cursor-pointer px-4 py-2 rounded-lg bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400 hover:bg-pink-100 text-xs font-semibold border border-pink-200 dark:border-pink-800/50 transition inline-flex items-center gap-2">
+
+                                <i class="fa-solid fa-camera"></i>
+
+                                Cambiar imagen
+
+                            </label>
+
+
+                            <!-- Eliminar foto -->
+                            <button type="button"
+                                    id="btn-remove-photo"
+                                    class="px-3 py-2 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition flex items-center gap-1.5">
+
+                                <i class="fa-solid fa-trash-can"></i>
+
+                                Eliminar foto
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CAMPOS DEL FORMULARIO -->
+            <!-- ================================================= -->
+
+            <div class="p-6 sm:p-8 space-y-6">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+
+                    <!-- NOMBRE -->
+                    <div>
+
+                        <label for="nombre"
+                               class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+
+                            Nombre
+
+                            <span class="text-pink-500">*</span>
+
+                        </label>
+
+
+                        <input type="text"
+                               id="nombre"
+                               name="nombre"
+                               value="{{ perfil.nombre|default:'' }}"
+                               required
+                               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition">
+
+                    </div>
+
+
+                    <!-- APELLIDO -->
+                    <div>
+
+                        <label for="apellido"
+                               class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+
+                            Apellido
+
+                            <span class="text-pink-500">*</span>
+
+                        </label>
+
+
+                        <input type="text"
+                               id="apellido"
+                               name="apellido"
+                               value="{{ perfil.apellido|default:'' }}"
+                               required
+                               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition">
+
+                    </div>
+
+
+                    <!-- CORREO -->
+                    <div>
+
+                        <label for="email"
+                               class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+
+                            Correo electrónico
+
+                            <span class="text-pink-500">*</span>
+
+                        </label>
+
+
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               value="{{ perfil.email|default:'' }}"
+                               required
+                               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition">
+
+                    </div>
+
+
+                    <!-- TELÉFONO -->
+                    <div>
+
+                        <label for="telefono"
+                               class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+
+                            Teléfono
+
+                            <span class="text-pink-500">*</span>
+
+                        </label>
+
+
+                        <input type="tel"
+                               id="telefono"
+                               name="telefono"
+                               value="{{ perfil.telefono|default:'' }}"
+                               required
+                               class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- BOTONES -->
+            <!-- ================================================= -->
+
+            <div class="p-6 sm:p-8 bg-gray-50/50 dark:bg-gray-800/30 flex items-center justify-between rounded-b-xl">
+
+                <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
+
+                    Los campos marcados con
+                    (<span class="text-pink-500">*</span>)
+                    son obligatorios.
+
+                </span>
+
+
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+
+                    <!-- Cancelar -->
+                    <a href="{% url 'agenda:dashboard' %}"
+                       class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition">
+
+                        Cancelar
+
+                    </a>
+
+
+                    <!-- Guardar -->
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-lg bg-pink-600 hover:bg-pink-700 text-white font-medium text-sm transition shadow-sm">
+
+                        <i class="fa-solid fa-floppy-disk mr-2 text-xs"></i>
+
+                        Guardar cambios
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- MODAL PARA RECORTAR LA IMAGEN -->
+<!-- ========================================================= -->
+
+<div id="crop-modal"
+     class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 hidden">
+
+    <div class="bg-white dark:bg-gray-900 rounded-xl max-w-lg w-full overflow-hidden shadow-2xl">
+
+
+        <!-- HEADER -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+
+            <h3 class="font-semibold text-gray-900 dark:text-white text-sm">
+                Recortar foto de perfil
+            </h3>
+
+            <button type="button"
+                    id="btn-cancel-crop"
+                    class="text-gray-400 hover:text-gray-600">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </div>
+
+
+        <!-- IMAGEN -->
+        <div class="p-4 flex justify-center max-h-96 overflow-hidden">
+
+            <img id="image-to-crop"
+                 class="max-w-full">
+
+        </div>
+
+
+        <!-- BOTONES -->
+        <div class="p-4 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-2">
+
+            <button type="button"
+                    id="btn-cancel-crop-2"
+                    class="px-4 py-2 text-xs font-medium text-gray-600 bg-white border rounded-lg">
+
+                Cancelar
+
+            </button>
+
+
+            <button type="button"
+                    id="btn-apply-crop"
+                    class="px-4 py-2 text-xs font-semibold text-white bg-pink-600 hover:bg-pink-700 rounded-lg">
+
+                Aplicar recortes
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ========================================================= -->
+
+<script>
+
+    let cropper;
+
+    const inputFile = document.getElementById('input-file');
+
+    const cropModal = document.getElementById('crop-modal');
+
+    const imageToCrop = document.getElementById('image-to-crop');
+
+    const profileForm = document.getElementById('profile-form');
+
+    const removePhotoBtn = document.getElementById('btn-remove-photo');
+
+    const eliminarInput = document.getElementById('eliminar_foto_input');
+
+
+    // =========================================================
+    // SELECCIONAR IMAGEN
+    // =========================================================
+
+    inputFile.addEventListener('change', function (e) {
+
+        const files = e.target.files;
+
+        if (files && files.length > 0) {
+
+            const reader = new FileReader();
+
+
+            reader.onload = function (event) {
+
+                imageToCrop.src = event.target.result;
+
+                cropModal.classList.remove('hidden');
+
+
+                if (cropper) {
+
+                    cropper.destroy();
+
+                }
+
+
+                cropper = new Cropper(imageToCrop, {
+
+                    aspectRatio: 1,
+
+                    viewMode: 1,
+
+                    background: false
+
+                });
+
+            };
+
+
+            reader.readAsDataURL(files[0]);
+
+        }
+
+    });
+
+
+    // =========================================================
+    // CERRAR MODAL
+    // =========================================================
+
+    const closeCrop = () => {
+
+        cropModal.classList.add('hidden');
+
+        if (cropper) {
+
+            cropper.destroy();
+
+        }
+
+        inputFile.value = '';
+
+    };
+
+
+    document
+        .getElementById('btn-cancel-crop')
+        .addEventListener('click', closeCrop);
+
+
+    document
+        .getElementById('btn-cancel-crop-2')
+        .addEventListener('click', closeCrop);
+
+
+    // =========================================================
+    // APLICAR RECORTE
+    // =========================================================
+
+    document
+        .getElementById('btn-apply-crop')
+        .addEventListener('click', function () {
+
+
+            const canvas = cropper.getCroppedCanvas({
+
+                width: 300,
+
+                height: 300
+
+            });
+
+
+            canvas.toBlob(function (blob) {
+
+
+                const croppedFile = new File(
+
+                    [blob],
+
+                    'foto_perfil.jpg',
+
+                    {
+                        type: 'image/jpeg'
+                    }
+
+                );
+
+
+                const dataTransfer = new DataTransfer();
+
+                dataTransfer.items.add(croppedFile);
+
+
+                // Crear input real para enviar la foto
+                let realInput =
+                    document.getElementById('foto_perfil_final');
+
+
+                if (!realInput) {
+
+                    realInput =
+                        document.createElement('input');
+
+                    realInput.type = 'file';
+
+                    realInput.name = 'foto_perfil';
+
+                    realInput.id = 'foto_perfil_final';
+
+                    realInput.className = 'hidden';
+
+                    profileForm.appendChild(realInput);
+
+                }
+
+
+                realInput.files = dataTransfer.files;
+
+
+                // =================================================
+                // ACTUALIZAR PREVIEW
+                // =================================================
+
+                const previewAvatar =
+                    document.getElementById('preview-avatar');
+
+                const placeholderAvatar =
+                    document.getElementById('placeholder-avatar');
+
+
+                if (previewAvatar) {
+
+                    previewAvatar.src =
+                        canvas.toDataURL();
+
+                    previewAvatar.classList.remove('hidden');
+
+                }
+
+
+                if (placeholderAvatar) {
+
+                    placeholderAvatar.classList.add('hidden');
+
+                }
+
+
+                eliminarInput.value = "false";
+
+
+                closeCrop();
+
+            }, 'image/jpeg');
+
+        });
+
+
+    // =========================================================
+    // ELIMINAR FOTO
+    // =========================================================
+
+    removePhotoBtn.addEventListener('click', function () {
+
+
+        eliminarInput.value = "true";
+
+
+        const previewAvatar =
+            document.getElementById('preview-avatar');
+
+        const placeholderAvatar =
+            document.getElementById('placeholder-avatar');
+
+
+        if (previewAvatar) {
+
+            previewAvatar.classList.add('hidden');
+
+        }
+
+
+        if (placeholderAvatar) {
+
+            placeholderAvatar.classList.remove('hidden');
+
+        }
+
+
+        const realInput =
+            document.getElementById('foto_perfil_final');
+
+
+        if (realInput) {
+
+            realInput.remove();
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,208 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+<div>
+    <!-- Encabezado -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Manicuristas</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Administración del personal, estados y datos de contacto
+            </p>
+        </div>
+
+        <!-- Botón para registrar manicurista -->
+        <a href="{% url 'agenda:crear_manicurista' %}"
+            class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+            <i class="fa-solid fa-plus"></i> Nueva Manicurista
+        </a>
+    </div>
+
+    <!-- Grid de Manicuristas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for i in datos %}
+
+        <div
+            class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+
+            <div>
+                <!-- Encabezado de la Tarjeta: Avatar + Nombre + Estado -->
+                <div class="flex items-center justify-between mb-4">
+
+                    <!-- Foto de Perfil o Iniciales -->
+                    <div class="flex items-center gap-3">
+                        {% if i.foto_perfil %}
+                        <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}"
+                            class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
+                        {% else %}
+                        <div
+                            class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
+                            {% if i.user %}
+                            {{ i.user.first_name|slice:":1"|upper }}{{ i.user.last_name|slice:":1"|upper }}
+                            {% else %}
+                            {{ i.nombre|slice:":1"|upper }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div>
+                            <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
+                                {% if i.user %}{{ i.user.get_full_name }}{% else %}{{ i.nombre }}{% endif %}
+                            </h2>
+                            <span class="text-xs text-gray-400">Especialista</span>
+                        </div>
+                    </div>
+
+                    <!-- Badge del Estado (Activa / Inactiva) -->
+                    {% if i.estado == "Activa" %}
+                    <span
+                        class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activa
+                    </span>
+                    {% else %}
+                    <span
+                        class="text-xs font-semibold px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Inactiva
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Detalles de Especialidad y Contacto -->
+                <div class="space-y-2.5 text-xs border-t border-b border-gray-100 dark:border-gray-700/60 py-3.5 my-3">
+
+                    <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-wand-magic-sparkles text-pink-500 w-4"></i> Especialidad:
+                        </span>
+                        <strong class="text-gray-800 dark:text-gray-200">{{ i.especialidad|default:"No asignada" }}</strong>
+                    </div>
+
+                    <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-phone text-pink-500 w-4"></i> Teléfono:
+                        </span>
+                        <strong class="text-gray-800 dark:text-gray-200">{{ i.telefono|default:"Sin registro" }}</strong>
+                    </div>
+
+                    <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-envelope text-pink-500 w-4"></i> Correo:
+                        </span>
+                        <strong class="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">
+                            {% if i.user %}{{ i.user.email }}{% else %}{{ i.email }}{% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Botones de Acción para Administrador -->
+            <div class="flex items-center gap-2 pt-1">
+
+                <!-- WhatsApp Directo -->
+                <a href="https://wa.me/{{ i.telefono }}" target="_blank" title="Contactar por WhatsApp"
+                    class="py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                </a>
+
+                <!-- Editar Perfil (Corregido a editar_manicurista) -->
+                <a href="{% url 'agenda:actualizar_manicurista' i.id %}"
+                    class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-regular fa-pen-to-square"></i> Editar
+                </a>
+
+                <!-- Botón Desactivar / Inactivar (Uso de data-attributes para mayor seguridad) -->
+                {% if i.estado == "Activa" %}
+                <button type="button"
+                    data-nombre="{% if i.user %}{{ i.user.get_full_name }}{% else %}{{ i.nombre }}{% endif %}"
+                    data-url="{% url 'agenda:eliminar_manicurista' i.id %}"
+                    onclick="abrirModalInactivar(this)"
+                    class="py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                    title="Inactivar Manicurista">
+                    <i class="fa-solid fa-user-slash"></i>
+                </button>
+                {% else %}
+                <button type="button" disabled
+                    class="py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-lg text-xs font-semibold flex items-center justify-center cursor-not-allowed opacity-60"
+                    title="La manicurista ya está inactiva">
+                    <i class="fa-solid fa-user-slash"></i>
+                </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <!-- Estado Vacío -->
+        <div
+            class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div
+                class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-hand-sparkles"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay manicuristas registradas</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Haz clic en "Nueva Manicurista" para agregar al
+                primer miembro del equipo.</p>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<!-- Modal Confirmar Inactivación -->
+<div id="modalInactivar"
+    class="fixed inset-0 z-50 hidden bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+        class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-center space-y-4">
+
+        <div
+            class="w-14 h-14 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">¿Desactivar Manicurista?</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-relaxed">
+                Estás a punto de inactivar a <strong id="nombre-manicurista"
+                    class="text-gray-800 dark:text-gray-200 font-semibold"></strong>. Su cuenta quedará deshabilitada y
+                no podrá recibir citas ni iniciar sesión.
+            </p>
+        </div>
+
+        <!-- Formulario POST necesario por el decorador @require_POST -->
+        <form id="form-inactivar" method="POST" action="" class="flex items-center gap-3 pt-2">
+            {% csrf_token %}
+            <button type="button" onclick="cerrarModalInactivar()"
+                class="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg transition">
+                Cancelar
+            </button>
+            <button type="submit"
+                class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                Sí, Desactivar
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalInactivar(elemento) {
+        const nombre = elemento.getAttribute('data-nombre');
+        const urlAccion = elemento.getAttribute('data-url');
+        
+        document.getElementById('nombre-manicurista').innerText = nombre;
+        document.getElementById('form-inactivar').action = urlAccion;
+        document.getElementById('modalInactivar').classList.remove('hidden');
+    }
+
+    function cerrarModalInactivar() {
+        document.getElementById('modalInactivar').classList.add('hidden');
+    }
+</script>
+
+{% endblock %}

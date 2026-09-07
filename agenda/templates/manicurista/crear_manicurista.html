@@ -1,0 +1,218 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+<!-- CSS para anular el color azul predeterminado del autocompletado de Chrome -->
+<style>
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px #f9fafb inset !important;
+        -webkit-text-fill-color: #111827 !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover, 
+    .dark input:-webkit-autofill:focus,
+    .dark input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px #1f2937 inset !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+</style>
+
+<div class="max-w-4xl mx-auto py-4">
+
+    <!-- Encabezado y Botón de Regreso -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Registrar Nueva Manicurista</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Ingresa las credenciales y datos generales del nuevo miembro del equipo
+            </p>
+        </div>
+
+        <a href="{% url 'agenda:ver_manicuristas' %}" 
+           class="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm border border-gray-200 dark:border-gray-700/60">
+            <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
+        </a>
+    </div>
+
+    <!-- Mensajes de Alerta/Notificaciones -->
+    {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+                <div class="p-4 rounded-xl text-xs font-medium border flex items-center justify-between gap-3
+                    {% if message.tags == 'error' or message.tags == 'danger' %}
+                        bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/50
+                    {% elif message.tags == 'success' %}
+                        bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50
+                    {% else %}
+                        bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50
+                    {% endif %}">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid {% if message.tags == 'error' or message.tags == 'danger' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} text-sm"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Tarjeta Principal del Formulario -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700/80 shadow-sm overflow-hidden">
+        
+        <form method="POST" action="{% url 'agenda:crear_manicurista' %}" autocomplete="off" novalidate class="p-6 sm:p-8 space-y-6">
+            {% csrf_token %}
+
+            <!-- Sección: Información Personal -->
+            <div>
+                <h2 class="text-sm font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear"></i> Información Personal y de Contacto
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    
+                    <!-- Nombre -->
+                    <div class="space-y-1.5">
+                        <label for="nombre" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Nombre <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="nombre" name="nombre" value="{{ form_data.nombre|default:'' }}" required
+                                   placeholder="Ej. Laura" autocomplete="off"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Apellido -->
+                    <div class="space-y-1.5">
+                        <label for="apellido" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Apellido <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-regular fa-user"></i>
+                            </span>
+                            <input type="text" id="apellido" name="apellido" value="{{ form_data.apellido|default:'' }}" required
+                                   placeholder="Ej. Gómez" autocomplete="off"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Correo Electrónico -->
+                    <div class="space-y-1.5">
+                        <label for="email" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Correo Electrónico <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input type="email" id="email" name="email" value="{{ form_data.email|default:'' }}" required
+                                   placeholder="ejemplo@correo.com" autocomplete="off"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="space-y-1.5">
+                        <label for="telefono" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Teléfono <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-solid fa-phone"></i>
+                            </span>
+                            <input type="tel" id="telefono" name="telefono" value="{{ form_data.telefono|default:'' }}" required
+                                   placeholder="+57 300 123 4567" autocomplete="off"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <hr class="border-gray-100 dark:border-gray-800">
+
+            <!-- Sección: Acceso y Perfil Profesional -->
+            <div>
+                <h2 class="text-sm font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-briefcase"></i> Acceso y Datos Profesionales
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    <!-- Contraseña -->
+                    <div class="md:col-span-2 space-y-1.5">
+                        <label for="password" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Contraseña de Acceso <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" id="password" name="password" required
+                                   placeholder="••••••••••••" autocomplete="new-password"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                        <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
+                            Esta clave permitirá a la manicurista iniciar sesión en la plataforma.
+                        </p>
+                    </div>
+
+                    <!-- Especialidad -->
+                    <div class="space-y-1.5">
+                        <label for="especialidad" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Especialidad <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </span>
+                            <input type="text" id="especialidad" name="especialidad" value="{{ form_data.especialidad|default:'' }}" required
+                                   placeholder="Ej. Acrílico, Soft Gel, Nail Art" autocomplete="off"
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <!-- Fecha de Ingreso -->
+                    <div class="space-y-1.5">
+                        <label for="fecha_ingreso" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                            Fecha de Ingreso <span class="text-pink-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
+                                <i class="fa-regular fa-calendar-days"></i>
+                            </span>
+                            <input type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ form_data.fecha_ingreso|default:'' }}" required
+                                   class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Acciones / Botones -->
+            <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-end gap-3">
+                <a href="{% url 'agenda:ver_manicuristas' %}" 
+                   class="px-5 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold transition">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Manicurista
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

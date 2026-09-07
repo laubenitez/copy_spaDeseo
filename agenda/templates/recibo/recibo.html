@@ -1,0 +1,181 @@
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Botones de Acción (Se ocultan automáticamente al imprimir) -->
+<div class="max-w-3xl mx-auto mb-6 flex items-center justify-between gap-4 print:hidden">
+    <a href="{% url 'agenda:mis_citas' %}" 
+       class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Volver a Mis Citas
+    </a>
+
+    <button onclick="window.print()" 
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-pink-600 hover:bg-pink-700 transition shadow-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        Imprimir Recibo
+    </button>
+</div>
+
+<!-- Tarjeta Principal de la Factura -->
+<div class="max-w-3xl mx-auto bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm p-8 space-y-6 print-factura">
+
+    <!-- Encabezado con Logo y Datos de Emisión -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-gray-200 dark:border-gray-800 gap-4">
+        <div class="flex items-center gap-4">
+            <img src="{% static 'img/logo-spa-deseo-fucsia.png' %}" alt="Spa Deseo Logo" class="h-16 w-auto object-contain">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">Spa Deseo</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Estética & Cuidado Personal</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500">NIT/RUT: 123456789-0</p>
+            </div>
+        </div>
+
+        <div class="text-left sm:text-right">
+            <span class="inline-block px-3 py-1 bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 rounded-lg text-xs font-bold border border-pink-100 dark:border-pink-900/30">
+                RECIBO DE PAGO #{{ recibo.id|default:cita.id }}
+            </span>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <span class="font-semibold text-gray-700 dark:text-gray-300">Fecha de emisión:</span><br>
+                {% if recibo.fecha_emision %}
+                    {{ recibo.fecha_emision|date:"d/m/Y • h:i A" }}
+                {% else %}
+                    {{ cita.fecha }} • {{ cita.hora }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Sección Datos del Cliente y Atendido Por -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm py-2">
+        <div class="p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+            <p class="text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider mb-2">Facturado a</p>
+            <p class="font-bold text-gray-900 dark:text-white text-base">
+                {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+            </p>
+            {% if cita.cliente.user.email %}
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <strong>Email:</strong> {{ cita.cliente.user.email }}
+            </p>
+            {% endif %}
+            {% if cita.cliente.telefono %}
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                <strong>Teléfono:</strong> {{ cita.cliente.telefono }}
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+            <p class="text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider mb-2">Detalles del Servicio</p>
+            <p class="text-xs text-gray-600 dark:text-gray-300">
+                <strong>Atendido por:</strong> {{ cita.manicurista.nombre }} {{ cita.manicurista.apellido }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                <strong>Cita ID:</strong> #{{ cita.id }}
+            </p>
+            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                <strong>Método de pago:</strong> {{ pago.metodo_pago|default:"Transferencia" }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Tabla Detallada estilo Factura -->
+    <div class="m-0 p-0">
+        <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+            <table class="w-full text-left text-sm border-collapse p-0 m-0">
+                <thead class="bg-pink-600 text-white font-bold text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="py-3 px-4 align-middle">Descripción del Servicio</th>
+                        <th class="py-3 px-4 text-center align-middle">Fecha y Hora</th>
+                        <th class="py-3 px-4 text-center align-middle">Estado Pago</th>
+                        <th class="py-3 px-4 text-right align-middle">Monto</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900">
+                    <tr class="align-middle">
+                        <td class="py-4 px-4 align-middle">
+                            <p class="font-bold text-gray-900 dark:text-white leading-tight text-sm">
+                                {{ cita.servicios.nombre }}
+                            </p>
+                        </td>
+                        <td class="py-4 px-4 text-center text-xs align-middle whitespace-nowrap">
+                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ cita.fecha }}</span><br>
+                            <span class="text-gray-400">{{ cita.hora }}</span>
+                        </td>
+                        <td class="py-4 px-4 text-center align-middle whitespace-nowrap">
+                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                                {{ pago.estado|default:"Realizado" }}
+                            </span>
+                        </td>
+                        <td class="py-4 px-4 text-right font-bold text-gray-900 dark:text-white align-middle whitespace-nowrap text-sm">
+                            ${{ cita.total|floatformat:0 }} COP
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Totales (Alineados a los extremos del contenedor principal) -->
+    <div class="w-full pt-2">
+        <div class="w-full space-y-2 text-sm">
+            <div class="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                <span>Subtotal:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">${{ cita.total|floatformat:0 }} COP</span>
+            </div>
+            <div class="flex justify-between items-center text-gray-500 dark:text-gray-400">
+                <span>Descuento / Impuestos:</span>
+                <span class="font-semibold text-gray-800 dark:text-gray-200">$0 COP</span>
+            </div>
+            <div class="flex justify-between items-center text-base font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-800">
+                <span class="text-pink-600 dark:text-pink-400">Total Pagado:</span>
+                <span>${{ cita.total|floatformat:0 }} COP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje y Términos al Pie -->
+    <div class="text-center pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 space-y-1">
+        <p class="font-bold text-gray-700 dark:text-gray-300">¡Gracias por tu preferencia!</p>
+        <p>Este recibo sirve como comprobante de pago oficial de tu cita en Spa Deseo.</p>
+    </div>
+
+</div>
+
+<!-- Estilos de Impresión CSS -->
+<style>
+    @media print {
+        body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .print-factura {
+            border: 1px solid #e5e7eb !important;
+            box-shadow: none !important;
+            padding: 24px !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 0 !important;
+        }
+
+        header, nav, aside, .print\:hidden {
+            display: none !important;
+        }
+    }
+</style>
+
+{% endblock %}
