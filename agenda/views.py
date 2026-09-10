@@ -1,57 +1,55 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Citas, Clientes, Manicurista, Servicios
-from django.http import HttpResponse
-from django.contrib import messages
-from django.db import transaction, IntegrityError
-from .models import *
-from .utils import validar_password
-from datetime import datetime, date, time, timedelta
-from django.views.decorators.http import require_POST, require_http_methods, require_GET
+import os
 import re
 import json
-# importar las serializaciones de los modelos
-from .serializador import *
-
-# importar el módulo de ViewSets para las vistas de las API's
+import logging
 from decimal import Decimal, InvalidOperation
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from datetime import datetime, date, time, timedelta
 
-from drf_spectacular.utils import extend_schema
-from rest_framework import viewsets
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from .models import Servicios
-from .permissions import *
-from .permissions import IsStaffOrReadOnly  # <--- Importa tu permiso
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum, Avg, Max, Min, Q, ProtectedError  # Herramientas analíticas avanzadas
-
-from rest_framework.decorators import action
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
-from .utils import validar_password, requiere_rol
-
-
-import os
-
+from django.db import transaction, IntegrityError
+from django.db.models import Sum, Avg, Max, Min, Q, ProtectedError
+from django.views.decorators.http import require_POST, require_http_methods, require_GET
 from django.conf import settings
 from django.urls import reverse
 
-import logging
+# Django REST Framework & Spectacular
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from drf_spectacular.utils import extend_schema
+
+# Importaciones locales explícitas
+from .models import (
+    Citas, Clientes, Manicurista, Servicios, Inventario, Pagos, Recibo, Gastos
+)
+from .serializador import (
+    ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
+    CitasSerializer, InventarioSerializer, PagosSerializer,
+    ReciboSerializer, GastosSerializer
+)
+from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
+from .utils import validar_password, requiere_rol
+
 logger = logging.getLogger(__name__)
 
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="Cerrar sesión de la API",
+        description="Elimina el token del usuario actual.",
+        responses={200: dict}
+    )
     def post(self, request):
-        # Elimina el token asociado al usuario de la petición
         request.user.auth_token.delete()
         return Response(
             {"message": "Sesión cerrada correctamente. Token destruido."}, 
@@ -89,6 +87,10 @@ class ServiciosViewSet(viewsets.ModelViewSet):
     # =========================================================================
     # ENDPOINT 1: DASHBOARD DE ESTADÍSTICAS (GET /api/servicios/dashboard/)
     # =========================================================================
+    @extend_schema(
+        summary="Obtener métricas y estadísticas del dashboard de servicios",
+        responses={200: dict}  # Indica que devuelve un objeto JSON personalizado
+    )
     @action(detail=False, methods=['get'])
     def dashboard(self, request):
         # Mapeo y conteo de estados en la BD
@@ -121,6 +123,10 @@ class ServiciosViewSet(viewsets.ModelViewSet):
     # =========================================================================
     # ENDPOINT 2: BÚSQUEDA AVANZADA MULTI-CAMPO (GET /api/servicios/buscar/?q=texto)
     # =========================================================================
+    @extend_schema(
+        summary="Buscar servicios por nombre o descripción",
+        responses={200: dict}
+    )
     @action(detail=False, methods=['get'])
     def buscar(self, request):
         query_texto = request.query_params.get('q', '').strip()

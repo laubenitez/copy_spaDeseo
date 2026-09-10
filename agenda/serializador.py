@@ -10,7 +10,7 @@ from rest_framework import serializers
 class ClientesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clientes
-        fields = ["id", "nombre", "apellido", "telefono", "email", "color_piel"]
+        fields = ["id", "nombre", "apellido", "telefono", "email"]
         # fields = '__all__'
 
 class ManicuristaSerializer(serializers.ModelSerializer):
