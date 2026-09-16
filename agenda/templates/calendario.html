@@ -34,6 +34,7 @@
     /* 2. Corrección estricta para Celdas y Fondos */
     .fc-theme-standard .fc-scrollgrid {
         border: none !important;
+        border-radius: 0 !important;
     }
     .fc-theme-standard td, 
     .fc-theme-standard th {
@@ -48,21 +49,30 @@
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
+        border-radius: 0 !important;
     }
 
     .fc-scrollgrid-sync-table {
         border-collapse: collapse !important;
+        border-radius: 0 !important;
     }
 
-    /* Cabecera Fucsia de los Días */
+    /* Cabecera Fucsia de los Días (Vista Mes) */
     .fc .fc-col-header {
         width: 100% !important;
+        border-radius: 0 !important;
     }
     .fc .fc-col-header-cell {
         background-color: #db2777 !important;
         border: none !important;
         padding: 0 !important;
         margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    .fc .fc-col-header-cell:first-child,
+    .fc .fc-col-header-cell:last-child,
+    .fc .fc-col-header-cell-cushion {
+        border-radius: 0 !important;
     }
     .fc .fc-col-header-cell-cushion {
         display: block !important;
@@ -75,7 +85,7 @@
         width: 100%;
     }
 
-    /* 3. Efecto Hover por Columna */
+    /* 3. Efecto Hover por Columna en Mes */
     .fc-daygrid-day:hover {
         background-color: rgba(219, 39, 119, 0.04) !important;
         transition: background-color 0.15s ease-in-out;
@@ -111,7 +121,7 @@
         margin: 4px;
     }
 
-    /* 6. Eventos unificados */
+    /* 6. Eventos unificados en vista Mes/Semana */
     .fc-daygrid-event-dot {
         display: none !important;
     }
@@ -122,44 +132,237 @@
         border: none !important;
         border-radius: 6px !important;
         padding: 4px 8px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         cursor: pointer;
         transition: opacity 0.2s ease;
     }
     .fc-daygrid-event:hover, .fc-timegrid-event:hover {
-        opacity: 0.9;
+        opacity: 0.85;
     }
     .fc-event-main {
-        color: #ffffff !important;
         font-size: 0.75rem !important;
         font-weight: 600 !important;
         line-height: 1.25 !important;
         white-space: normal !important;
         word-break: break-word !important;
     }
-    .fc-event-time, .fc-event-title {
+
+    .fc-timegrid-event {
+        border-radius: 6px !important;
+        padding: 2px 6px !important;
+    }
+    .fc-timegrid-event .fc-event-main {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 4px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    .fc-timegrid-event .fc-event-time,
+    .fc-timegrid-event .fc-event-title-container {
+        display: inline !important;
+        white-space: nowrap !important;
+    }
+
+    /* CITAS PASADAS: ROSADAS CLARAS */
+    .evento-pasado {
+        background-color: #fdf2f8 !important;
+        color: #db2777 !important;
+        border: 1px solid #fbcfe8 !important;
+    }
+    .evento-pasado .fc-event-main,
+    .evento-pasado .fc-event-time,
+    .evento-pasado .fc-event-title {
+        color: #db2777 !important;
+    }
+
+    .dark .evento-pasado {
+        background-color: rgba(219, 39, 119, 0.15) !important;
+        color: #f472b6 !important;
+        border: 1px solid rgba(219, 39, 119, 0.3) !important;
+    }
+    .dark .evento-pasado .fc-event-main,
+    .dark .evento-pasado .fc-event-time,
+    .dark .evento-pasado .fc-event-title {
+        color: #f472b6 !important;
+    }
+
+    /* CITAS FUTURAS: FUCSIA INTENSO */
+    .evento-futuro {
+        background-color: #db2777 !important;
+        color: #ffffff !important;
+    }
+    .evento-futuro .fc-event-main,
+    .evento-futuro .fc-event-time,
+    .evento-futuro .fc-event-title {
         color: #ffffff !important;
     }
 
-    /* 7. Vista Agenda */
+    /* =========================================================
+       7. VISTA AGENDA: TARJETAS POR FECHA (SEPARADAS)
+       ========================================================= */
     .fc-list {
         border: none !important;
+        background: transparent !important;
     }
+
+    .fc-list-table {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+    }
+
+    .fc-list-day {
+        background-color: transparent !important;
+    }
+
+    /* Encabezado fucsia REDONDEADO ARRIBA PARA TODOS LOS BLOQUES */
+    .fc-list-day th,
     .fc-list-day-cushion {
         background-color: #db2777 !important;
+        border: none !important;
+        border-top-left-radius: 12px !important;
+        border-top-right-radius: 12px !important;
+        padding: 0 !important;
+        width: 100% !important;
+        overflow: hidden !important;
     }
-    .fc-list-day-text, .fc-list-day-side-text {
+
+    /* Separación física ampliada entre tarjetas (excepto la primera) */
+    tr.fc-list-day:not(:first-child) th {
+        border-top: 28px solid transparent !important;
+        background-clip: padding-box !important;
+    }
+
+    /* Formato flex para fecha y día de la semana */
+    .fc-list-day-cushion {
+        background: #db2777 !important;
+        padding: 10px 16px !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Texto principal de la fecha */
+    .fc-list-day-text {
         color: #ffffff !important;
-        font-weight: 600 !important;
-        text-decoration: none !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
         text-transform: capitalize;
     }
-    .fc-list-event {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
+
+    /* Día de la semana en la derecha con separación correcta */
+    .fc-list-day-side-text {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        text-transform: capitalize;
+        margin-left: 10px !important;
     }
+
+    /* Filas de citas pegadas abajo de su encabezado */
+    .fc-list-event {
+        background-color: #fdf2f8 !important;
+        border-left: 1px solid #fbcfe8 !important;
+        border-right: 1px solid #fbcfe8 !important;
+        border-bottom: 1px solid #fbcfe8 !important;
+        border-top: none !important;
+        transition: background-color 0.15s ease-in-out !important;
+        cursor: pointer;
+    }
+
+    /* Esquinas inferiores redondeadas solo en la última cita de ese día */
+    .fc-list-event:last-child {
+        border-radius: 0 0 12px 12px !important;
+    }
+
+    .fc-list-event:hover {
+        background-color: #fce7f3 !important;
+    }
+
+    .fc-list-event td {
+        border: none !important;
+        padding: 12px 16px !important;
+        background: transparent !important;
+    }
+
+    /* CUADRITO INDICADOR DERECHO POR CITA (PASADAS / FUTURAS) */
+    .fc-list-event-graphic {
+        display: table-cell !important;
+        width: 32px !important;
+        text-align: right !important;
+        padding-right: 16px !important;
+        vertical-align: middle !important;
+    }
+
     .fc-list-event-dot {
-        border-color: #db2777 !important;
+        display: inline-block !important;
+        width: 14px !important;
+        height: 14px !important;
+        border-radius: 4px !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Cuadrito para Cita Pasada */
+    .evento-pasado .fc-list-event-dot {
+        background-color: #fdf2f8 !important;
+        border: 2px solid #db2777 !important;
+    }
+
+    /* Cuadrito para Cita Futura */
+    .evento-futuro .fc-list-event-dot {
+        background-color: #db2777 !important;
+        border: 2px solid #be185d !important;
+    }
+
+    .fc-list-event-time {
+        color: #db2777 !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        width: 130px !important;
+        white-space: nowrap !important;
+    }
+
+    .fc-list-event-title {
+        color: #db2777 !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+    }
+
+    .fc-list-event-title a {
+        color: #db2777 !important;
+        text-decoration: none !important;
+    }
+
+    /* MODO OSCURO PARA AGENDA */
+    .dark tr.fc-list-day:not(:first-child) th {
+        border-top-color: transparent !important;
+    }
+    .dark .fc-list-event {
+        background-color: rgba(219, 39, 119, 0.15) !important;
+        border-left-color: rgba(219, 39, 119, 0.3) !important;
+        border-right-color: rgba(219, 39, 119, 0.3) !important;
+        border-bottom-color: rgba(219, 39, 119, 0.3) !important;
+    }
+    .dark .fc-list-event:hover {
+        background-color: rgba(219, 39, 119, 0.25) !important;
+    }
+    .dark .fc-list-event-time,
+    .dark .fc-list-event-title,
+    .dark .fc-list-event-title a {
+        color: #f472b6 !important;
+    }
+    .dark .evento-pasado .fc-list-event-dot {
+        background-color: rgba(219, 39, 119, 0.2) !important;
+        border-color: #f472b6 !important;
+    }
+    .dark .evento-futuro .fc-list-event-dot {
+        background-color: #db2777 !important;
+        border-color: #f472b6 !important;
     }
 
     /* 8. Botones de Control */
@@ -218,31 +421,6 @@
     .fc-timegrid-all-day {
         border-bottom: none !important;
     }
-    .fc-list-event-graphic {
-        display: none !important;
-    }
-    .fc-list-event:hover td,
-    .fc-list-event:hover .fc-list-event-time,
-    .fc-list-event:hover .fc-list-event-title,
-    .fc-list-event:hover .fc-list-event-title a,
-    .fc-list-event:hover a {
-        color: #db2777 !important;
-        font-weight: 600 !important;
-    }
-    .fc-list-event:hover td {
-        background-color: #fdf2f8 !important;
-    }
-    .fc-list-event td {
-        border-left: 1px solid #e5e7eb !important;
-        border-right: 1px solid #e5e7eb !important;
-        border-bottom: 1px solid #e5e7eb !important;
-        transition: background-color 0.15s ease;
-    }
-    .fc-list-table {
-        border-top: 1px solid #e5e7eb !important;
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
-    }
     th.fc-timegrid-axis {
         background-color: #db2777 !important;
     }
@@ -267,9 +445,7 @@
         color: #ffffff !important;
     }
 
-    /* ==========================================================
-       SECCIÓN AISLADA: MODO OSCURO (CORREGIDO Y LIMPIO)
-       ========================================================== */
+    /* MODO OSCURO GENERAL */
     .dark .fc-theme-standard td, 
     .dark .fc-theme-standard th {
         border-color: #374151 !important;
@@ -291,10 +467,6 @@
     }
     .dark .fc-list {
         background-color: #1f2937 !important;
-    }
-    .dark .fc-list-event td {
-        background-color: #1f2937 !important;
-        color: #f3f4f6 !important;
     }
     .dark .fc .fc-button-group > .fc-button,
     .dark .fc .fc-prev-button, 
@@ -361,6 +533,18 @@
 <!-- Contenedor del Calendario -->
 <div class="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
     <div id="calendar"></div>
+
+    <!-- Leyenda al final del calendario -->
+    <div class="flex items-center justify-end gap-4 mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs">
+        <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded bg-[#fdf2f8] dark:bg-[#371d32] border border-[#db2777] inline-block shadow-sm"></span>
+            <span class="font-medium text-gray-700 dark:text-gray-300">Citas pasadas</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded bg-[#db2777] inline-block shadow-sm"></span>
+            <span class="font-medium text-gray-700 dark:text-gray-300">Citas futuras</span>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -480,6 +664,18 @@
             aspectRatio: 1.75,
             events: "{% url 'agenda:obtener_citas_json' %}",
             noEventsContent: 'No hay citas registradas.',
+            
+            eventDidMount: function(info) {
+                var ahora = new Date();
+                var fechaEvento = info.event.start;
+                
+                if (fechaEvento < ahora) {
+                    info.el.classList.add('evento-pasado');
+                } else {
+                    info.el.classList.add('evento-futuro');
+                }
+            },
+
             eventClick: function(info) {
                 var props = info.event.extendedProps;
                 

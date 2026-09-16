@@ -28,7 +28,7 @@ from drf_spectacular.utils import extend_schema
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Servicios, Inventario, Pagos, Recibo, Gastos
+    Citas, Clientes, Manicurista, Servicios, Inventario, Pagos, Recibo, Gastos, Resena
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
