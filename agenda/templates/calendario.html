@@ -549,79 +549,88 @@
 {% endblock %}
 
 {% block modals %}
-<!-- Modal Detalle Cita -->
-<div id="modalDetalleCita" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transform transition-all">
+<!-- Modal Detalle Cita - Rediseño con Toque Fucsia Institucional -->
+<div id="modalDetalleCita" class="hidden fixed inset-0 z-50 overflow-y-auto bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl border border-pink-100 dark:border-pink-900/40 overflow-hidden transform transition-all relative">
         
-        <!-- Header -->
-        <div class="bg-pink-600 p-4 text-white flex justify-between items-center">
-            <h3 class="font-bold text-lg flex items-center gap-2" id="modalTitulo">
-                <i class="fa-regular fa-clock"></i> Detalle Cita
-            </h3>
-            <button type="button" onclick="cerrarModal()" class="text-white/80 hover:text-white text-xl font-bold focus:outline-none transition">
-                <i class="fa-solid fa-xmark"></i>
+        <!-- Header con toque Fucsia Pastel y Borde Rosa -->
+        <div class="px-6 py-4 bg-[#fdf2f8] dark:bg-pink-950/40 flex justify-between items-center border-b border-[#fbcfe8] dark:border-pink-900/50">
+            <div class="flex items-center gap-2.5">
+                <span class="text-xs font-extrabold tracking-wider text-white bg-pink-600 uppercase px-3 py-1 rounded-full shadow-sm" id="modalTitulo">Cita</span>
+                <span id="modalEstadoBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">Pendiente</span>
+            </div>
+            <button type="button" onclick="cerrarModal()" class="w-8 h-8 rounded-full bg-white dark:bg-gray-800 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-gray-700 flex items-center justify-center transition shadow-sm border border-pink-200 dark:border-gray-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
 
         <!-- Cuerpo del Modal -->
         <div class="p-6 space-y-4">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">Servicio Contratado</span>
-                    <p class="text-lg font-bold text-pink-600 dark:text-pink-400 mt-0.5" id="modalServicio"></p>
-                </div>
-                <!-- Badge de Estado -->
-                <span id="modalEstadoBadge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300">Pendiente</span>
+            <!-- Servicio -->
+            <div class="border-b border-pink-50 dark:border-gray-800 pb-3">
+                <span class="text-[11px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider block mb-1">Servicio Solicitado</span>
+                <h2 class="text-2xl font-black text-gray-900 dark:text-white" id="modalServicio">--</h2>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 border-y border-gray-100 dark:border-gray-800 py-3">
+            <!-- Detalles de Tiempo -->
+            <div class="grid grid-cols-2 gap-3 p-3.5 bg-pink-50/50 dark:bg-gray-800/60 rounded-xl border border-pink-100 dark:border-gray-800">
                 <div>
-                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">📅 Fecha y Hora</span>
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-0.5" id="modalFechaHora"></p>
+                    <span class="text-[11px] font-semibold text-pink-600 dark:text-pink-400 flex items-center gap-1.5 mb-1">
+                        <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Fecha y Hora
+                    </span>
+                    <p class="text-xs font-bold text-gray-800 dark:text-gray-200" id="modalFechaHora">--</p>
                 </div>
                 <div>
-                    <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">⏳ Duración</span>
-                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mt-0.5" id="modalDuracion"></p>
+                    <span class="text-[11px] font-semibold text-pink-600 dark:text-pink-400 flex items-center gap-1.5 mb-1">
+                        <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Duración Estimada
+                    </span>
+                    <p class="text-xs font-bold text-gray-800 dark:text-gray-200" id="modalDuracion">--</p>
                 </div>
             </div>
 
             <!-- Bloques Dinámicos -->
-            <div id="bloqueCliente" class="p-3 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-100 dark:border-gray-800">
-                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-user text-pink-600"></i> Datos del Cliente
+            <div id="bloqueCliente" class="p-3.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                <span class="text-[11px] font-bold text-gray-400 dark:text-gray-400 flex items-center gap-1.5 uppercase tracking-wider mb-1">
+                    <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    Cliente
                 </span>
-                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1" id="modalClienteNombre"></p>
-                <p class="text-xs text-gray-500 font-medium mt-0.5" id="modalClienteTel"></p>
+                <p class="text-sm font-bold text-gray-900 dark:text-gray-100" id="modalClienteNombre">--</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5" id="modalClienteTel">--</p>
             </div>
 
-            <div id="bloqueManicurista" class="p-3 bg-pink-50/50 dark:bg-pink-950/20 rounded-xl border border-pink-100/60 dark:border-pink-900/30">
-                <span class="text-xs text-pink-600 dark:text-pink-400 uppercase font-bold tracking-wider flex items-center gap-1">
-                    <i class="fa-solid fa-hand-sparkles"></i> Manicurista Asignada
+            <div id="bloqueManicurista" class="p-3.5 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/30 dark:to-gray-800 rounded-xl border border-pink-200 dark:border-pink-900/50 shadow-sm">
+                <span class="text-[11px] font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1.5 uppercase tracking-wider mb-1">
+                    <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    Manicurista Asignada
                 </span>
-                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1" id="modalManicuristaNombre"></p>
-                <p class="text-xs text-gray-500 font-medium mt-0.5" id="modalManicuristaTel"></p>
+                <p class="text-sm font-extrabold text-gray-900 dark:text-gray-100" id="modalManicuristaNombre">--</p>
+                <p class="text-xs text-pink-600 dark:text-pink-300 font-medium mt-0.5" id="modalManicuristaTel">--</p>
             </div>
 
-            <div>
-                <span class="text-xs text-gray-400 uppercase font-bold tracking-wider">💰 Valor Total</span>
-                <p class="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5" id="modalTotal"></p>
+            <!-- Precio -->
+            <div class="flex justify-between items-center pt-2 px-1">
+                <span class="text-xs font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider">Valor Total</span>
+                <p class="text-3xl font-black text-pink-600 dark:text-pink-400" id="modalTotal">--</p>
             </div>
 
-            <!-- Recordatorio -->
-            <div class="bg-pink-50 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/40 rounded-xl p-3 text-pink-900 dark:text-pink-300 text-xs space-y-1">
-                <p class="font-bold flex items-center gap-1.5 text-pink-700 dark:text-pink-400">
-                    <i class="fa-solid fa-circle-info"></i> Recordatorio importante:
+            <!-- Recordatorio con tono fucsia -->
+            <div class="bg-pink-50/60 dark:bg-gray-800/40 rounded-xl p-3 border border-pink-100 dark:border-gray-800 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                <p class="font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Nota importante:
                 </p>
-                <ul class="list-disc list-inside space-y-0.5 text-pink-800 dark:text-pink-300">
-                    <li>Por favor llegar 10 minutos antes de la hora programada.</li>
-                    <li>Notificar si requiere retiro de acrílico o semipermanente.</li>
+                <ul class="list-disc list-inside space-y-0.5 pl-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                    <li>Llegar 10 minutos antes del inicio de la cita.</li>
+                    <li>Avisar con anticipación en caso de requerir retiro previo.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Footer Modal -->
-        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-3.5 flex justify-end items-center">
-            <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
+        <!-- Footer -->
+        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-3.5 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+            <button type="button" onclick="cerrarModal()" class="px-5 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition shadow-md shadow-pink-600/20">
                 Cerrar
             </button>
         </div>
