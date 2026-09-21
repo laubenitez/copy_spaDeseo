@@ -6,530 +6,1525 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
 
 <style>
-    /* 1. Variables y estructura general */
-    .fc {
-        font-family: inherit;
-        --fc-border-color: #f3f4f6;
-        --fc-today-bg-color: #fdf2f8;
-        --fc-event-bg-color: #db2777;
-        --fc-event-border-color: #db2777;
-        --fc-page-bg-color: transparent;
-        --fc-neutral-bg-color: transparent;
-    }
-    .dark .fc {
-        --fc-border-color: #374151;
-        --fc-today-bg-color: rgba(219, 39, 119, 0.2);
-        --fc-neutral-bg-color: #1f2937;
-        --fc-list-event-hover-bg-color: #374151;
-    }
 
-    /* Reducción de espacio en la cabecera */
-    .fc-header-toolbar {
-        gap: 12px;
-        margin-top: 0 !important;
-        margin-bottom: 0.35rem !important;
-        padding-top: 0 !important;
-    }
+/* =========================================================
+   1. VARIABLES GENERALES DE FULLCALENDAR
+   ========================================================= */
 
-    /* 2. Corrección estricta para Celdas y Fondos */
-    .fc-theme-standard .fc-scrollgrid {
-        border: none !important;
-        border-radius: 0 !important;
-    }
-    .fc-theme-standard td, 
-    .fc-theme-standard th {
-        border-color: #f3f4f6 !important;
-    }
-    
-    .fc-scrollgrid-section-header,
-    .fc-scrollgrid-section-header > td,
-    .fc-scrollgrid-section-header th {
-        background: transparent !important;
-        background-color: transparent !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-    }
+.fc {
+    font-family: inherit;
 
-    .fc-scrollgrid-sync-table {
-        border-collapse: collapse !important;
-        border-radius: 0 !important;
-    }
+    --fc-border-color: #e5e7eb;
+    --fc-page-bg-color: #ffffff;
+    --fc-neutral-bg-color: #ffffff;
+    --fc-list-event-hover-bg-color: #fdf2f8;
 
-    /* Cabecera Fucsia de los Días (Vista Mes) */
-    .fc .fc-col-header {
-        width: 100% !important;
-        border-radius: 0 !important;
-    }
-    .fc .fc-col-header-cell {
-        background-color: #db2777 !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-    }
-    .fc .fc-col-header-cell:first-child,
-    .fc .fc-col-header-cell:last-child,
-    .fc .fc-col-header-cell-cushion {
-        border-radius: 0 !important;
-    }
-    .fc .fc-col-header-cell-cushion {
-        display: block !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
-        padding: 6px 0 !important;
-        text-transform: capitalize;
-        text-decoration: none !important;
-        width: 100%;
-    }
+    --fc-today-bg-color: #fdf2f8;
 
-    /* 3. Efecto Hover por Columna en Mes */
-    .fc-daygrid-day:hover {
-        background-color: rgba(219, 39, 119, 0.04) !important;
-        transition: background-color 0.15s ease-in-out;
-    }
+    --fc-event-bg-color: #db2777;
+    --fc-event-border-color: #db2777;
+    --fc-event-text-color: #ffffff;
+}
 
-    /* 4. Título del Mes */
-    .fc .fc-toolbar-title {
-        font-size: 1.25rem !important;
-        font-weight: 500 !important;
-        font-style: normal !important;
-        color: #111827;
-        text-transform: capitalize;
-        line-height: 1 !important;
-    }
 
-    /* 5. Números de las celdas */
-    .fc .fc-daygrid-day-number {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #4b5563;
-        padding: 4px 8px !important;
-        text-decoration: none !important;
-    }
-    .fc .fc-day-today .fc-daygrid-day-number {
-        background-color: #db2777;
-        color: #ffffff !important;
-        border-radius: 9999px;
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: 4px;
-    }
+/* =========================================================
+   2. VARIABLES MODO OSCURO
+   ========================================================= */
 
-    /* 6. Eventos unificados en vista Mes/Semana */
-    .fc-daygrid-event-dot {
-        display: none !important;
-    }
-    .fc-daygrid-event-harness {
-        margin: 2px 4px !important;
-    }
-    .fc-daygrid-event, .fc-timegrid-event {
-        border: none !important;
-        border-radius: 6px !important;
-        padding: 4px 8px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        cursor: pointer;
-        transition: opacity 0.2s ease;
-    }
-    .fc-daygrid-event:hover, .fc-timegrid-event:hover {
-        opacity: 0.85;
-    }
-    .fc-event-main {
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
-        line-height: 1.25 !important;
-        white-space: normal !important;
-        word-break: break-word !important;
-    }
+.dark .fc {
+    --fc-border-color: #374151;
+    --fc-page-bg-color: #1f2937;
+    --fc-neutral-bg-color: #1f2937;
 
-    .fc-timegrid-event {
-        border-radius: 6px !important;
-        padding: 2px 6px !important;
-    }
-    .fc-timegrid-event .fc-event-main {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 4px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    .fc-timegrid-event .fc-event-time,
-    .fc-timegrid-event .fc-event-title-container {
-        display: inline !important;
-        white-space: nowrap !important;
-    }
+    --fc-today-bg-color: rgba(219, 39, 119, 0.16);
 
-    /* CITAS PASADAS: ROSADAS CLARAS */
-    .evento-pasado {
-        background-color: #fdf2f8 !important;
-        color: #db2777 !important;
-        border: 1px solid #fbcfe8 !important;
-    }
-    .evento-pasado .fc-event-main,
-    .evento-pasado .fc-event-time,
-    .evento-pasado .fc-event-title {
-        color: #db2777 !important;
-    }
+    --fc-list-event-hover-bg-color: rgba(219, 39, 119, 0.22);
 
-    .dark .evento-pasado {
-        background-color: rgba(219, 39, 119, 0.15) !important;
-        color: #f472b6 !important;
-        border: 1px solid rgba(219, 39, 119, 0.3) !important;
-    }
-    .dark .evento-pasado .fc-event-main,
-    .dark .evento-pasado .fc-event-time,
-    .dark .evento-pasado .fc-event-title {
-        color: #f472b6 !important;
-    }
+    --fc-event-bg-color: #db2777;
+    --fc-event-border-color: #db2777;
+    --fc-event-text-color: #ffffff;
+}
 
-    /* CITAS FUTURAS: FUCSIA INTENSO */
-    .evento-futuro {
-        background-color: #db2777 !important;
-        color: #ffffff !important;
-    }
-    .evento-futuro .fc-event-main,
-    .evento-futuro .fc-event-time,
-    .evento-futuro .fc-event-title {
-        color: #ffffff !important;
-    }
 
-    /* =========================================================
-       7. VISTA AGENDA: TARJETAS POR FECHA (SEPARADAS)
-       ========================================================= */
-    .fc-list {
-        border: none !important;
-        background: transparent !important;
-    }
+/* =========================================================
+   3. CABECERA PRINCIPAL
+   ========================================================= */
 
-    .fc-list-table {
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
-        width: 100% !important;
-    }
+.fc-header-toolbar {
+    gap: 12px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.35rem !important;
+    padding-top: 0 !important;
+}
 
-    .fc-list-day {
-        background-color: transparent !important;
-    }
+#calendar-page-header {
+    margin-top: -5px !important;
+    position: relative;
+}
 
-    /* Encabezado fucsia REDONDEADO ARRIBA PARA TODOS LOS BLOQUES */
-    .fc-list-day th,
-    .fc-list-day-cushion {
-        background-color: #db2777 !important;
-        border: none !important;
-        border-top-left-radius: 12px !important;
-        border-top-right-radius: 12px !important;
-        padding: 0 !important;
-        width: 100% !important;
-        overflow: hidden !important;
-    }
 
-    /* Separación física ampliada entre tarjetas (excepto la primera) */
-    tr.fc-list-day:not(:first-child) th {
-        border-top: 28px solid transparent !important;
-        background-clip: padding-box !important;
-    }
+/* =========================================================
+   4. CONTENEDOR GENERAL
+   ========================================================= */
 
-    /* Formato flex para fecha y día de la semana */
-    .fc-list-day-cushion {
-        background: #db2777 !important;
-        padding: 10px 16px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
+.fc {
+    color: #111827;
+}
 
-    /* Texto principal de la fecha */
-    .fc-list-day-text {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        text-transform: capitalize;
-    }
+.dark .fc {
+    color: #f3f4f6;
+}
 
-    /* Día de la semana en la derecha con separación correcta */
-    .fc-list-day-side-text {
-        color: rgba(255, 255, 255, 0.9) !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-        text-transform: capitalize;
-        margin-left: 10px !important;
-    }
 
-    /* Filas de citas pegadas abajo de su encabezado */
-    .fc-list-event {
-        background-color: #fdf2f8 !important;
-        border-left: 1px solid #fbcfe8 !important;
-        border-right: 1px solid #fbcfe8 !important;
-        border-bottom: 1px solid #fbcfe8 !important;
-        border-top: none !important;
-        transition: background-color 0.15s ease-in-out !important;
-        cursor: pointer;
-    }
+/* =========================================================
+   5. SCROLLGRID
+   ========================================================= */
 
-    /* Esquinas inferiores redondeadas solo en la última cita de ese día */
-    .fc-list-event:last-child {
-        border-radius: 0 0 12px 12px !important;
-    }
+.fc-theme-standard .fc-scrollgrid {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+}
 
-    .fc-list-event:hover {
-        background-color: #fce7f3 !important;
-    }
+.dark .fc-theme-standard .fc-scrollgrid {
+    border: 1px solid #374151 !important;
+}
 
-    .fc-list-event td {
-        border: none !important;
-        padding: 12px 16px !important;
-        background: transparent !important;
-    }
 
-    /* CUADRITO INDICADOR DERECHO POR CITA (PASADAS / FUTURAS) */
-    .fc-list-event-graphic {
-        display: table-cell !important;
-        width: 32px !important;
-        text-align: right !important;
-        padding-right: 16px !important;
-        vertical-align: middle !important;
-    }
+/* =========================================================
+   6. CELDAS GENERALES
+   ========================================================= */
 
-    .fc-list-event-dot {
-        display: inline-block !important;
-        width: 14px !important;
-        height: 14px !important;
-        border-radius: 4px !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: #e5e7eb !important;
+}
 
-    /* Cuadrito para Cita Pasada */
-    .evento-pasado .fc-list-event-dot {
-        background-color: #fdf2f8 !important;
-        border: 2px solid #db2777 !important;
-    }
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th {
+    border-color: #374151 !important;
+}
 
-    /* Cuadrito para Cita Futura */
-    .evento-futuro .fc-list-event-dot {
-        background-color: #db2777 !important;
-        border: 2px solid #be185d !important;
-    }
 
-    .fc-list-event-time {
-        color: #db2777 !important;
-        font-weight: 800 !important;
-        font-size: 0.95rem !important;
-        width: 130px !important;
-        white-space: nowrap !important;
-    }
+/* =========================================================
+   7. FONDO GENERAL DEL CALENDARIO
+   ========================================================= */
 
-    .fc-list-event-title {
-        color: #db2777 !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-    }
+.fc-scrollgrid-section-body,
+.fc-scrollgrid-section-body > td,
+.fc-daygrid-body,
+.fc-daygrid-body table {
+    background: #ffffff !important;
+}
 
-    .fc-list-event-title a {
-        color: #db2777 !important;
-        text-decoration: none !important;
-    }
+.dark .fc-scrollgrid-section-body,
+.dark .fc-scrollgrid-section-body > td,
+.dark .fc-daygrid-body,
+.dark .fc-daygrid-body table {
+    background: #1f2937 !important;
+}
 
-    /* MODO OSCURO PARA AGENDA */
-    .dark tr.fc-list-day:not(:first-child) th {
-        border-top-color: transparent !important;
-    }
-    .dark .fc-list-event {
-        background-color: rgba(219, 39, 119, 0.15) !important;
-        border-left-color: rgba(219, 39, 119, 0.3) !important;
-        border-right-color: rgba(219, 39, 119, 0.3) !important;
-        border-bottom-color: rgba(219, 39, 119, 0.3) !important;
-    }
-    .dark .fc-list-event:hover {
-        background-color: rgba(219, 39, 119, 0.25) !important;
-    }
-    .dark .fc-list-event-time,
-    .dark .fc-list-event-title,
-    .dark .fc-list-event-title a {
-        color: #f472b6 !important;
-    }
-    .dark .evento-pasado .fc-list-event-dot {
-        background-color: rgba(219, 39, 119, 0.2) !important;
-        border-color: #f472b6 !important;
-    }
-    .dark .evento-futuro .fc-list-event-dot {
-        background-color: #db2777 !important;
-        border-color: #f472b6 !important;
-    }
 
-    /* 8. Botones de Control */
-    .fc .fc-button-group {
-        gap: 6px !important;
-    }
-    .fc .fc-button-group > .fc-button,
-    .fc .fc-prev-button, 
-    .fc .fc-next-button, 
-    .fc .fc-today-button {
-        border-radius: 0.6rem !important;
-        border: 1px solid #e5e7eb !important;
-        background-color: #ffffff !important;
-        color: #374151 !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
-        padding: 0.35rem 0.8rem !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        text-transform: capitalize;
-        transition: all 0.2s ease;
-    }
-    .fc .fc-button-group > .fc-button-active,
-    .fc .fc-button:active,
-    .fc .fc-button:focus {
-        background-color: #db2777 !important;
-        border-color: #db2777 !important;
-        color: #ffffff !important;
-        box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3) !important;
-    }
-    .fc-timegrid-divider {
-        display: none !important;
-    }
-    .fc-theme-standard .fc-scrollgrid {
-        border-top: none !important;
-        border-left: 1px solid #f3f4f6 !important;
-    }
-    .fc-scrollgrid-section-body {
-        background-color: transparent !important;
-    }
-    .fc-daygrid-body {
-        margin-top: 0 !important;
-    }
-    .fc-scroller-harness, 
-    .fc-scroller {
-        overflow: visible !important;
-    }
-    .fc-daygrid-body table {
-        margin-top: -1px !important;
-    }
-    .fc-timegrid-slots {
-        margin-top: -16px !important;
-    }
-    .fc-timegrid-slots tr:first-child td {
-        border-top: 1px solid #e0e0e0 !important;
-    }
-    .fc-timegrid-all-day {
-        border-bottom: none !important;
-    }
-    th.fc-timegrid-axis {
-        background-color: #db2777 !important;
-    }
-    .fc-timegrid-all-day td.fc-timegrid-axis,
-    .fc-timegrid-all-day {
-        border: none !important;
-        background-color: #fafafa !important;
-    }
-    .fc .fc-button-group > .fc-button:hover,
-    .fc .fc-prev-button:hover, 
-    .fc .fc-next-button:hover, 
-    .fc .fc-today-button:hover {
-        background-color: #fdf2f8 !important;
-        border-color: #f472b6 !important;
-        color: #db2777 !important;
-        transition: all 0.2s ease-in-out;
-    }
-    .fc .fc-button-group > .fc-button-active:hover,
-    .fc .fc-button:active:hover {
-        background-color: #be185d !important;
-        border-color: #be185d !important;
-        color: #ffffff !important;
-    }
+/* =========================================================
+   8. TABLA DEL MES
+   ========================================================= */
 
-    /* MODO OSCURO GENERAL */
-    .dark .fc-theme-standard td, 
-    .dark .fc-theme-standard th {
-        border-color: #374151 !important;
-        background-color: #1f2937 !important;
-    }
-    .dark .fc .fc-timegrid-slot,
-    .dark .fc .fc-timegrid-axis,
-    .dark .fc .fc-scrollgrid-section > td {
-        background-color: #1f2937 !important;
-    }
-    .dark .fc-daygrid-day:hover {
-        background-color: rgba(219, 39, 119, 0.12) !important;
-    }
-    .dark .fc .fc-toolbar-title {
-        color: #ffffff !important;
-    }
-    .dark .fc .fc-daygrid-day-number {
-        color: #d1d5db;
-    }
-    .dark .fc-list {
-        background-color: #1f2937 !important;
-    }
-    .dark .fc .fc-button-group > .fc-button,
-    .dark .fc .fc-prev-button, 
-    .dark .fc .fc-next-button, 
-    .dark .fc .fc-today-button {
-        background-color: #1f2937 !important;
-        border-color: #374151 !important;
-        color: #f3f4f6 !important;
-    }
-    .dark .fc .fc-button-group > .fc-button:hover,
-    .dark .fc .fc-prev-button:hover, 
-    .dark .fc .fc-next-button:hover, 
-    .dark .fc .fc-today-button:hover {
-        background-color: #371d32 !important; 
-        border-color: #db2777 !important;     
-        color: #f472b6 !important;            
-        transition: all 0.2s ease-in-out;
-    }
-    .dark .fc .fc-button-group > .fc-button-active,
-    .dark .fc .fc-button.fc-button-active {
-        background-color: #db2777 !important;
-        border-color: #db2777 !important;
-        color: #ffffff !important;
-    }
-    .dark .fc .fc-button-group > .fc-button-active:hover,
-    .dark .fc .fc-button:active {
-        background-color: #be185d !important; 
-        border-color: #be185d !important;
-        color: #ffffff !important;
-    }
-    .dark .fc-theme-standard .fc-scrollgrid-section-header,
-    .dark .fc-theme-standard .fc-scrollgrid-section-header td,
-    .dark .fc-theme-standard .fc-scrollgrid-section-header th,
-    .dark .fc .fc-col-header {
-        border-top: none !important;
-        border-left: none !important;
-        border-right: none !important;
-    }
-    .dark .fc-daygrid-day:nth-child(-n+7),
-    .dark .fc-timegrid-col,
-    .dark .fc-scrollgrid-section-body td {
-        border-top: none !important;
-    }
-    .dark .fc-theme-standard .fc-scrollgrid {
-        border-left: 1px solid #374151 !important;
-    }
+.fc-scrollgrid-sync-table {
+    border-collapse: collapse !important;
+}
+
+.fc-daygrid-body {
+    margin-top: 0 !important;
+}
+
+.fc-daygrid-body table {
+    margin-top: 0 !important;
+}
+
+
+/* =========================================================
+   9. CELDAS DE LOS DÍAS
+   ========================================================= */
+
+.fc-daygrid-day {
+    background-color: #ffffff !important;
+    transition: background-color 0.15s ease-in-out !important;
+}
+
+.dark .fc-daygrid-day {
+    background-color: #1f2937 !important;
+}
+
+
+/* =========================================================
+   10. HOVER DE LAS CELDAS
+   ========================================================= */
+
+/*
+   IMPORTANTE:
+   El hover solamente se aplica a la celda.
+   Los elementos internos permanecen transparentes.
+*/
+
+.fc-daygrid-day:hover {
+    background-color: #fdf2f8 !important;
+}
+
+.fc-daygrid-day:hover .fc-daygrid-day-frame,
+.fc-daygrid-day:hover .fc-daygrid-day-top,
+.fc-daygrid-day:hover .fc-daygrid-day-events {
+    background-color: transparent !important;
+}
+
+.dark .fc-daygrid-day:hover {
+    background-color: rgba(219, 39, 119, 0.12) !important;
+}
+
+.dark .fc-daygrid-day:hover .fc-daygrid-day-frame,
+.dark .fc-daygrid-day:hover .fc-daygrid-day-top,
+.dark .fc-daygrid-day:hover .fc-daygrid-day-events {
+    background-color: transparent !important;
+}
+
+
+/* =========================================================
+   11. DÍA ACTUAL
+   ========================================================= */
+
+.fc-day-today {
+    background-color: #fdf2f8 !important;
+}
+
+.fc-day-today:hover {
+    background-color: #fce7f3 !important;
+}
+
+.dark .fc-day-today {
+    background-color: rgba(219, 39, 119, 0.16) !important;
+}
+
+.dark .fc-day-today:hover {
+    background-color: rgba(219, 39, 119, 0.22) !important;
+}
+
+
+
+/* =========================================================
+   13. TÍTULO DEL MES / SEMANA / DÍA
+   ========================================================= */
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem !important;
+
+    font-weight: 500 !important;
+
+    font-style: normal !important;
+
+    color: #111827 !important;
+
+    text-transform: capitalize;
+
+    line-height: 1 !important;
+}
+
+.dark .fc .fc-toolbar-title {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   14. NÚMEROS DE LOS DÍAS
+   ========================================================= */
+
+.fc .fc-daygrid-day-number {
+    font-size: 0.85rem !important;
+
+    font-weight: 500 !important;
+
+    color: #374151 !important;
+
+    padding: 4px 8px !important;
+
+    text-decoration: none !important;
+}
+
+.dark .fc .fc-daygrid-day-number {
+    color: #d1d5db !important;
+}
+
+
+/* Evitar negrita innecesaria */
+
+.fc .fc-daygrid-day-number,
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+    font-weight: 500 !important;
+}
+
+.dark .fc .fc-timegrid-axis-cushion,
+.dark .fc .fc-timegrid-slot-label-cushion {
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   15. NÚMERO DEL DÍA ACTUAL
+   ========================================================= */
+
+.fc .fc-day-today .fc-daygrid-day-number {
+    background-color: #db2777 !important;
+
+    color: #ffffff !important;
+
+    border-radius: 9999px !important;
+
+    width: 24px !important;
+    height: 24px !important;
+
+    display: inline-flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 4px !important;
+
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   16. EVENTOS DEL CALENDARIO
+   ========================================================= */
+
+.fc-daygrid-event-dot {
+    display: none !important;
+}
+
+.fc-daygrid-event-harness {
+    margin: 2px 4px !important;
+}
+
+.fc-daygrid-event,
+.fc-timegrid-event {
+    border: none !important;
+
+    border-radius: 6px !important;
+
+    padding: 4px 8px !important;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    cursor: pointer;
+
+    transition: opacity 0.2s ease !important;
+}
+
+.fc-daygrid-event:hover,
+.fc-timegrid-event:hover {
+    opacity: 0.88 !important;
+}
+
+.fc-event-main {
+    font-size: 0.75rem !important;
+
+    font-weight: 600 !important;
+
+    line-height: 1.25 !important;
+
+    white-space: normal !important;
+
+    word-break: break-word !important;
+}
+
+
+/* =========================================================
+   17. EVENTOS SEMANA / DÍA
+   ========================================================= */
+
+.fc-timegrid-event {
+    border-radius: 6px !important;
+
+    padding: 2px 6px !important;
+}
+
+.fc-timegrid-event .fc-event-main {
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    gap: 4px !important;
+
+    white-space: nowrap !important;
+
+    overflow: hidden !important;
+
+    text-overflow: ellipsis !important;
+}
+
+.fc-timegrid-event .fc-event-time,
+.fc-timegrid-event .fc-event-title-container {
+    display: inline !important;
+
+    white-space: nowrap !important;
+}
+
+
+/* =========================================================
+   18. CITAS PASADAS
+   ========================================================= */
+
+.evento-pasado {
+    background-color: #fdf2f8 !important;
+
+    color: #db2777 !important;
+
+    border: 1px solid #fbcfe8 !important;
+}
+
+.evento-pasado .fc-event-main,
+.evento-pasado .fc-event-time,
+.evento-pasado .fc-event-title {
+    color: #db2777 !important;
+}
+
+
+/* =========================================================
+   19. CITAS FUTURAS
+   ========================================================= */
+
+.evento-futuro {
+    background-color: #db2777 !important;
+
+    color: #ffffff !important;
+}
+
+.evento-futuro .fc-event-main,
+.evento-futuro .fc-event-time,
+.evento-futuro .fc-event-title {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   20. MODO OSCURO - CITAS PASADAS
+   ========================================================= */
+
+.dark .evento-pasado {
+    background-color: rgba(219, 39, 119, 0.15) !important;
+
+    color: #f9a8d4 !important;
+
+    border: 1px solid rgba(244, 114, 182, 0.35) !important;
+}
+
+.dark .evento-pasado .fc-event-main,
+.dark .evento-pasado .fc-event-time,
+.dark .evento-pasado .fc-event-title {
+    color: #f9a8d4 !important;
+}
+
+
+/* =========================================================
+   21. TIMEGRID - SEMANA / DÍA
+   ========================================================= */
+
+.fc-timegrid {
+    background-color: #ffffff !important;
+}
+
+.dark .fc-timegrid {
+    background-color: #1f2937 !important;
+}
+
+
+/* Área de horarios */
+
+.fc-timegrid-slots,
+.fc-timegrid-slots table {
+    background-color: #ffffff !important;
+}
+
+.dark .fc-timegrid-slots,
+.dark .fc-timegrid-slots table {
+    background-color: #1f2937 !important;
+}
+
+
+/* Líneas horizontales */
+
+.fc .fc-timegrid-slot {
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc .fc-timegrid-slot {
+    border-color: #374151 !important;
+}
+
+
+/* Líneas verticales */
+
+.fc .fc-timegrid-col {
+    background-color: #ffffff !important;
+
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc .fc-timegrid-col {
+    background-color: #1f2937 !important;
+
+    border-color: #374151 !important;
+}
+
+
+/* Ejes de tiempo */
+
+.fc .fc-timegrid-axis {
+    background-color: #ffffff !important;
+
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc .fc-timegrid-axis {
+    background-color: #1f2937 !important;
+
+    border-color: #374151 !important;
+}
+
+
+/* Texto de las horas */
+
+.fc .fc-timegrid-slot-label-cushion {
+    color: #374151 !important;
+
+    font-size: 0.8rem !important;
+
+    font-weight: 500 !important;
+}
+
+.dark .fc .fc-timegrid-slot-label-cushion {
+    color: #d1d5db !important;
+
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   22. ALL DAY
+   ========================================================= */
+
+.fc-timegrid-all-day,
+.fc-timegrid-all-day td {
+    background-color: #ffffff !important;
+
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc-timegrid-all-day,
+.dark .fc-timegrid-all-day td {
+    background-color: #1f2937 !important;
+
+    border-color: #374151 !important;
+}
+
+
+/* =========================================================
+   23. QUITAR DIVISOR EXTRA
+   ========================================================= */
+
+.fc-timegrid-divider {
+    display: none !important;
+}
+
+.fc-timegrid-slots {
+    margin-top: 0 !important;
+}
+
+
+/* =========================================================
+   24. AGENDA / LISTA
+   ========================================================= */
+
+.fc-list {
+    width: 100% !important;
+
+    border: none !important;
+
+    background-color: #ffffff !important;
+
+    color: #111827 !important;
+}
+
+.dark .fc-list {
+    background-color: #1f2937 !important;
+
+    color: #f3f4f6 !important;
+}
+
+
+/* Tabla */
+
+.fc-list-table {
+    width: 100% !important;
+
+    border-collapse: separate !important;
+
+    border-spacing: 0 !important;
+
+    background-color: #ffffff !important;
+}
+
+.dark .fc-list-table {
+    background-color: #1f2937 !important;
+}
+
+
+/* Cuerpo */
+
+.fc-list-table tbody {
+    background-color: #ffffff !important;
+}
+
+.dark .fc-list-table tbody {
+    background-color: #1f2937 !important;
+}
+
+
+/* =========================================================
+   25. ENCABEZADO DE CADA FECHA EN AGENDA
+   ========================================================= */
+
+.fc-list-day th {
+    background-color: #db2777 !important;
+
+    border: none !important;
+
+    padding: 0 !important;
+}
+
+
+/* Separación entre días */
+
+.fc-list-day:not(:first-child) th {
+    border-top: 10px solid #ffffff !important;
+}
+
+.dark .fc-list-day:not(:first-child) th {
+    border-top: 10px solid #1f2937 !important;
+}
+
+
+/* Contenido */
+
+.fc-list-day-cushion {
+    background-color: #db2777 !important;
+
+    padding: 10px 16px !important;
+
+    display: flex !important;
+
+    justify-content: space-between !important;
+
+    align-items: center !important;
+
+    width: 100% !important;
+
+    box-sizing: border-box !important;
+
+    border-radius: 12px 12px 0 0 !important;
+}
+
+
+/* Fecha */
+
+.fc-list-day-text {
+    color: #ffffff !important;
+
+    font-weight: 700 !important;
+
+    font-size: 0.95rem !important;
+
+    text-transform: capitalize;
+}
+
+
+/* Día */
+
+.fc-list-day-side-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    font-weight: 600 !important;
+
+    font-size: 0.9rem !important;
+
+    text-transform: capitalize;
+
+    margin-left: 10px !important;
+}
+
+
+/* =========================================================
+   26. FILAS DE CITAS EN AGENDA
+   ========================================================= */
+
+.fc-list-event {
+    background-color: #fdf2f8 !important;
+
+    cursor: pointer;
+
+    transition: background-color 0.15s ease-in-out !important;
+}
+
+
+/* Bordes */
+
+.fc-list-event td {
+    background-color: #fdf2f8 !important;
+
+    border: none !important;
+
+    border-left: 1px solid #fbcfe8 !important;
+
+    border-right: 1px solid #fbcfe8 !important;
+
+    border-bottom: 1px solid #fbcfe8 !important;
+
+    padding: 12px 16px !important;
+}
+
+
+/* Primera celda */
+
+.fc-list-event td:first-child {
+    border-left: 1px solid #fbcfe8 !important;
+}
+
+
+/* Última fila antes del siguiente día */
+
+.fc-list-event:last-child td {
+    border-bottom: 1px solid #fbcfe8 !important;
+}
+
+
+/* Esquinas inferiores */
+
+.fc-list-event:last-child td:first-child {
+    border-bottom-left-radius: 12px !important;
+}
+
+.fc-list-event:last-child td:last-child {
+    border-bottom-right-radius: 12px !important;
+}
+
+
+/* Hover */
+
+.fc-list-event:hover,
+.fc-list-event:hover td {
+    background-color: #fce7f3 !important;
+}
+
+
+/* =========================================================
+   27. AGENDA EN MODO OSCURO
+   ========================================================= */
+
+.dark .fc-list-event {
+    background-color: #273244 !important;
+
+    border: none !important;
+}
+
+.dark .fc-list-event td {
+    background-color: #273244 !important;
+
+    border-left: 1px solid #374151 !important;
+
+    border-right: 1px solid #374151 !important;
+
+    border-bottom: 1px solid #374151 !important;
+}
+
+
+/* Hover oscuro */
+
+.dark .fc-list-event:hover,
+.dark .fc-list-event:hover td {
+    background-color: rgba(219, 39, 119, 0.18) !important;
+}
+
+
+/* =========================================================
+   28. INFORMACIÓN DE LAS CITAS EN AGENDA
+   ========================================================= */
+
+.fc-list-event-time {
+    color: #db2777 !important;
+
+    font-weight: 700 !important;
+
+    font-size: 0.95rem !important;
+
+    width: 130px !important;
+
+    white-space: nowrap !important;
+}
+
+.fc-list-event-title {
+    color: #db2777 !important;
+
+    font-weight: 600 !important;
+
+    font-size: 0.9rem !important;
+}
+
+.fc-list-event-title a {
+    color: #db2777 !important;
+
+    text-decoration: none !important;
+}
+
+
+/* Oscuro */
+
+.dark .fc-list-event-time,
+.dark .fc-list-event-title,
+.dark .fc-list-event-title a {
+    color: #f9a8d4 !important;
+}
+
+
+/* =========================================================
+   29. INDICADOR DE CITA
+   ========================================================= */
+
+.fc-list-event-graphic {
+    display: table-cell !important;
+
+    width: 32px !important;
+
+    text-align: right !important;
+
+    padding-right: 16px !important;
+
+    vertical-align: middle !important;
+}
+
+.fc-list-event-dot {
+    display: inline-block !important;
+
+    width: 14px !important;
+
+    height: 14px !important;
+
+    border-radius: 4px !important;
+
+    box-shadow: none !important;
+}
+
+
+/* Pasada */
+
+.evento-pasado .fc-list-event-dot {
+    background-color: #fdf2f8 !important;
+
+    border: 2px solid #db2777 !important;
+}
+
+
+/* Futura */
+
+.evento-futuro .fc-list-event-dot {
+    background-color: #db2777 !important;
+
+    border: 2px solid #be185d !important;
+}
+
+
+/* Oscuro */
+
+.dark .evento-pasado .fc-list-event-dot {
+    background-color: rgba(219, 39, 119, 0.15) !important;
+
+    border-color: #f9a8d4 !important;
+}
+
+.dark .evento-futuro .fc-list-event-dot {
+    background-color: #db2777 !important;
+
+    border-color: #f9a8d4 !important;
+}
+
+
+/* =========================================================
+   30. BOTONES
+   ========================================================= */
+
+.fc .fc-button-group {
+    gap: 6px !important;
+}
+
+.fc .fc-button-group > .fc-button,
+.fc .fc-prev-button,
+.fc .fc-next-button,
+.fc .fc-today-button {
+    border-radius: 0.6rem !important;
+
+    border: 1px solid #e5e7eb !important;
+
+    background-color: #ffffff !important;
+
+    color: #374151 !important;
+
+    font-weight: 600 !important;
+
+    font-size: 0.85rem !important;
+
+    padding: 0.35rem 0.8rem !important;
+
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+
+    text-transform: capitalize;
+
+    transition: all 0.2s ease !important;
+}
+
+
+/* Hover */
+
+.fc .fc-button-group > .fc-button:hover,
+.fc .fc-prev-button:hover,
+.fc .fc-next-button:hover,
+.fc .fc-today-button:hover {
+    background-color: #fdf2f8 !important;
+
+    border-color: #f472b6 !important;
+
+    color: #db2777 !important;
+}
+
+
+/* Activo */
+
+.fc .fc-button-group > .fc-button-active,
+.fc .fc-button.fc-button-active {
+    background-color: #db2777 !important;
+
+    border-color: #db2777 !important;
+
+    color: #ffffff !important;
+
+    box-shadow: 0 2px 6px rgba(219, 39, 119, 0.3) !important;
+}
+
+
+/* Hover activo */
+
+.fc .fc-button-group > .fc-button-active:hover,
+.fc .fc-button.fc-button-active:hover {
+    background-color: #be185d !important;
+
+    border-color: #be185d !important;
+
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   31. BOTONES MODO OSCURO
+   ========================================================= */
+
+.dark .fc .fc-button-group > .fc-button,
+.dark .fc .fc-prev-button,
+.dark .fc .fc-next-button,
+.dark .fc .fc-today-button {
+    background-color: #273244 !important;
+
+    border-color: #374151 !important;
+
+    color: #f3f4f6 !important;
+}
+
+
+/* Hover oscuro */
+
+.dark .fc .fc-button-group > .fc-button:hover,
+.dark .fc .fc-prev-button:hover,
+.dark .fc .fc-next-button:hover,
+.dark .fc .fc-today-button:hover {
+    background-color: #371d32 !important;
+
+    border-color: #db2777 !important;
+
+    color: #f9a8d4 !important;
+}
+
+
+/* Activo oscuro */
+
+.dark .fc .fc-button-group > .fc-button-active,
+.dark .fc .fc-button.fc-button-active {
+    background-color: #db2777 !important;
+
+    border-color: #db2777 !important;
+
+    color: #ffffff !important;
+}
+
+
+/* Hover activo oscuro */
+
+.dark .fc .fc-button-group > .fc-button-active:hover,
+.dark .fc .fc-button.fc-button-active:hover {
+    background-color: #be185d !important;
+
+    border-color: #be185d !important;
+
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   32. FOCUS DE BOTONES
+   ========================================================= */
+
+.fc .fc-button:focus {
+    box-shadow: none !important;
+
+    outline: none !important;
+}
+
+
+/* =========================================================
+   33. MODO OSCURO - ELEMENTOS INTERNOS
+   ========================================================= */
+
+.dark .fc table,
+.dark .fc tbody,
+.dark .fc thead,
+.dark .fc tr {
+    background-color: transparent;
+}
+
+
+/* Evitar fondos blancos heredados */
+
+.dark .fc .fc-scrollgrid-section,
+.dark .fc .fc-scrollgrid-section > td,
+.dark .fc .fc-scrollgrid-section > th {
+    background-color: #1f2937;
+}
+
+
+/* Excepción header */
+
+.dark .fc .fc-scrollgrid-section-header,
+.dark .fc .fc-scrollgrid-section-header > td,
+.dark .fc .fc-scrollgrid-section-header > th {
+    background-color: #db2777 !important;
+}
+
+
+/* =========================================================
+   34. LÍNEAS DEL CALENDARIO
+   ========================================================= */
+
+/* Mes */
+
+.fc-daygrid-day {
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc-daygrid-day {
+    border-color: #374151 !important;
+}
+
+
+/* Semana / Día */
+
+.fc-timegrid-col,
+.fc-timegrid-slot {
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc-timegrid-col,
+.dark .fc-timegrid-slot {
+    border-color: #374151 !important;
+}
+
+
+/* =========================================================
+   35. SCROLL
+   ========================================================= */
+
+.fc-scroller-harness {
+    overflow: hidden !important;
+}
+
+.fc-scroller {
+    overflow: auto !important;
+}
+
+
+/* =========================================================
+   36. EVITAR BORDES / FONDOS EXTRA
+   ========================================================= */
+
+.fc .fc-col-header,
+.fc .fc-col-header thead,
+.fc .fc-col-header tbody,
+.fc .fc-col-header tr,
+.fc .fc-col-header th,
+.fc .fc-col-header td {
+    box-sizing: border-box !important;
+}
+
+/* =========================================================
+   HEADER DEL CALENDARIO - UNIFICADO
+   ========================================================= */
+
+/* Contenedor completo del encabezado */
+.fc .fc-scrollgrid-section-header,
+.fc .fc-scrollgrid-section-header > th,
+.fc .fc-scrollgrid-section-header > td {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+    border-spacing: 0 !important;
+
+    box-shadow: none !important;
+}
+
+
+/* Eliminar cualquier espacio interno */
+.fc .fc-scrollgrid-section-header .fc-scroller-harness,
+.fc .fc-scrollgrid-section-header .fc-scroller {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   TABLA DEL HEADER
+   ========================================================= */
+
+.fc .fc-col-header {
+    width: 100% !important;
+
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+
+    table-layout: fixed !important;
+}
+
+
+/* Filas internas */
+.fc .fc-col-header thead,
+.fc .fc-col-header tbody,
+.fc .fc-col-header tr {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+    border-spacing: 0 !important;
+
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   CELDAS DEL HEADER
+   ========================================================= */
+
+.fc .fc-col-header th,
+.fc .fc-col-header td,
+.fc .fc-col-header-cell {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+    box-shadow: none !important;
+
+    vertical-align: middle !important;
+}
+
+
+/* =========================================================
+   TEXTO DEL HEADER
+   ========================================================= */
+
+.fc .fc-col-header-cell-cushion {
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    height: 34px !important;
+    min-height: 34px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    box-sizing: border-box !important;
+
+    background: transparent !important;
+
+    color: #ffffff !important;
+
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+
+    line-height: 1 !important;
+
+    text-decoration: none !important;
+}
+
+
+/* =========================================================
+   ESQUINAS DEL HEADER
+   ========================================================= */
+
+.fc .fc-col-header-cell:first-child {
+    border-radius: 10px 0 0 10px !important;
+}
+
+.fc .fc-col-header-cell:last-child {
+    border-radius: 0 10px 10px 0 !important;
+}
+
+
+/* =========================================================
+   MODO OSCURO
+   MISMO HEADER, SIN ESPACIOS
+   ========================================================= */
+
+.dark .fc .fc-scrollgrid-section-header,
+.dark .fc .fc-scrollgrid-section-header > th,
+.dark .fc .fc-scrollgrid-section-header > td,
+.dark .fc .fc-scrollgrid-section-header .fc-scroller-harness,
+.dark .fc .fc-scrollgrid-section-header .fc-scroller,
+
+.dark .fc .fc-col-header,
+.dark .fc .fc-col-header thead,
+.dark .fc .fc-col-header tbody,
+.dark .fc .fc-col-header tr,
+.dark .fc .fc-col-header th,
+.dark .fc .fc-col-header td,
+.dark .fc .fc-col-header-cell {
+    background: #db2777 !important;
+    background-color: #db2777 !important;
+
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+
+/* Texto en modo oscuro */
+.dark .fc .fc-col-header-cell-cushion {
+    background: transparent !important;
+    color: #ffffff !important;
+}
+
+
+/* Esquinas en modo oscuro */
+.dark .fc .fc-col-header-cell:first-child {
+    border-radius: 10px 0 0 10px !important;
+}
+
+.dark .fc .fc-col-header-cell:last-child {
+    border-radius: 0 10px 10px 0 !important;
+}
+
+
+/* =========================================================
+   ELIMINAR ESPACIO ENTRE TOOLBAR Y HEADER
+   ========================================================= */
+
+.fc .fc-scrollgrid {
+    margin-top: 0 !important;
+    border-top: 0 !important;
+}
+
+.fc .fc-scrollgrid-section-header {
+    border-top: 0 !important;
+}
+
+.fc .fc-scrollgrid-section-header > th,
+.fc .fc-scrollgrid-section-header > td {
+    border-top: 0 !important;
+}
+
+
+/* =========================================================
+   SEMANA Y DÍA - SIN SCROLLER INTERNO
+   ========================================================= */
+
+/* Ocultar el scroll interno vertical */
+.fc-timegrid .fc-scroller {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+}
+
+
+/* El contenedor de las horas tampoco genera scroll */
+.fc-timegrid .fc-scroller-harness {
+    overflow: hidden !important;
+}
+
+
+/* El área del calendario ocupa el espacio disponible */
+.fc-timegrid {
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   EVITAR BARRAS DE SCROLL EN TODO TIMEGRID
+   ========================================================= */
+
+.fc-timegrid-body,
+.fc-timegrid-body-container,
+.fc-timegrid-slots,
+.fc-timegrid-slots table {
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   FONDO SEMANA / DÍA
+   ========================================================= */
+
+.fc-timegrid {
+    background-color: #ffffff !important;
+}
+
+.dark .fc-timegrid {
+    background-color: #1f2937 !important;
+}
+
+
+/* Columnas */
+.fc-timegrid-col {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc-timegrid-col {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+
+/* Horarios */
+.fc-timegrid-slots,
+.fc-timegrid-slots table {
+    background-color: #ffffff !important;
+}
+
+.dark .fc-timegrid-slots,
+.dark .fc-timegrid-slots table {
+    background-color: #1f2937 !important;
+}
+
+
+/* Líneas */
+.fc .fc-timegrid-slot {
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc .fc-timegrid-slot {
+    border-color: #374151 !important;
+}
+
+
+/* Eje de horas */
+.fc .fc-timegrid-axis {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc .fc-timegrid-axis {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+
+/* Texto de horas */
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+    color: #374151 !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+}
+
+.dark .fc .fc-timegrid-slot-label-cushion,
+.dark .fc .fc-timegrid-axis-cushion {
+    color: #d1d5db !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   ALL DAY
+   ========================================================= */
+
+.fc-timegrid-all-day,
+.fc-timegrid-all-day td {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+.dark .fc-timegrid-all-day,
+.dark .fc-timegrid-all-day td {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+
+/* =========================================================
+   QUITAR DIVISOR EXTRA DE SEMANA / DÍA
+   ========================================================= */
+
+.fc-timegrid-divider {
+    display: none !important;
+}
+
+
+/* =========================================================
+   DÍA
+   ========================================================= */
+
+.fc .fc-timegrid {
+    margin-top: 0 !important;
+}
+
+
+/* =========================================================
+   MODO OSCURO
+   ========================================================= */
+
+/*
+   El espacio creado arriba es transparente,
+   por lo que no genera una franja blanca en modo oscuro.
+*/
+.dark .fc .fc-view-harness {
+    margin-top: 12px !important;
+}
+/* =========================================================
+   AJUSTE DEFINITIVO DEL CALENDARIO
+   ESPACIO SUPERIOR UNIFICADO
+   ========================================================= */
+
+/* El calendario baja ligeramente respecto a los botones */
+.fc .fc-view-harness {
+    margin-top: 8px !important;
+}
+
+/* ELIMINA EL ESPACIO EXTRA PROPIO DE AGENDA */
+.fc .fc-list-view {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.fc .fc-list {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* La tabla de Agenda empieza inmediatamente */
+.fc .fc-list-table {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Evita espacios agregados por el contenedor de FullCalendar */
+.fc .fc-list-sticky {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Mantener la separación interna entre días */
+.fc .fc-list-day {
+    margin-top: 0 !important;
+}
+
+/* =========================================================
+   FIN DEL ESTILO
+   ========================================================= */
+
 </style>
 
 <!-- Cabecera de la página -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mt-0 pt-0 mb-4">
+<div id="calendar-page-header"
+     class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             Agenda de Citas
         </h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Consulta interactiva de servicios programados</p>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            Consulta interactiva de servicios programados
+        </p>
     </div>
+
     <div class="flex items-center gap-3">
-        <button id="btnRefrescar" class="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold shadow-sm transition">
-            <i class="fa-solid fa-rotate text-pink-600" id="iconRefrescar"></i> Sincronizar
+        <button id="btnRefrescar"
+            class="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl text-xs font-semibold shadow-sm transition">
+            
+            <i class="fa-solid fa-rotate text-pink-600" id="iconRefrescar"></i>
+            Sincronizar
+
         </button>
     </div>
 </div>
-
 <!-- Contenedor del Calendario -->
 <div class="bg-white dark:bg-gray-900 p-4 md:p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
     <div id="calendar"></div>
@@ -690,7 +1685,7 @@
                 
                 document.getElementById('modalTitulo').innerText = "Cita #" + info.event.id;
                 document.getElementById('modalServicio').innerText = props.servicio;
-                document.getElementById('modalEstadoBadge').innerText = props.estado || 'Pendiente';
+                document.getElementById('modalEstadoBadge').innerText = props.estado || 'Programada';
                 document.getElementById('modalFechaHora').innerText = info.event.start.toLocaleString('es-CO', { 
                     dateStyle: 'medium', 
                     timeStyle: 'short' 

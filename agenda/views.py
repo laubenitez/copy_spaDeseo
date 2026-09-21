@@ -28,7 +28,7 @@ from drf_spectacular.utils import extend_schema
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Servicios, Inventario, Pagos, Recibo, Gastos, Resena
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, Pagos, Recibo, Gastos, Resena
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -1792,7 +1792,7 @@ def ver_servicio(request):
         }
         messages.error(request, "Ocurrió un error al intentar cargar el catálogo de servicios.")
 
-    return render(request, "servicio/servicios.html", contexto)
+    return render(request, "servicios.html", contexto)
 
 @require_http_methods(["GET", "POST"])  # Seguridad: Permite únicamente métodos GET y POST estándar
 @requiere_rol("ADMINISTRADOR")
