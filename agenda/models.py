@@ -244,4 +244,55 @@ class Administrador(models.Model):
     def __str__(self):
         return f"{self.id} - {self.nombre} {self.apellido}"
 
+class SolicitudSoporte(models.Model):
+
+    ESTADOS = (
+        ("Pendiente", "Pendiente"),
+        ("En revisión", "En revisión"),
+        ("Resuelto", "Resuelto"),
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="solicitudes_soporte"
+    )
+
+    nombre_solicitante = models.CharField(max_length=200)
+    rol_solicitante = models.CharField(max_length=50)
+
+    asunto = models.CharField(max_length=200)
+    descripcion = models.TextField()
+
+    estado = models.CharField(
+        max_length=20,
+        choices=ESTADOS,
+        default="Pendiente"
+    )
+
+    respuesta = models.TextField(
+        null=True,
+        blank=True
+    )
+
+    administrador_respuesta = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="respuestas_soporte"
+    )
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    fecha_resolucion = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"#{self.id:04d} - {self.asunto}"
+
 

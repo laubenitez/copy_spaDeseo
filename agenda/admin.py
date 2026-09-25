@@ -145,3 +145,38 @@ class PagosAdmin(admin.ModelAdmin):
             "telefono",
             "email",
         ]
+
+@admin.register(SolicitudSoporte)
+class SolicitudSoporteAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "nombre_solicitante",
+        "rol_solicitante",
+        "asunto",
+        "estado",
+        "fecha_creacion",
+        "fecha_resolucion",
+    )
+
+    list_filter = (
+        "estado",
+        "rol_solicitante",
+        "fecha_creacion",
+    )
+
+    search_fields = (
+        "nombre_solicitante",
+        "asunto",
+        "descripcion",
+        "respuesta",
+    )
+
+    readonly_fields = (
+        "fecha_creacion",
+        "fecha_resolucion",
+    )
+
+    ordering = (
+        "-fecha_creacion",
+    )

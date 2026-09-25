@@ -1,0 +1,1346 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<!-- ========================================= -->
+<!-- CABECERA -->
+<!-- ========================================= -->
+
+<div class="mb-8 text-center max-w-3xl mx-auto">
+
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        Centro de Soporte
+    </h1>
+
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        Gestiona y revisa las solicitudes de soporte de clientes y manicuristas.
+    </p>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- CONTENEDOR PRINCIPAL -->
+<!-- ========================================= -->
+
+<div class="max-w-5xl mx-auto space-y-6">
+
+
+    <!-- ========================================= -->
+    <!-- RESUMEN DE SOPORTE -->
+    <!-- ========================================= -->
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+
+            <i class="fa-solid fa-headset text-pink-600"></i>
+
+            Resumen de soporte
+
+        </h3>
+
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+
+            <!-- TOTAL -->
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-xs text-gray-400">
+                            Total de solicitudes
+                        </p>
+
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ total_solicitudes }}
+                        </p>
+
+                    </div>
+
+                    <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center">
+
+                        <i class="fa-solid fa-ticket text-pink-600"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDIENTES -->
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-xs text-gray-400">
+                            Pendientes
+                        </p>
+
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ solicitudes_pendientes }}
+                        </p>
+
+                    </div>
+
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+
+                        <i class="fa-solid fa-clock text-amber-500"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESUELTAS -->
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+
+                <div class="flex items-center justify-between">
+
+                    <div>
+
+                        <p class="text-xs text-gray-400">
+                            Resueltas
+                        </p>
+
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                            {{ solicitudes_resueltas }}
+                        </p>
+
+                    </div>
+
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- SOLICITUDES DE SOPORTE -->
+    <!-- ========================================= -->
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
+
+        <!-- TITULO -->
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+
+                <i class="fa-solid fa-comments text-pink-600"></i>
+
+                Solicitudes de soporte
+
+            </h3>
+
+
+            <!-- FILTRO -->
+
+            <div>
+
+                <select
+                    id="filtroRol"
+                    class="rounded-xl border border-gray-200 dark:border-gray-700
+                    bg-gray-50 dark:bg-gray-800
+                    text-gray-800 dark:text-white
+                    text-sm p-2.5
+                    focus:outline-none focus:border-pink-600"
+                >
+
+                    <option value="todos">
+                        Todos
+                    </option>
+
+                    <option value="Cliente">
+                        Clientes
+                    </option>
+
+                    <option value="Manicurista">
+                        Manicuristas
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ========================================= -->
+        <!-- SOLICITUDES REALES -->
+        <!-- ========================================= -->
+
+        {% for solicitud in solicitudes %}
+
+        <div
+            class="solicitud soporte-item flex flex-col sm:flex-row
+            sm:items-center sm:justify-between gap-4
+            p-4 mb-3 rounded-xl
+            bg-gray-50 dark:bg-gray-800/50
+            border border-gray-100 dark:border-gray-800"
+            data-rol="{{ solicitud.rol_solicitante|capfirst }}"
+        >
+
+            <div class="flex items-center gap-3">
+
+                <!-- AVATAR: ROSADO PARA TODOS -->
+
+                <div class="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+
+                    <i class="fa-solid fa-user text-pink-600"></i>
+
+                </div>
+
+                <div>
+
+                    <div class="flex items-center gap-2 flex-wrap">
+
+                        <p class="text-sm font-medium text-gray-800 dark:text-white">
+                            {{ solicitud.nombre_solicitante }}
+                        </p>
+
+                        <!-- ROL: SIEMPRE ROSADO -->
+
+                        <span class="text-xs px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-900/30 text-pink-600">
+                            {{ solicitud.rol_solicitante|capfirst }}
+                        </span>
+
+                    </div>
+
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                        {{ solicitud.asunto }}
+                    </p>
+
+                    <p class="text-xs text-gray-400 mt-1">
+                        #{{ solicitud.id|stringformat:"04d" }} · {{ solicitud.fecha_creacion|date:"d/m/Y" }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="flex items-center gap-3">
+
+                {% if solicitud.estado == "Resuelto" %}
+
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">
+                    Resuelto
+                </span>
+
+                {% elif solicitud.estado == "En revisión" %}
+
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                    En revisión
+                </span>
+
+                {% else %}
+
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400">
+                    Pendiente
+                </span>
+
+                {% endif %}
+
+
+                <button
+                    type="button"
+                    class="ver-soporte w-9 h-9 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-pink-600 hover:border-pink-300 transition"
+                    title="Ver solicitud"
+
+                    data-id="{{ solicitud.id }}"
+
+                    data-nombre="{{ solicitud.nombre_solicitante|escapejs }}"
+
+                    data-rol="{{ solicitud.rol_solicitante|capfirst|escapejs }}"
+
+                    data-asunto="{{ solicitud.asunto|escapejs }}"
+
+                    data-mensaje="{{ solicitud.descripcion|escapejs }}"
+
+                    data-fecha="{{ solicitud.fecha_creacion|date:'d/m/Y · h:i A' }}"
+
+                    data-estado="{{ solicitud.estado|escapejs }}"
+
+                    data-respuesta="{{ solicitud.respuesta|default:''|escapejs }}"
+
+                    data-fecha-respuesta="{% if solicitud.fecha_resolucion %}{{ solicitud.fecha_resolucion|date:'d/m/Y · h:i A' }}{% endif %}"
+                >
+
+                    <i class="fa-solid fa-eye"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="text-center py-10">
+
+            <i class="fa-solid fa-ticket text-pink-500 text-3xl mb-3"></i>
+
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                No hay solicitudes de soporte registradas.
+            </p>
+
+        </div>
+
+        {% endfor %}
+
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- INFORMACIÓN -->
+    <!-- ========================================= -->
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
+        <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+
+            <i class="fa-solid fa-circle-info text-pink-600"></i>
+
+            Información de atención
+
+        </h3>
+
+
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+
+            Desde este espacio puedes revisar las solicitudes realizadas por los usuarios de SpaDeseo y realizar el seguimiento correspondiente.
+
+        </p>
+
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+
+            <!-- CLIENTES -->
+
+            <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+
+                <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center">
+
+                    <i class="fa-solid fa-user-group text-pink-600"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="text-xs text-gray-400">
+                        Solicitudes de clientes
+                    </p>
+
+                    <p class="font-medium text-gray-800 dark:text-white text-sm">
+                        Atención y seguimiento
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- MANICURISTAS -->
+
+            <div class="p-4 rounded-xl bg-pink-50/50 dark:bg-pink-950/10 flex items-center gap-3">
+
+                <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center">
+
+                    <i class="fa-solid fa-user text-pink-600"></i>
+
+                </div>
+
+                <div>
+
+                    <p class="text-xs text-gray-400">
+                        Solicitudes de manicuristas
+                    </p>
+
+                    <p class="font-medium text-gray-800 dark:text-white text-sm">
+                        Atención y seguimiento
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ========================================= -->
+    <!-- MENSAJE FINAL -->
+    <!-- ========================================= -->
+
+    <div class="bg-pink-50/60 dark:bg-pink-950/20 rounded-2xl border border-pink-100 dark:border-pink-900/30 shadow-sm p-6">
+
+        <div class="flex items-center gap-3">
+
+            <div class="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+
+                <i class="fa-solid fa-headset text-pink-600"></i>
+
+            </div>
+
+
+            <div>
+
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    Atención de soporte
+                </h3>
+
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+
+                    Revisa cada solicitud y realiza el seguimiento necesario para ayudar a nuestros usuarios.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- MODAL DETALLE DE SOLICITUD -->
+<!-- ===================================================== -->
+
+<div
+    id="modalSoporte"
+    class="hidden fixed inset-0 z-50"
+>
+
+    <!-- FONDO -->
+
+    <div
+        id="modalFondo"
+        class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+    ></div>
+
+
+    <!-- CONTENEDOR -->
+
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+
+        <div
+            class="relative w-full max-w-xl
+            max-h-[92vh]
+            flex flex-col
+            bg-white dark:bg-darkCard
+            rounded-3xl
+            shadow-2xl
+            border border-gray-200 dark:border-gray-700
+            overflow-hidden"
+        >
+
+
+            <!-- ========================================= -->
+            <!-- CABECERA -->
+            <!-- ========================================= -->
+
+            <div
+                class="flex items-center justify-between
+                px-6 py-5
+                bg-pink-50/80 dark:bg-pink-950/20
+                border-b border-pink-100 dark:border-pink-900/30"
+            >
+
+                <div class="flex items-center gap-2">
+
+                    <span
+                        id="modalNumero"
+                        class="px-4 py-2
+                        rounded-full
+                        bg-pink-600
+                        text-white
+                        text-sm
+                        font-bold"
+                    >
+                        #0001
+                    </span>
+
+
+                    <span
+                        id="modalEstado"
+                        class="px-4 py-2
+                        rounded-full
+                        text-sm
+                        font-medium
+                        bg-amber-50
+                        text-amber-600
+                        border border-amber-200"
+                    >
+                        En revisión
+                    </span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="cerrarModal"
+                    class="w-10 h-10
+                    rounded-full
+                    bg-white
+                    dark:bg-gray-800
+                    border border-pink-200
+                    dark:border-pink-900/40
+                    text-pink-600
+                    hover:bg-pink-600
+                    hover:text-white
+                    transition
+                    flex items-center justify-center"
+                >
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- CONTENIDO -->
+            <!-- ========================================= -->
+
+            <div
+                class="p-6
+                space-y-5
+                overflow-y-auto"
+            >
+
+
+                <!-- TITULO -->
+
+                <div>
+
+                    <p
+                        class="text-xs
+                        font-bold
+                        uppercase
+                        tracking-wide
+                        text-pink-600
+                        mb-1"
+                    >
+                        Solicitud de soporte
+                    </p>
+
+
+                    <h2
+                        id="modalAsunto"
+                        class="text-2xl
+                        font-bold
+                        text-gray-900
+                        dark:text-white
+                        leading-tight"
+                    >
+                        Problema con una cita
+                    </h2>
+
+                </div>
+
+
+                <div
+                    class="border-t
+                    border-pink-100
+                    dark:border-gray-800"
+                ></div>
+
+
+
+                <!-- USUARIO -->
+
+                <div
+                    class="p-4
+                    rounded-2xl
+                    bg-white
+                    dark:bg-gray-800/40
+                    border
+                    border-gray-200
+                    dark:border-gray-700
+                    shadow-sm"
+                >
+
+                    <div class="flex items-center gap-3">
+
+                        <!-- AVATAR SIEMPRE ROSADO -->
+
+                        <div
+                            id="modalAvatar"
+                            class="w-12 h-12
+                            rounded-full
+                            bg-pink-100
+                            dark:bg-pink-900/30
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-solid fa-user
+                                text-pink-600"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-xs
+                                font-semibold
+                                text-gray-400
+                                uppercase"
+                            >
+                                Usuario
+                            </p>
+
+                            <p
+                                id="modalNombre"
+                                class="text-base
+                                font-bold
+                                text-gray-900
+                                dark:text-white"
+                            >
+                                Laura Benítez
+                            </p>
+
+                            <p
+                                id="modalRol"
+                                class="text-xs
+                                text-pink-600
+                                mt-0.5"
+                            >
+                                Cliente
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- MENSAJE -->
+
+                <div>
+
+                    <p
+                        class="text-xs
+                        font-bold
+                        text-pink-600
+                        mb-2"
+                    >
+                        MENSAJE DE LA SOLICITUD
+                    </p>
+
+
+                    <div
+                        id="modalMensaje"
+                        class="p-4
+                        rounded-2xl
+                        bg-gray-50
+                        dark:bg-gray-800/50
+                        border
+                        border-gray-100
+                        dark:border-gray-700
+                        text-sm
+                        text-gray-700
+                        dark:text-gray-300
+                        leading-relaxed"
+                    >
+                    </div>
+
+                </div>
+
+
+
+                <!-- FECHA -->
+
+                <div
+                    class="p-4
+                    rounded-2xl
+                    bg-pink-50/50
+                    dark:bg-pink-950/10
+                    border
+                    border-pink-100
+                    dark:border-pink-900/30"
+                >
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="w-10 h-10
+                            rounded-xl
+                            bg-white
+                            dark:bg-gray-800
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-regular fa-calendar
+                                text-pink-600"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-xs
+                                text-gray-400"
+                            >
+                                Solicitud realizada
+                            </p>
+
+                            <p
+                                id="modalFecha"
+                                class="text-sm
+                                font-semibold
+                                text-gray-800
+                                dark:text-white"
+                            >
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- RESPUESTA PENDIENTE -->
+                <!-- ========================================= -->
+
+                <div id="respuestaPendiente">
+
+                    <div class="flex items-center gap-3 mb-3">
+
+                        <div
+                            class="w-10 h-10
+                            rounded-xl
+                            bg-pink-50
+                            dark:bg-pink-900/30
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-solid fa-reply
+                                text-pink-600"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-sm
+                                font-bold
+                                text-gray-900
+                                dark:text-white"
+                            >
+                                Responder solicitud
+                            </p>
+
+                            <p
+                                class="text-xs
+                                text-gray-400"
+                            >
+                                Escribe cómo fue solucionado el problema.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form
+                        id="formResponderSoporte"
+                        method="POST"
+                    >
+
+                        {% csrf_token %}
+
+
+                        <textarea
+                            id="respuestaTexto"
+                            name="respuesta"
+                            rows="4"
+                            required
+                            placeholder="Escribe aquí la respuesta para el usuario..."
+                            class="w-full
+                            rounded-2xl
+                            border border-gray-200
+                            dark:border-gray-700
+                            bg-gray-50
+                            dark:bg-gray-800
+                            text-gray-800
+                            dark:text-white
+                            text-sm
+                            p-4
+                            resize-none
+                            focus:outline-none
+                            focus:border-pink-500"
+                        ></textarea>
+
+                    </form>
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- RESPUESTA RESUELTA -->
+                <!-- ========================================= -->
+
+                <div
+                    id="respuestaResuelta"
+                    class="hidden"
+                >
+
+                    <div class="flex items-center gap-3 mb-3">
+
+                        <div
+                            class="w-10 h-10
+                            rounded-xl
+                            bg-emerald-50
+                            dark:bg-emerald-900/30
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-solid fa-check
+                                text-emerald-500"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-sm
+                                font-bold
+                                text-gray-900
+                                dark:text-white"
+                            >
+                                Solicitud resuelta
+                            </p>
+
+                            <p
+                                class="text-xs
+                                text-gray-400"
+                            >
+                                Respuesta del administrador
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="modalRespuesta"
+                        class="p-4
+                        rounded-2xl
+                        bg-emerald-50/60
+                        dark:bg-emerald-950/20
+                        border
+                        border-emerald-100
+                        dark:border-emerald-900/30
+                        text-sm
+                        text-gray-700
+                        dark:text-gray-300
+                        leading-relaxed"
+                    >
+                    </div>
+
+
+                    <div
+                        class="flex items-center gap-2
+                        mt-3
+                        text-xs
+                        text-gray-400"
+                    >
+
+                        <i
+                            class="fa-regular fa-clock"
+                        ></i>
+
+                        <span
+                            id="modalFechaRespuesta"
+                        ></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- PIE -->
+            <!-- ========================================= -->
+
+            <div
+                class="flex items-center justify-end gap-3
+                px-6 py-5
+                bg-gray-50
+                dark:bg-gray-800/30
+                border-t
+                border-gray-100
+                dark:border-gray-800"
+            >
+
+                <button
+                    type="button"
+                    id="cancelarModal"
+                    class="px-5 py-2.5
+                    rounded-xl
+                    border border-gray-200
+                    dark:border-gray-700
+                    text-gray-600
+                    dark:text-gray-300
+                    text-sm
+                    font-medium
+                    hover:bg-white
+                    dark:hover:bg-gray-800
+                    transition"
+                >
+                    Cerrar
+                </button>
+
+
+                <button
+                    type="submit"
+                    form="formResponderSoporte"
+                    id="resolverSolicitud"
+                    class="px-5 py-2.5
+                    rounded-xl
+                    bg-pink-600
+                    hover:bg-pink-700
+                    text-white
+                    text-sm
+                    font-semibold
+                    transition
+                    shadow-sm"
+                >
+
+                    <i class="fa-solid fa-check mr-1"></i>
+
+                    Marcar como resuelta
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT -->
+<!-- ===================================================== -->
+
+<script>
+
+
+    /* ================================================== */
+    /* FILTRO POR ROL */
+    /* ================================================== */
+
+    const filtroRol = document.getElementById("filtroRol");
+
+    const solicitudes = document.querySelectorAll(".soporte-item");
+
+
+    filtroRol.addEventListener("change", function () {
+
+        const rolSeleccionado = this.value.toLowerCase();
+
+
+        solicitudes.forEach(function (solicitud) {
+
+            const rol =
+                solicitud.dataset.rol.toLowerCase();
+
+
+            if (
+                rolSeleccionado === "todos" ||
+                rol === rolSeleccionado
+            ) {
+
+                solicitud.classList.remove("hidden");
+
+            } else {
+
+                solicitud.classList.add("hidden");
+
+            }
+
+        });
+
+    });
+
+
+
+    /* ================================================== */
+    /* ELEMENTOS DEL MODAL */
+    /* ================================================== */
+
+    const modal =
+        document.getElementById("modalSoporte");
+
+    const modalFondo =
+        document.getElementById("modalFondo");
+
+    const cerrarModal =
+        document.getElementById("cerrarModal");
+
+    const cancelarModal =
+        document.getElementById("cancelarModal");
+
+
+    const modalNumero =
+        document.getElementById("modalNumero");
+
+    const modalNombre =
+        document.getElementById("modalNombre");
+
+    const modalRol =
+        document.getElementById("modalRol");
+
+    const modalAsunto =
+        document.getElementById("modalAsunto");
+
+    const modalMensaje =
+        document.getElementById("modalMensaje");
+
+    const modalFecha =
+        document.getElementById("modalFecha");
+
+    const modalEstado =
+        document.getElementById("modalEstado");
+
+    const modalAvatar =
+        document.getElementById("modalAvatar");
+
+    const modalRespuesta =
+        document.getElementById("modalRespuesta");
+
+    const modalFechaRespuesta =
+        document.getElementById("modalFechaRespuesta");
+
+
+    const respuestaPendiente =
+        document.getElementById("respuestaPendiente");
+
+    const respuestaResuelta =
+        document.getElementById("respuestaResuelta");
+
+
+    const respuestaTexto =
+        document.getElementById("respuestaTexto");
+
+
+    const resolverSolicitud =
+        document.getElementById("resolverSolicitud");
+
+
+
+    /* ================================================== */
+    /* FUNCIÓN PARA ABRIR MODAL */
+    /* ================================================== */
+
+    function abrirModal(boton) {
+
+        const id =
+            boton.dataset.id;
+
+
+        /*
+         * Configuramos la URL real de Django
+         * para responder la solicitud.
+         */
+
+        document.getElementById("formResponderSoporte").action =
+            "{% url 'agenda:responder_solicitud_soporte' 0 %}".replace("0", id);
+
+
+        const nombre =
+            boton.dataset.nombre;
+
+        const rol =
+            boton.dataset.rol;
+
+        const asunto =
+            boton.dataset.asunto;
+
+        const mensaje =
+            boton.dataset.mensaje;
+
+        const fecha =
+            boton.dataset.fecha;
+
+        const estado =
+            boton.dataset.estado;
+
+        const respuesta =
+            boton.dataset.respuesta;
+
+        const fechaRespuesta =
+            boton.dataset.fechaRespuesta;
+
+
+
+        /* ------------------------------------------ */
+        /* MOSTRAR INFORMACIÓN */
+        /* ------------------------------------------ */
+
+        modalNumero.textContent =
+            "#" + String(id).padStart(4, "0");
+
+        modalNombre.textContent =
+            nombre;
+
+        modalRol.textContent =
+            rol;
+
+        modalAsunto.textContent =
+            asunto;
+
+        modalMensaje.textContent =
+            mensaje;
+
+        modalFecha.textContent =
+            fecha;
+
+
+
+        /* ------------------------------------------ */
+        /* COLOR DEL ROL */
+        /* ------------------------------------------ */
+
+        /*
+         * Cliente y Manicurista utilizan
+         * exactamente el mismo estilo rosado.
+         */
+
+        modalRol.className =
+            "text-xs text-pink-600 mt-0.5";
+
+        modalAvatar.className =
+            "w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center";
+
+        modalAvatar.innerHTML =
+            '<i class="fa-solid fa-user text-pink-600"></i>';
+
+
+
+        /* ------------------------------------------ */
+        /* ESTADO */
+        /* ------------------------------------------ */
+
+        modalEstado.textContent =
+            estado;
+
+
+        if (estado === "Resuelto") {
+
+            modalEstado.className =
+                "text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400";
+
+        }
+
+        else if (estado === "En revisión") {
+
+            modalEstado.className =
+                "text-xs font-semibold px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400";
+
+        }
+
+        else {
+
+            modalEstado.className =
+                "text-xs font-semibold px-3 py-1.5 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400";
+
+        }
+
+
+
+        /* ------------------------------------------ */
+        /* SI YA ESTÁ RESUELTO */
+        /* ------------------------------------------ */
+
+        if (estado === "Resuelto") {
+
+            respuestaPendiente.classList.add("hidden");
+
+            respuestaResuelta.classList.remove("hidden");
+
+            resolverSolicitud.classList.add("hidden");
+
+
+            modalRespuesta.textContent =
+                respuesta ||
+                "La solicitud fue resuelta correctamente.";
+
+
+            modalFechaRespuesta.textContent =
+                fechaRespuesta ||
+                "Fecha no disponible";
+
+
+        }
+
+
+        /* ------------------------------------------ */
+        /* SI TODAVÍA NO ESTÁ RESUELTO */
+        /* ------------------------------------------ */
+
+        else {
+
+            respuestaPendiente.classList.remove("hidden");
+
+            respuestaResuelta.classList.add("hidden");
+
+            resolverSolicitud.classList.remove("hidden");
+
+            respuestaTexto.value = "";
+
+        }
+
+
+
+        /* ------------------------------------------ */
+        /* MOSTRAR MODAL */
+        /* ------------------------------------------ */
+
+        modal.classList.remove("hidden");
+
+        document.body.classList.add("overflow-hidden");
+
+    }
+
+
+
+    /* ================================================== */
+    /* BOTONES VER SOLICITUD */
+    /* ================================================== */
+
+    document.querySelectorAll(".ver-soporte").forEach(function (boton) {
+
+        boton.addEventListener("click", function () {
+
+            abrirModal(this);
+
+        });
+
+    });
+
+
+
+    /* ================================================== */
+    /* CERRAR MODAL */
+    /* ================================================== */
+
+    function cerrarVentanaModal() {
+
+        modal.classList.add("hidden");
+
+        document.body.classList.remove("overflow-hidden");
+
+    }
+
+
+    cerrarModal.addEventListener(
+        "click",
+        cerrarVentanaModal
+    );
+
+
+    cancelarModal.addEventListener(
+        "click",
+        cerrarVentanaModal
+    );
+
+
+    modalFondo.addEventListener(
+        "click",
+        cerrarVentanaModal
+    );
+
+
+
+    /* ================================================== */
+    /* CERRAR CON TECLA ESC */
+    /* ================================================== */
+
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape") {
+
+            cerrarVentanaModal();
+
+        }
+
+    });
+
+
+
+    /* ================================================== */
+    /* ENVÍO DE RESPUESTA */
+    /* ================================================== */
+
+    /*
+     * El botón pertenece al formulario real.
+     * Django recibe la respuesta y cambia el estado
+     * a "Resuelto" en la base de datos.
+     */
+
+</script>
+
+{% endblock %}

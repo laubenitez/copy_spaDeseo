@@ -30,6 +30,8 @@ urlpatterns = [
     path("dashboard/", views.dashboard, name="dashboard"),
     path('ajustes/', views.ajustes, name='ajustes'),
     path('soporte/', views.soporte, name='soporte'),
+    path('soporte_administrador/', views.soporte_administrador, name='soporte_administrador'),
+    path('soporte/responder/<int:id>/',views.responder_solicitud_soporte, name='responder_solicitud_soporte'),
     path('calendario/', views.ver_calendario, name='ver_calendario'),
     path('api/citas/', views.obtener_citas_json, name='obtener_citas_json'),
 

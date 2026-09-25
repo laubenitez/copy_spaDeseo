@@ -16,7 +16,7 @@ from django.db.models import Sum, Avg, Max, Min, Q, ProtectedError
 from django.views.decorators.http import require_POST, require_http_methods, require_GET
 from django.conf import settings
 from django.urls import reverse
-
+from django.utils import timezone
 # Django REST Framework & Spectacular
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -28,7 +28,7 @@ from drf_spectacular.utils import extend_schema
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, Pagos, Recibo, Gastos, Resena
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -227,9 +227,142 @@ class GastosViewSet(viewsets.ModelViewSet):
 def ajustes(request):
     return render(request, 'ajustes.html')
 
+@login_required(login_url="agenda:login")
+@requiere_rol("CLIENTE", "MANICURISTA")
 def soporte(request):
-    return render(request, 'soporte.html')
 
+    if request.method == "POST":
+
+        asunto = request.POST.get("asunto", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+
+        if not asunto or not descripcion:
+            messages.error(
+                request,
+                "Debes completar el asunto y la descripción de la solicitud."
+            )
+
+            return redirect("agenda:soporte")
+
+        # Obtener el rol real desde PerfilUsuario
+        try:
+            rol = request.user.perfil.rol.nombre.capitalize()
+        except (AttributeError, PerfilUsuario.DoesNotExist):
+
+            messages.error(
+                request,
+                "Tu usuario no tiene un rol asignado."
+            )
+
+            return redirect("agenda:login")
+
+        # Obtener nombre del usuario
+        nombre = request.user.get_full_name()
+
+        if not nombre:
+            nombre = request.user.username
+
+        SolicitudSoporte.objects.create(
+            usuario=request.user,
+            nombre_solicitante=nombre,
+            rol_solicitante=rol,
+            asunto=asunto,
+            descripcion=descripcion,
+            estado="Pendiente"
+        )
+
+        messages.success(
+            request,
+            "Tu solicitud de soporte fue enviada correctamente."
+        )
+
+        return redirect("agenda:soporte")
+
+    solicitudes = SolicitudSoporte.objects.filter(
+        usuario=request.user
+    ).order_by("-fecha_creacion")
+
+    return render(
+        request,
+        "soporte.html",
+        {
+            "solicitudes": solicitudes
+        }
+    )
+
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+def soporte_administrador(request):
+
+    solicitudes = SolicitudSoporte.objects.all().order_by(
+        "-fecha_creacion"
+    )
+
+    total = solicitudes.count()
+
+    pendientes = solicitudes.filter(
+        estado__in=["Pendiente", "En revisión"]
+    ).count()
+
+    resueltas = solicitudes.filter(
+        estado="Resuelto"
+    ).count()
+
+    return render(
+        request,
+        "soporte_administrador.html",
+        {
+            "solicitudes": solicitudes,
+            "total_solicitudes": total,
+            "solicitudes_pendientes": pendientes,
+            "solicitudes_resueltas": resueltas,
+        }
+    )
+
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+def responder_solicitud_soporte(request, id):
+
+    if request.method != "POST":
+        return redirect("agenda:soporte_administrador")
+
+    solicitud = get_object_or_404(
+        SolicitudSoporte,
+        id=id
+    )
+
+    respuesta = request.POST.get(
+        "respuesta",
+        ""
+    ).strip()
+
+    if not respuesta:
+
+        messages.error(
+            request,
+            "Debes escribir una respuesta antes de resolver la solicitud."
+        )
+
+        return redirect("agenda:soporte_administrador")
+
+    solicitud.respuesta = respuesta
+
+    solicitud.estado = "Resuelto"
+
+    solicitud.administrador_respuesta = request.user
+
+    solicitud.fecha_resolucion = timezone.now()
+
+    solicitud.save()
+
+    messages.success(
+        request,
+        f"La solicitud #{solicitud.id:04d} fue resuelta correctamente."
+    )
+
+    return redirect("agenda:soporte_administrador")
 
 def index(request):
     return render(request, "index.html")

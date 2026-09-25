@@ -1,243 +1,1487 @@
 {% extends "dashboard.html" %}
 
 {% block content %}
-<!-- Cabecera centrada -->
+
+<!-- ========================================= -->
+<!-- CABECERA -->
+<!-- ========================================= -->
+
 <div class="mb-8 text-center max-w-2xl mx-auto">
+
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center justify-center gap-2">
+
+        <i class="fa-solid fa-headset text-pink-600"></i>
+
         Centro de Soporte
+
     </h1>
+
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        ¿Tienes dudas o necesitas ayuda? Encuentra respuestas rápidas o comunícate con nuestro equipo técnico.
+
+        ¿Tienes dudas o necesitas ayuda? Encuentra respuestas rápidas o
+        comunícate con nuestro equipo técnico.
+
     </p>
+
 </div>
 
-<!-- Contenedor principal centrado -->
+
+<!-- ========================================= -->
+<!-- CONTENEDOR PRINCIPAL -->
+<!-- ========================================= -->
+
 <div class="max-w-4xl mx-auto space-y-6">
 
-    <!-- 1. Centro de ayuda (Preguntas frecuentes adaptadas por rol) -->
+
+    <!-- ========================================= -->
+    <!-- 1. CENTRO DE AYUDA -->
+    <!-- ========================================= -->
+
     <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-            <i class="fa-solid fa-circle-question text-pink-600"></i> Centro de ayuda (Preguntas frecuentes)
+
+            <i class="fa-solid fa-circle-question text-pink-600"></i>
+
+            Centro de ayuda (Preguntas frecuentes)
+
         </h3>
-        
+
+
         <div class="space-y-3" id="faq-container">
+
+
             {% if request.session.logueado.rol == "Cliente" %}
-                <!-- Preguntas exclusivas para CLIENTES -->
-                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Cómo agendo una cita en el spa?</span>
-                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Dirígete a la sección "Agendar cita" en el menú, selecciona tu servicio de preferencia, el día y la hora disponible, y confirma tu reserva al instante.
-                    </div>
-                </div>
+
+                <!-- CLIENTES -->
 
                 <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Cómo cancelo o reprogramo una cita?</span>
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Cómo agendo una cita en el spa?
+                        </span>
+
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
                     </button>
+
                     <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Entra en "Mis citas", ubica el servicio reservado y haz clic en la opción de cancelar o modificar según la disponibilidad de la agenda.
+
+                        Dirígete a la sección "Agendar cita" en el menú,
+                        selecciona tu servicio de preferencia, el día y la
+                        hora disponible, y confirma tu reserva al instante.
+
                     </div>
+
                 </div>
 
+
                 <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Cómo actualizo mi foto de perfil y mis datos?</span>
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Cómo cancelo o reprogramo una cita?
+                        </span>
+
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
                     </button>
+
                     <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Ve al menú superior en tu foto de usuario o haz clic en "Editar Perfil" para cambiar tu información personal y subir una foto nueva.
+
+                        Entra en "Mis citas", ubica el servicio reservado y
+                        haz clic en la opción de cancelar o modificar según
+                        la disponibilidad de la agenda.
+
                     </div>
+
                 </div>
+
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Cómo actualizo mi foto de perfil y mis datos?
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
+                    </button>
+
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+
+                        Ve al menú superior en tu foto de usuario o haz clic
+                        en "Editar Perfil" para cambiar tu información
+                        personal y subir una foto nueva.
+
+                    </div>
+
+                </div>
+
 
             {% elif request.session.logueado.rol == "Manicurista" %}
-                <!-- Preguntas exclusivas para MANICURISTAS -->
-                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Cómo visualizo las citas que tengo asignadas?</span>
-                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
-                    </button>
-                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        En el menú lateral izquierdo, haz clic en la sección "Citas asignadas" para ver tu itinerario completo de servicios diarios y semanales.
-                    </div>
-                </div>
+
+                <!-- MANICURISTAS -->
 
                 <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Dónde puedo consultar el listado de clientes?</span>
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Cómo visualizo las citas que tengo asignadas?
+                        </span>
+
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
                     </button>
+
                     <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Accede a la opción "Clientes" en el panel de navegación para ver el historial y los datos de contacto de las personas atendidas en el spa.
+
+                        En el menú lateral izquierdo, haz clic en la sección
+                        "Citas asignadas" para ver tu itinerario completo de
+                        servicios diarios y semanales.
+
                     </div>
+
                 </div>
 
+
                 <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                    <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                        <span>¿Qué hago si tengo un conflicto de horario en mi agenda?</span>
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Dónde puedo consultar el listado de clientes?
+                        </span>
+
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
                     </button>
+
                     <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Comunícate de inmediato con la administración del sistema mediante el formulario de soporte inferior o por el canal directo de WhatsApp.
+
+                        Accede a la opción "Clientes" en el panel de
+                        navegación para ver el historial y los datos de
+                        contacto de las personas atendidas en el spa.
+
                     </div>
+
                 </div>
+
+
+                <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
+
+                    <button
+                        class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                        type="button"
+                    >
+
+                        <span>
+                            ¿Qué hago si tengo un conflicto de horario en mi agenda?
+                        </span>
+
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
+                    </button>
+
+                    <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+
+                        Comunícate de inmediato con la administración del
+                        sistema mediante el formulario de soporte inferior
+                        o por el canal directo de WhatsApp.
+
+                    </div>
+
+                </div>
+
             {% endif %}
 
-            <!-- Pregunta común para ambos roles -->
+
+            <!-- PREGUNTA COMÚN -->
+
             <div class="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/30">
-                <button class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition">
-                    <span>¿Olvidé mi contraseña, qué pasos debo seguir?</span>
+
+                <button
+                    class="faq-toggle w-full flex items-center justify-between p-4 text-left text-sm font-medium text-gray-800 dark:text-white hover:text-pink-600 transition"
+                    type="button"
+                >
+
+                    <span>
+                        ¿Olvidé mi contraseña, qué pasos debo seguir?
+                    </span>
+
                     <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+
                 </button>
+
                 <div class="faq-content hidden px-4 pb-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    En la pantalla de inicio de sesión, haz clic en la opción de recuperación de contraseña para restablecer tus credenciales de acceso de forma segura.
+
+                    En la pantalla de inicio de sesión, haz clic en la opción
+                    de recuperación de contraseña para restablecer tus
+                    credenciales de acceso de forma segura.
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- 2. Contactar soporte (Formulario con opciones adaptadas) -->
+
+
+    <!-- ========================================= -->
+    <!-- 2. CONTACTAR SOPORTE -->
+    <!-- ========================================= -->
+
     <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-            <i class="fa-solid fa-comment-dots text-pink-600"></i> Contactar soporte
+
+            <i class="fa-solid fa-comment-dots text-pink-600"></i>
+
+            Contactar soporte
+
         </h3>
-        
-        <form method="POST" action="" class="space-y-4">
+
+
+        <form
+            method="POST"
+            action="{% url 'agenda:soporte' %}"
+            class="space-y-4"
+        >
+
             {% csrf_token %}
+
+
+            <!-- NOMBRE Y ROL -->
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre</label>
-                    <input type="text" value="{{ request.session.logueado.nombre }} {{ request.session.logueado.apellido }}" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600" required>
+
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+
+                        Nombre
+
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ request.session.logueado.nombre }} {{ request.session.logueado.apellido }}"
+                        class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none"
+                        readonly
+                    >
+
                 </div>
+
+
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Rol en el sistema</label>
-                    <input type="text" value="{{ request.session.logueado.rol }}" class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none" disabled>
+
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+
+                        Rol en el sistema
+
+                    </label>
+
+                    <input
+                        type="text"
+                        value="{{ request.session.logueado.rol }}"
+                        class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none"
+                        disabled
+                    >
+
                 </div>
+
             </div>
 
+
+            <!-- ASUNTO -->
+
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Asunto</label>
-                <select class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600" required>
-                    <option value="" disabled selected>Seleccionar...</option>
+
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+
+                    Asunto
+
+                </label>
+
+                <select
+                    name="asunto"
+                    class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600"
+                    required
+                >
+
+                    <option value="" disabled selected>
+                        Seleccionar...
+                    </option>
+
+
                     {% if request.session.logueado.rol == "Cliente" %}
-                        <option>Problema con una cita</option>
-                        <option>Problema con el pago</option>
+
+                        <option value="Problema con una cita">
+                            Problema con una cita
+                        </option>
+
+                        <option value="Problema con el pago">
+                            Problema con el pago
+                        </option>
+
                     {% elif request.session.logueado.rol == "Manicurista" %}
-                        <option>Problema con citas asignadas</option>
-                        <option>Problema con el registro de clientes</option>
+
+                        <option value="Problema con citas asignadas">
+                            Problema con citas asignadas
+                        </option>
+
+                        <option value="Problema con el registro de clientes">
+                            Problema con el registro de clientes
+                        </option>
+
                     {% endif %}
-                    <option>Problema con mi cuenta</option>
-                    <option>Problema con el sistema</option>
-                    <option>Otro</option>
+
+
+                    <option value="Problema con mi cuenta">
+                        Problema con mi cuenta
+                    </option>
+
+                    <option value="Problema con el sistema">
+                        Problema con el sistema
+                    </option>
+
+                    <option value="Otro">
+                        Otro
+                    </option>
+
                 </select>
+
             </div>
 
+
+            <!-- MENSAJE -->
+
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Mensaje</label>
-                <textarea rows="4" placeholder="Describe aquí tu problema detalladamente..." class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600 resize-none" required></textarea>
+
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+
+                    Mensaje
+
+                </label>
+
+                <textarea
+                    name="descripcion"
+                    rows="4"
+                    placeholder="Describe aquí tu problema detalladamente..."
+                    class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-2.5 focus:outline-none focus:border-pink-600 resize-none"
+                    required
+                ></textarea>
+
             </div>
+
+
+            <!-- BOTÓN -->
 
             <div class="flex justify-end">
-                <button type="submit" class="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium transition shadow-sm">
+
+                <button
+                    type="submit"
+                    class="px-5 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium transition shadow-sm"
+                >
+
+                    <i class="fa-solid fa-paper-plane mr-1"></i>
+
                     Enviar solicitud
+
                 </button>
+
             </div>
+
         </form>
+
     </div>
 
-    <!-- 3. Información de contacto -->
+
+
+    <!-- ========================================= -->
+    <!-- 3. INFORMACIÓN DE CONTACTO -->
+    <!-- ========================================= -->
+
     <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-            <i class="fa-solid fa-headset text-pink-600"></i> Información de contacto
+
+            <i class="fa-solid fa-headset text-pink-600"></i>
+
+            Información de contacto
+
         </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Canales oficiales de atención interna para el equipo y usuarios de SpaDeseo:</p>
-        
+
+
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+
+            Canales oficiales de atención interna para el equipo y usuarios de SpaDeseo:
+
+        </p>
+
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+
+
             <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+
                 <i class="fa-solid fa-envelope text-pink-600 text-lg"></i>
+
                 <div>
-                    <p class="text-xs text-gray-400">Correo electrónico</p>
-                    <p class="font-medium text-gray-800 dark:text-white text-xs">soporte@spadeseo.com</p>
+
+                    <p class="text-xs text-gray-400">
+                        Correo electrónico
+                    </p>
+
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">
+                        soporte@spadeseo.com
+                    </p>
+
                 </div>
+
             </div>
+
+
             <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+
                 <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i>
+
                 <div>
-                    <p class="text-xs text-gray-400">WhatsApp Oficial</p>
-                    <p class="font-medium text-gray-800 dark:text-white text-xs">+57 300 000 0000</p>
+
+                    <p class="text-xs text-gray-400">
+                        WhatsApp Oficial
+                    </p>
+
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">
+                        +57 300 000 0000
+                    </p>
+
                 </div>
+
             </div>
+
+
             <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex items-center gap-3">
+
                 <i class="fa-regular fa-clock text-pink-600 text-lg"></i>
+
                 <div>
-                    <p class="text-xs text-gray-400">Horario de atención</p>
-                    <p class="font-medium text-gray-800 dark:text-white text-xs">Lunes a sábado — 8 a. m. a 6 p. m.</p>
+
+                    <p class="text-xs text-gray-400">
+                        Horario de atención
+                    </p>
+
+                    <p class="font-medium text-gray-800 dark:text-white text-xs">
+                        Lunes a sábado — 8 a. m. a 6 p. m.
+                    </p>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- 4. Mis solicitudes -->
+
+
+    <!-- ========================================= -->
+    <!-- 4. MIS SOLICITUDES -->
+    <!-- ========================================= -->
+
     <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+
         <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-            <i class="fa-solid fa-ticket text-pink-600"></i> Mis solicitudes de soporte
+
+            <i class="fa-solid fa-ticket text-pink-600"></i>
+
+            Mis solicitudes de soporte
+
         </h3>
+
 
         <div class="space-y-3">
-            {% if request.session.logueado.rol == "Cliente" %}
-                <div class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">#0001</span>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800 dark:text-white">Problema con la cancelación de mi cita</p>
-                            <p class="text-xs text-gray-400">26/08/2026</p>
+
+
+            {% if solicitudes %}
+
+
+                {% for solicitud in solicitudes %}
+
+
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+
+
+                        <div class="flex items-center gap-3">
+
+
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
+
+                                #{{ solicitud.id|stringformat:"04d" }}
+
+                            </span>
+
+
+                            <div>
+
+                                <p class="text-sm font-medium text-gray-800 dark:text-white">
+
+                                    {{ solicitud.asunto }}
+
+                                </p>
+
+                                <p class="text-xs text-gray-400">
+
+                                    {{ solicitud.fecha_creacion|date:"d/m/Y · h:i A" }}
+
+                                </p>
+
+                            </div>
+
                         </div>
-                    </div>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">En revisión</span>
-                </div>
-            {% elif request.session.logueado.rol == "Manicurista" %}
-                <div class="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">#0105</span>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800 dark:text-white">Actualización de cupos en agenda semanal</p>
-                            <p class="text-xs text-gray-400">25/08/2026</p>
+
+
+                        <div class="flex items-center gap-2">
+
+
+                            {% if solicitud.estado == "Resuelto" %}
+
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">
+
+                                    Resuelto
+
+                                </span>
+
+                            {% elif solicitud.estado == "En revisión" %}
+
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+
+                                    En revisión
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400">
+
+                                    Pendiente
+
+                                </span>
+
+                            {% endif %}
+
+
+                            <!-- BOTÓN VER SOLICITUD -->
+
+                            <button
+                                type="button"
+                                class="ver-solicitud w-9 h-9 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-pink-600 hover:border-pink-300 transition"
+                                title="Ver solicitud"
+
+                                data-id="{{ solicitud.id }}"
+                                data-numero="#{{ solicitud.id|stringformat:'04d' }}"
+                                data-nombre="{{ solicitud.nombre_solicitante }}"
+                                data-rol="{{ solicitud.rol_solicitante }}"
+                                data-asunto="{{ solicitud.asunto }}"
+                                data-mensaje="{{ solicitud.descripcion }}"
+                                data-fecha="{{ solicitud.fecha_creacion|date:'d/m/Y · h:i A' }}"
+                                data-estado="{{ solicitud.estado }}"
+                                data-respuesta="{{ solicitud.respuesta|default:'' }}"
+                                data-fecha-respuesta="{% if solicitud.fecha_resolucion %}{{ solicitud.fecha_resolucion|date:'d/m/Y · h:i A' }}{% endif %}"
+                            >
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </button>
+
                         </div>
+
                     </div>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400">Resuelto</span>
+
+
+                {% endfor %}
+
+
+            {% else %}
+
+
+                <div class="text-center py-8">
+
+                    <div class="w-12 h-12 mx-auto rounded-full bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center mb-3">
+
+                        <i class="fa-solid fa-ticket text-pink-600"></i>
+
+                    </div>
+
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+
+                        Aún no tienes solicitudes de soporte.
+
+                    </p>
+
+                    <p class="text-xs text-gray-400 mt-1">
+
+                        Cuando envíes una solicitud aparecerá aquí.
+
+                    </p>
+
                 </div>
+
+
             {% endif %}
+
+
         </div>
+
     </div>
 
-    <!-- 5. Reportar un problema -->
+
+
+    <!-- ========================================= -->
+    <!-- 5. REPORTAR PROBLEMA -->
+    <!-- ========================================= -->
+
     <div class="bg-pink-50/60 dark:bg-pink-950/20 rounded-2xl border border-pink-100 dark:border-pink-900/30 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+
         <div>
+
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-1">
-                <i class="fa-solid fa-triangle-exclamation text-pink-600"></i> ¿Encontraste un error en el sistema?
+
+                <i class="fa-solid fa-triangle-exclamation text-pink-600"></i>
+
+                ¿Encontraste un error en el sistema?
+
             </h3>
-            <p class="text-xs text-gray-600 dark:text-gray-400">Ayúdanos a optimizar SpaDeseo reportando cualquier fallo técnico inesperado.</p>
+
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+
+                Ayúdanos a optimizar SpaDeseo reportando cualquier fallo técnico inesperado.
+
+            </p>
+
         </div>
-        <button type="button" onclick="alert('Formulario de reporte de incidencias abierto.')" class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap">
+
+
+        <button
+            type="button"
+            onclick="document.querySelector('textarea[name=descripcion]').focus()"
+            class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold transition shadow-sm whitespace-nowrap"
+        >
+
             Reportar problema
+
         </button>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- MODAL DETALLE DE SOLICITUD -->
+<!-- ===================================================== -->
+
+<div
+    id="modalSolicitud"
+    class="fixed inset-0 z-50 hidden"
+>
+
+    <!-- FONDO -->
+
+    <div
+        id="modalFondo"
+        class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+    ></div>
+
+
+    <!-- CONTENEDOR -->
+
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+
+        <!-- TARJETA -->
+
+        <div
+            class="relative w-full max-w-xl
+            max-h-[92vh]
+            flex flex-col
+            bg-white dark:bg-darkCard
+            rounded-3xl
+            shadow-2xl
+            border border-gray-200 dark:border-gray-700
+            overflow-hidden"
+        >
+
+
+            <!-- ========================================= -->
+            <!-- CABECERA -->
+            <!-- ========================================= -->
+
+            <div
+                class="flex items-center justify-between
+                px-6 py-5
+                bg-pink-50/80 dark:bg-pink-950/20
+                border-b border-pink-100 dark:border-pink-900/30"
+            >
+
+                <div class="flex items-center gap-2">
+
+                    <!-- NUMERO -->
+
+                    <span
+                        id="modalNumero"
+                        class="px-4 py-2
+                        rounded-full
+                        bg-pink-600
+                        text-white
+                        text-sm
+                        font-bold"
+                    >
+                        #0001
+                    </span>
+
+
+                    <!-- ESTADO -->
+
+                    <span
+                        id="modalEstado"
+                        class="px-4 py-2
+                        rounded-full
+                        text-sm
+                        font-medium
+                        bg-emerald-50
+                        text-emerald-600
+                        border border-emerald-200"
+                    >
+                        Resuelto
+                    </span>
+
+                </div>
+
+
+                <!-- CERRAR -->
+
+                <button
+                    type="button"
+                    id="cerrarModal"
+                    class="w-10 h-10
+                    rounded-full
+                    bg-white
+                    dark:bg-gray-800
+                    border border-pink-200
+                    dark:border-pink-900/40
+                    text-pink-600
+                    hover:bg-pink-600
+                    hover:text-white
+                    transition
+                    flex items-center justify-center"
+                >
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- CONTENIDO -->
+            <!-- ========================================= -->
+
+            <div
+                class="p-6
+                space-y-5
+                overflow-y-auto"
+            >
+
+
+                <!-- ========================================= -->
+                <!-- TITULO -->
+                <!-- ========================================= -->
+
+                <div>
+
+                    <p
+                        class="text-xs
+                        font-bold
+                        uppercase
+                        tracking-wide
+                        text-pink-600
+                        mb-1"
+                    >
+                        Solicitud de soporte
+                    </p>
+
+
+                    <h2
+                        id="modalAsunto"
+                        class="text-2xl
+                        font-bold
+                        text-gray-900
+                        dark:text-white
+                        leading-tight"
+                    >
+                        Problema con una cita
+                    </h2>
+
+                </div>
+
+
+                <div
+                    class="border-t
+                    border-pink-100
+                    dark:border-gray-800"
+                ></div>
+
+
+
+                <!-- ========================================= -->
+                <!-- USUARIO -->
+                <!-- ========================================= -->
+
+                <div
+                    class="p-4
+                    rounded-2xl
+                    bg-white
+                    dark:bg-gray-800/40
+                    border
+                    border-gray-200
+                    dark:border-gray-700
+                    shadow-sm"
+                >
+
+                    <div class="flex items-center gap-3">
+
+
+                        <!-- AVATAR -->
+
+                        <div
+                            id="modalAvatar"
+                            class="w-12 h-12
+                            rounded-full
+                            bg-pink-100
+                            dark:bg-pink-900/30
+                            flex items-center justify-center
+                            shrink-0"
+                        >
+
+                            <i
+                                class="fa-solid fa-user
+                                text-pink-600"
+                            ></i>
+
+                        </div>
+
+
+                        <!-- INFORMACION -->
+
+                        <div>
+
+                            <p
+                                class="text-xs
+                                font-semibold
+                                text-gray-400
+                                uppercase"
+                            >
+                                Usuario
+                            </p>
+
+                            <p
+                                id="modalNombre"
+                                class="text-base
+                                font-bold
+                                text-gray-900
+                                dark:text-white"
+                            >
+                                Laura Benítez
+                            </p>
+
+                            <p
+                                id="modalRol"
+                                class="text-xs
+                                text-pink-600
+                                mt-0.5"
+                            >
+                                Cliente
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- MENSAJE -->
+                <!-- ========================================= -->
+
+                <div>
+
+                    <p
+                        class="text-xs
+                        font-bold
+                        text-pink-600
+                        mb-2"
+                    >
+                        MENSAJE DE LA SOLICITUD
+                    </p>
+
+
+                    <div
+                        id="modalMensaje"
+                        class="p-4
+                        rounded-2xl
+                        bg-gray-50
+                        dark:bg-gray-800/50
+                        border
+                        border-gray-100
+                        dark:border-gray-700
+                        text-sm
+                        text-gray-700
+                        dark:text-gray-300
+                        leading-relaxed"
+                    >
+                        No veo la cita reflejada que ya agendé.
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- FECHA -->
+                <!-- ========================================= -->
+
+                <div
+                    class="p-4
+                    rounded-2xl
+                    bg-pink-50/50
+                    dark:bg-pink-950/10
+                    border
+                    border-pink-100
+                    dark:border-pink-900/30"
+                >
+
+                    <div class="flex items-center gap-3">
+
+                        <div
+                            class="w-10 h-10
+                            rounded-xl
+                            bg-white
+                            dark:bg-gray-800
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-regular fa-calendar
+                                text-pink-600"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-xs
+                                text-gray-400"
+                            >
+                                Solicitud realizada
+                            </p>
+
+                            <p
+                                id="modalFecha"
+                                class="text-sm
+                                font-semibold
+                                text-gray-800
+                                dark:text-white"
+                            >
+                                25/09/2026 · 09:21 AM
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================= -->
+                <!-- RESPUESTA -->
+                <!-- ========================================= -->
+
+                <div
+                    id="modalRespuestaContainer"
+                    class="hidden"
+                >
+
+                    <div
+                        class="flex items-center gap-3
+                        mb-3"
+                    >
+
+                        <div
+                            class="w-10 h-10
+                            rounded-xl
+                            bg-emerald-50
+                            dark:bg-emerald-900/30
+                            flex items-center justify-center"
+                        >
+
+                            <i
+                                class="fa-solid fa-check
+                                text-emerald-500"
+                            ></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <p
+                                class="text-sm
+                                font-bold
+                                text-gray-900
+                                dark:text-white"
+                            >
+                                Solicitud resuelta
+                            </p>
+
+                            <p
+                                class="text-xs
+                                text-gray-400"
+                            >
+                                Respuesta del administrador
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="modalRespuesta"
+                        class="p-4
+                        rounded-2xl
+                        bg-emerald-50/60
+                        dark:bg-emerald-950/20
+                        border
+                        border-emerald-100
+                        dark:border-emerald-900/30
+                        text-sm
+                        text-gray-700
+                        dark:text-gray-300
+                        leading-relaxed"
+                    >
+                    </div>
+
+
+                    <div
+                        class="flex items-center gap-2
+                        mt-3
+                        text-xs
+                        text-gray-400"
+                    >
+
+                        <i
+                            class="fa-regular fa-clock"
+                        ></i>
+
+                        <span id="modalFechaRespuesta"></span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- ========================================= -->
+            <!-- PIE -->
+            <!-- ========================================= -->
+
+            <div
+                class="flex justify-end
+                px-6 py-5
+                bg-gray-50
+                dark:bg-gray-800/30
+                border-t
+                border-gray-100
+                dark:border-gray-800"
+            >
+
+                <button
+                    type="button"
+                    id="cerrarModal2"
+                    class="px-6 py-2.5
+                    rounded-xl
+                    bg-pink-600
+                    hover:bg-pink-700
+                    text-white
+                    text-sm
+                    font-semibold
+                    transition
+                    shadow-sm"
+                >
+                    Cerrar
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
 
-<!-- Script interactivo para las preguntas desplegables (Acordeón) -->
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT DEL MODAL -->
+<!-- ===================================================== -->
+
 <script>
-    document.querySelectorAll('.faq-toggle').forEach(button => {
-        button.addEventListener('click', () => {
-            const content = button.nextElementSibling;
-            const icon = button.querySelector('i');
-            
-            content.classList.toggle('hidden');
-            icon.classList.toggle('rotate-180');
-        });
+
+
+/* ===================================================== */
+/* ACORDEÓN FAQ */
+/* ===================================================== */
+
+document.querySelectorAll(".faq-toggle").forEach(function(button) {
+
+    button.addEventListener("click", function() {
+
+        const content = this.nextElementSibling;
+
+        const icon = this.querySelector("i");
+
+        content.classList.toggle("hidden");
+
+        icon.classList.toggle("rotate-180");
+
     });
+
+});
+
+
+
+/* ===================================================== */
+/* ELEMENTOS DEL MODAL */
+/* ===================================================== */
+
+const modalSolicitud =
+    document.getElementById("modalSolicitud");
+
+const modalFondo =
+    document.getElementById("modalFondo");
+
+const cerrarModal =
+    document.getElementById("cerrarModal");
+
+const cerrarModal2 =
+    document.getElementById("cerrarModal2");
+
+const modalNumero =
+    document.getElementById("modalNumero");
+
+const modalNombre =
+    document.getElementById("modalNombre");
+
+const modalRol =
+    document.getElementById("modalRol");
+
+const modalAsunto =
+    document.getElementById("modalAsunto");
+
+const modalMensaje =
+    document.getElementById("modalMensaje");
+
+const modalFecha =
+    document.getElementById("modalFecha");
+
+const modalEstado =
+    document.getElementById("modalEstado");
+
+const modalRespuestaContainer =
+    document.getElementById("modalRespuestaContainer");
+
+const modalRespuesta =
+    document.getElementById("modalRespuesta");
+
+const modalFechaRespuesta =
+    document.getElementById("modalFechaRespuesta");
+
+const modalAvatar =
+    document.getElementById("modalAvatar");
+
+
+
+/* ===================================================== */
+/* ABRIR SOLICITUD */
+/* ===================================================== */
+
+document.querySelectorAll(".ver-solicitud").forEach(function(button) {
+
+    button.addEventListener("click", function() {
+
+        const solicitud = {
+
+            numero:
+                this.dataset.numero,
+
+            nombre:
+                this.dataset.nombre,
+
+            rol:
+                this.dataset.rol,
+
+            asunto:
+                this.dataset.asunto,
+
+            mensaje:
+                this.dataset.mensaje,
+
+            fecha:
+                this.dataset.fecha,
+
+            estado:
+                this.dataset.estado,
+
+            respuesta:
+                this.dataset.respuesta,
+
+            fechaRespuesta:
+                this.dataset.fechaRespuesta
+
+        };
+
+
+        /* ============================================= */
+        /* INFORMACIÓN */
+        /* ============================================= */
+
+        modalNumero.textContent =
+            solicitud.numero;
+
+        modalNombre.textContent =
+            solicitud.nombre;
+
+        modalRol.textContent =
+            solicitud.rol;
+
+        modalAsunto.textContent =
+            solicitud.asunto;
+
+        modalMensaje.textContent =
+            solicitud.mensaje;
+
+        modalFecha.textContent =
+            solicitud.fecha;
+
+        modalEstado.textContent =
+            solicitud.estado;
+
+
+
+        /* ============================================= */
+        /* COLOR DEL ROL */
+        /* ============================================= */
+
+        if (solicitud.rol === "Manicurista") {
+
+            modalRol.className =
+                "text-xs text-purple-600 dark:text-purple-400";
+
+            modalAvatar.className =
+                "w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0";
+
+            modalAvatar.innerHTML =
+                '<i class="fa-solid fa-user text-purple-600"></i>';
+
+        }
+
+        else {
+
+            modalRol.className =
+                "text-xs text-pink-600 dark:text-pink-400";
+
+            modalAvatar.className =
+                "w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center shrink-0";
+
+            modalAvatar.innerHTML =
+                '<i class="fa-solid fa-user text-pink-600"></i>';
+
+        }
+
+
+
+        /* ============================================= */
+        /* ESTADO */
+        /* ============================================= */
+
+        if (solicitud.estado === "Resuelto") {
+
+            modalEstado.className =
+                "px-4 py-2 rounded-full text-sm font-medium bg-emerald-50 text-emerald-600 border border-emerald-200";
+
+        }
+
+        else if (solicitud.estado === "En revisión") {
+
+            modalEstado.className =
+                "px-4 py-2 rounded-full text-sm font-medium bg-amber-50 text-amber-600 border border-amber-200";
+
+        }
+
+        else {
+
+            modalEstado.className =
+                "px-4 py-2 rounded-full text-sm font-medium bg-pink-50 text-pink-600 border border-pink-200";
+
+        }
+
+
+
+        /* ============================================= */
+        /* RESPUESTA */
+        /* ============================================= */
+
+        if (
+            solicitud.estado === "Resuelto" &&
+            solicitud.respuesta.trim() !== ""
+        ) {
+
+            modalRespuestaContainer.classList.remove(
+                "hidden"
+            );
+
+            modalRespuesta.textContent =
+                solicitud.respuesta;
+
+            modalFechaRespuesta.textContent =
+                "Resuelto el " +
+                solicitud.fechaRespuesta;
+
+        }
+
+        else {
+
+            modalRespuestaContainer.classList.add(
+                "hidden"
+            );
+
+            modalRespuesta.textContent =
+                "";
+
+            modalFechaRespuesta.textContent =
+                "";
+
+        }
+
+
+
+        /* ============================================= */
+        /* MOSTRAR */
+        /* ============================================= */
+
+        modalSolicitud.classList.remove(
+            "hidden"
+        );
+
+        document.body.classList.add(
+            "overflow-hidden"
+        );
+
+    });
+
+});
+
+
+
+/* ===================================================== */
+/* CERRAR */
+/* ===================================================== */
+
+function cerrarVentanaModal() {
+
+    modalSolicitud.classList.add(
+        "hidden"
+    );
+
+    document.body.classList.remove(
+        "overflow-hidden"
+    );
+
+}
+
+
+cerrarModal.addEventListener(
+    "click",
+    cerrarVentanaModal
+);
+
+
+cerrarModal2.addEventListener(
+    "click",
+    cerrarVentanaModal
+);
+
+
+modalFondo.addEventListener(
+    "click",
+    cerrarVentanaModal
+);
+
+
+
+/* ===================================================== */
+/* ESC */
+/* ===================================================== */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            cerrarVentanaModal();
+
+        }
+
+    }
+);
+
 </script>
+
+
 {% endblock %}
