@@ -2,6 +2,9 @@ from django.urls import path, include
 from . import views
 from rest_framework import routers
 from django.contrib.auth.views import LogoutView
+from django.contrib.auth import views as auth_views
+from django.urls import reverse_lazy
+
 
 router = routers.DefaultRouter()
 
@@ -61,18 +64,20 @@ urlpatterns = [
     # Admin
     path('ver_todas_citas/', views.ver_todas_citas, name='ver_todas_citas'),
     path('resenas/', views.ver_todas_resenas, name='ver_resenas'),
+    path('cliente/<int:cliente_id>/citas/', views.obtener_citas_cliente_json, name='obtener_citas_cliente_json'),
     path('ver_manicuristas/', views.ver_manicuristas, name='ver_manicuristas'),
     path("manicuristas/crear/", views.crear_manicurista, name="crear_manicurista"),
     path("manicuristas/editar/<int:id>/", views.actualizar_manicurista, name="actualizar_manicurista"),
     path("manicuristas/eliminar/<int:id>/", views.eliminar_manicurista, name="eliminar_manicurista"),
-    path('admin/cita/estado/<int:cita_id>/<str:nuevo_estado>/', views.cambiar_estado_cita_admin, name='cambiar_estado_admin'),
-    path('admin/cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
+    path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', views.cambiar_estado_cita_admin, name='cambiar_estado_admin'),
+    path('cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
     path('ver_inventario/', views.ver_inventario, name="ver_inventario"),
     path('crear_inventario/', views.crear_inventario, name="crear_inventario"),
     path('actualizar_inventario/<int:id>/', views.actualizar_inventario, name="actualizar_inventario"),
     path('eliminar_inventario/<int:id>/', views.eliminar_inventario, name="eliminar_inventario"),
     path('inventario/movimientos/', views.lista_movimientos, name='lista_movimientos'),
     path('inventario/movimientos/registrar/', views.registrar_movimiento, name='registrar_movimiento'),
+    path('contabilidad/', views.modulo_contabilidad, name='modulo_contabilidad'),
 
 
 
@@ -104,6 +109,31 @@ urlpatterns = [
     path('eliminar_gastos/<int:id>/', views.eliminar_gastos, name="eliminar_gastos"),
     path('actualizar_gastos/<int:id>/', views.actualizar_gastos, name="actualizar_gastos"),
 
+
+    # Envío de correos para recuperación de contraseña
+    # 1. Vista donde el usuario introduce su correo
+    path('recuperar-contrasena/', auth_views.PasswordResetView.as_view(
+        template_name='password_reset.html',
+        html_email_template_name='password_reset_email.html', # <-- Cambiado aquí
+        subject_template_name='password_reset_subject.txt',
+        success_url=reverse_lazy('agenda:password_reset_done')
+    ), name='password_reset'),
+
+    # 2. Vista que avisa que el correo fue enviado
+    path('recuperar-contrasena/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='password_reset_done.html'
+    ), name='password_reset_done'),
+
+    # 3. Vista donde introduce la nueva contraseña (enlace del correo)
+    path('restablecer/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='password_reset_confirm.html',
+        success_url=reverse_lazy('agenda:login')
+    ), name='password_reset_confirm'),
+
+    # 4. Vista de éxito final indicando que la contraseña cambió
+    path('restablecer/completado/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='password_reset_complete.html'
+    ), name='password_reset_complete'),
 
 
 ]

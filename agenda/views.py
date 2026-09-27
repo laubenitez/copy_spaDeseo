@@ -4,6 +4,7 @@ import json
 import logging
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, date, time, timedelta
+from django.utils.timezone import now
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -28,11 +29,11 @@ from drf_spectacular.utils import extend_schema
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
-    CitasSerializer, InventarioSerializer, PagosSerializer,
+    CitasSerializer, InventarioSerializer, MovimientoInventarioSerializer, PagosSerializer,
     ReciboSerializer, GastosSerializer
 )
 from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
@@ -497,6 +498,12 @@ def login(request):
         return redirect("agenda:dashboard")
 
     if request.method == "POST":
+
+        # Verificar términos y condiciones
+        if not request.POST.get("terminos"):
+            messages.error(request, "Debes aceptar los términos y condiciones.")
+            return redirect("agenda:login")
+
 
         # El formulario envía el correo en el campo "user"
         correo = request.POST.get("user", "").strip()
@@ -2642,6 +2649,103 @@ def actualizar_pago(request, id):
 
 
 
+# ----------------- MÓDULO DE CONTABILIDAD ----------------
+@requiere_rol("ADMINISTRADOR")
+def modulo_contabilidad(request):
+    hoy = now().date()
+    
+    # Obtenemos los parámetros de forma segura limpiando puntos o comas
+    mes_str = request.GET.get('mes', str(hoy.month)).replace('.', '').replace(',', '')
+    anio_str = request.GET.get('anio', str(hoy.year)).replace('.', '').replace(',', '')
+
+    try:
+        mes_actual = int(mes_str)
+        anio_actual = int(anio_str)
+    except ValueError:
+        mes_actual = hoy.month
+        anio_actual = hoy.year
+
+    try:
+        # 1. INGRESOS: Pagos con estado 'Realizado' filtrados por la fecha del pago (o de la cita)
+        pagos_mes = Pagos.objects.filter(
+            fecha_pago__month=mes_actual,
+            fecha_pago__year=anio_actual,
+            estado='Realizado'
+        ).select_related('citas', 'citas__servicios')
+        
+        ingresos_totales = pagos_mes.aggregate(total=Sum('valor'))['total'] or 0
+
+        # Desglose por método de pago según tus choices (Efectivo, Nequi, Bancolombia, Transferencia)
+        ingresos_efectivo = pagos_mes.filter(metodo_pago='Efectivo').aggregate(t=Sum('valor'))['t'] or 0
+        ingresos_nequi = pagos_mes.filter(metodo_pago='Nequi').aggregate(t=Sum('valor'))['t'] or 0
+        ingresos_bancolombia = pagos_mes.filter(metodo_pago='Bancolombia').aggregate(t=Sum('valor'))['t'] or 0
+        ingresos_transferencia = pagos_mes.filter(metodo_pago='Transferencia').aggregate(t=Sum('valor'))['t'] or 0
+
+        # 2. GASTOS: Filtrados por fecha en el mes y año seleccionados usando tu modelo Gastos
+        gastos_mes = Gastos.objects.filter(
+            fecha__month=mes_actual,
+            fecha__year=anio_actual
+        )
+        gastos_totales = gastos_mes.aggregate(total=Sum('valor'))['total'] or 0
+
+        # 3. COMISIONES DE MANICURISTAS: Basado en citas completadas en el mes y el porcentaje del servicio
+        citas_completadas = Citas.objects.filter(
+            fecha__month=mes_actual,
+            fecha__year=anio_actual,
+            estado='completada'
+        ).select_related('manicurista', 'servicios')
+
+        comisiones_totales = 0
+        resumen_manicuristas = {}
+
+        for cita in citas_completadas:
+            manicurista = cita.manicurista
+            # Usa el porcentaje configurado en tu modelo Servicios (por defecto 50%)
+            porcentaje = cita.servicios.porcentaje_comision / 100
+            comision_cita = float(cita.total) * porcentaje
+            
+            comisiones_totales += comision_cita
+            
+            nombre_completo = f"{manicurista.nombre} {manicurista.apellido}"
+            if nombre_completo not in resumen_manicuristas:
+                resumen_manicuristas[nombre_completo] = {
+                    'servicios_realizados': 0, 
+                    'total_comision': 0
+                }
+            
+            resumen_manicuristas[nombre_completo]['servicios_realizados'] += 1
+            resumen_manicuristas[nombre_completo]['total_comision'] += comision_cita
+
+        # 4. BALANCE GENERAL / UTILIDAD NETA
+        utilidad_neta = float(ingresos_totales) - float(gastos_totales) - float(comisiones_totales)
+
+    except Exception as e:
+        ingresos_totales = 0
+        gastos_totales = 0
+        comisiones_totales = 0
+        utilidad_neta = 0
+        gastos_mes = []
+        resumen_manicuristas = {}
+        ingresos_efectivo = ingresos_nequi = ingresos_bancolombia = ingresos_transferencia = 0
+        messages.error(request, "Ocurrió un error al calcular los datos contables del período.")
+
+    contexto = {
+        "mes_actual": mes_actual,
+        "anio_actual": anio_actual,
+        "ingresos_totales": ingresos_totales,
+        "ingresos_efectivo": ingresos_efectivo,
+        "ingresos_nequi": ingresos_nequi,
+        "ingresos_bancolombia": ingresos_bancolombia,
+        "ingresos_transferencia": ingresos_transferencia,
+        "gastos_totales": gastos_totales,
+        "gastos_lista": gastos_mes,
+        "comisiones_totales": comisiones_totales,
+        "resumen_manicuristas": resumen_manicuristas,
+        "utilidad_neta": utilidad_neta,
+    }
+
+    return render(request, "administrador/contabilidad.html", contexto)
+
 
 
     # -----------CALENDARIO--------
@@ -2685,40 +2789,41 @@ def obtener_citas_json(request):
     except (AttributeError, Exception):
         return JsonResponse([], safe=False)
 
-    # Filtrado estricto según ID y Rol del usuario en sesión
+    # Filtrado estricto según ID y Rol del usuario en sesión (excluyendo canceladas)
     if rol_nombre == "CLIENTE":
         try:
             cliente = Clientes.objects.get(user=request.user)
-            citas = Citas.objects.filter(cliente=cliente).select_related('servicios', 'manicurista')
+            # Excluimos las canceladas
+            citas = Citas.objects.filter(cliente=cliente).exclude(estado__iexact='cancelada').select_related('servicios', 'manicurista')
         except Clientes.DoesNotExist:
             return JsonResponse([], safe=False)
 
     elif rol_nombre == "MANICURISTA":
         try:
             manicurista = Manicurista.objects.get(user=request.user)
-            citas = Citas.objects.filter(manicurista=manicurista).select_related('servicios', 'cliente')
+            # Excluimos las canceladas
+            citas = Citas.objects.filter(manicurista=manicurista).exclude(estado__iexact='cancelada').select_related('servicios', 'cliente')
         except Manicurista.DoesNotExist:
             return JsonResponse([], safe=False)
 
     else:
-        # ADMINISTRADOR o superusuario ve todas las citas del sistema
-        citas = Citas.objects.all().select_related('servicios', 'cliente', 'manicurista')
+        # ADMINISTRADOR o superusuario ve todas las citas activas del sistema
+        citas = Citas.objects.all().exclude(estado__iexact='Cancelada').select_related('servicios', 'cliente', 'manicurista')
 
     for cita in citas:
         # Crear timestamp de inicio
         start_dt = datetime.combine(cita.fecha, cita.hora)
         
-        # Duración segura (manejando tanto si usa duracion_horas o duracion en minutos)
+        # Duración segura
         if cita.servicios and hasattr(cita.servicios, 'duracion_horas'):
             duracion_min = int(cita.servicios.duracion_horas * 60)
         elif cita.servicios and hasattr(cita.servicios, 'duracion') and cita.servicios.duracion:
             duracion_min = cita.servicios.duracion
         else:
-            duracion_min = 60 # Valor por defecto de 1 hora si no está definido
+            duracion_min = 60 
 
         end_dt = start_dt + timedelta(minutes=duracion_min)
 
-        # Configurar título dinámico según la perspectiva del usuario
         if rol_nombre == "CLIENTE":
             titulo = f"💅 {cita.servicios.nombre} - Manicurista: {cita.manicurista.nombre} {cita.manicurista.apellido}"
         else:
@@ -2742,3 +2847,29 @@ def obtener_citas_json(request):
         })
 
     return JsonResponse(citas_data, safe=False)
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR", "MANICURISTA")
+def obtener_citas_cliente_json(request, cliente_id):
+    try:
+        # Buscamos al cliente por su ID
+        cliente = Clientes.objects.get(id=cliente_id)
+        # Obtenemos todas sus citas ordenadas por fecha reciente
+        citas = Citas.objects.filter(cliente=cliente).select_related('servicios', 'manicurista').order_by('-fecha', '-hora')
+        
+        citas_data = []
+        for cita in citas:
+            total_valor = float(cita.total) if hasattr(cita, 'total') and cita.total else 0.0
+            citas_data.append({
+                "servicio": cita.servicios.nombre if cita.servicios else "Servicio",
+                "fecha": cita.fecha.strftime('%Y-%m-%d') if cita.fecha else "",
+                "hora": cita.hora.strftime('%H:%M') if cita.hora else "",
+                "estado": getattr(cita, 'estado', 'Programada'),
+                "total": total_valor
+            })
+            
+        return JsonResponse({'citas': citas_data})
+    except Clientes.DoesNotExist:
+        return JsonResponse({'citas': [], 'error': 'Cliente no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'citas': [], 'error': str(e)}, status=400)

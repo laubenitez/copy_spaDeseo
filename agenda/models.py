@@ -73,6 +73,7 @@ class Manicurista(models.Model):
 class Servicios(models.Model):
     nombre = models.CharField(max_length=100)
     precio = models.IntegerField()
+    porcentaje_comision = models.IntegerField(default=50, help_text="Porcentaje de comisión para la manicurista")
     descripcion = models.TextField(null=True, blank=True)
     ESTADOS = (
         ("Activo", "ACTIVO"),

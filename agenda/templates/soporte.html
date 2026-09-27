@@ -708,7 +708,7 @@
 
 <div
     id="modalSolicitud"
-    class="fixed inset-0 z-50 hidden"
+    class="fixed inset-0 z-[9999] hidden"
 >
 
     <!-- FONDO -->
@@ -1201,6 +1201,7 @@ document.querySelectorAll(".faq-toggle").forEach(function(button) {
 
 const modalSolicitud =
     document.getElementById("modalSolicitud");
+document.body.appendChild(modalSolicitud);
 
 const modalFondo =
     document.getElementById("modalFondo");

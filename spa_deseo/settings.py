@@ -158,3 +158,12 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 USE_L10N = True  # O USE_TZ / USE_I18N activos
 USE_THOUSAND_SEPARATOR = True
+
+# Enviar correo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'spadeseo.oficial@gmail.com'  # El correo de Gmail del spa
+EMAIL_HOST_PASSWORD = 'nlkvbdhshivxhrfu'  # Una contraseña de aplicación de Gmail
+DEFAULT_FROM_EMAIL = 'Spa Deseo <spadeseo.oficial@gmail.com>'

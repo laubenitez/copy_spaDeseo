@@ -1,124 +1,242 @@
 {% extends 'dashboard.html' %}
 
-
 {% block content %}
-
-
 <div>
    <!-- Encabezado -->
-   <div class="mb-6">
-       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Clientes</h1>
-       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Lista de clientes registrados en el sistema</p>
-   </div>
+   <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Clientes</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Lista de clientes registrados en el sistema
+            </p>
+        </div>
 
+        <!-- Botón para registrar cliente -->
+        <a href="{% url 'agenda:crear_cliente' %}"
+            class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+            <i class="fa-solid fa-plus"></i> Nuevo Cliente
+        </a>
+   </div>
 
    <!-- Grid de Clientes -->
    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-
-       {% for i in datos %}
-
-
-       <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
-          
-           <div>
-               <!-- Encabezado de la Tarjeta: Avatar / ID -->
+        {% for i in datos %}
+        <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+             
+            <div>
+               <!-- Encabezado de la Tarjeta -->
                <div class="flex items-center justify-between mb-4">
-                  
-                   <!-- Foto de Perfil o Iniciales Nombre + Apellido -->
-                   <div class="flex items-center gap-3">
-                       {% if i.foto_perfil %}
-                           <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}" class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
-                       {% else %}
-                           <div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
-                               {{ i.nombre|slice:":1"|upper }}{{ i.apellido|slice:":1"|upper }}
-                           </div>
-                       {% endif %}
-                      
-                       <div>
-                           <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
-                               {{ i.nombre }} {{ i.apellido }}
-                           </h2>
-                           <span class="text-xs text-gray-400">Cliente registrado</span>
-                       </div>
-                   </div>
+                    <div class="flex items-center gap-3">
+                        {% if i.foto_perfil %}
+                            <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}" class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
+                        {% else %}
+                            <div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
+                                {{ i.nombre|slice:":1"|upper }}{{ i.apellido|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                       
+                        <div>
+                            <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
+                                {{ i.nombre }} {{ i.apellido }}
+                            </h2>
+                            <span class="text-xs text-gray-400">Cliente registrado</span>
+                        </div>
+                    </div>
 
-
-                   <!-- ID Tag -->
-                   <span class="text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
-                       ID: {{ i.id }}
-                   </span>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
+                        ID: {{ i.id }}
+                    </span>
                </div>
-
 
                <!-- Detalle de Contacto -->
                <div class="space-y-2.5 text-xs border-t border-b border-gray-100 dark:border-gray-700/60 py-3.5 my-3">
-                  
-                   <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
-                       <span class="flex items-center gap-2 text-gray-400">
-                           <i class="fa-solid fa-phone text-pink-500 w-4"></i> Teléfono:
-                       </span>
-                       <strong class="text-gray-800 dark:text-gray-200">{{ i.telefono }}</strong>
-                   </div>
+                    <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-phone text-pink-500 w-4"></i> Teléfono:
+                        </span>
+                        <strong class="text-gray-800 dark:text-gray-200">{{ i.telefono }}</strong>
+                    </div>
 
-
-                   <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
-                       <span class="flex items-center gap-2 text-gray-400">
-                           <i class="fa-solid fa-envelope text-pink-500 w-4"></i> Correo:
-                       </span>
-                       <strong class="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">{{ i.email }}</strong>
-                   </div>
-
-
+                    <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
+                        <span class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-envelope text-pink-500 w-4"></i> Correo:
+                        </span>
+                        <strong class="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">{{ i.email }}</strong>
+                    </div>
                </div>
-           </div>
+            </div>
 
-
-           <!-- Botones de Acción -->
-           <div class="flex items-center gap-2 pt-1">
-              
-               <!-- Botón WhatsApp -->
-               <a href="https://wa.me/{{ i.telefono }}" target="_blank"
+            <!-- Botones de Acción -->
+            <div class="flex items-center gap-2 pt-1">
+                <!-- Botón WhatsApp -->
+                <a href="https://wa.me/{{ i.telefono }}" target="_blank"
                   class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-                   <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
-               </a>
+                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+                </a>
 
-
-               <!-- Ver Historial / Detalle -->
-               <a href="#"
-                  class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-                   <i class="fa-regular fa-eye"></i> Historial
-               </a>
-
-
-           </div>
-
-
-       </div>
-
-
-       {% empty %}
-
-
-       <!-- Estado Vacío -->
-       <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-           <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-               <i class="fa-solid fa-users"></i>
-           </div>
-           <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay clientes registrados</h3>
-           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cuando se registre un nuevo cliente aparecerá en este listado.</p>
-       </div>
-
-
-       {% endfor %}
-
-
+                <!-- Botón Historial -->
+                <button type="button"
+                        data-id="{{ i.id }}"
+                        data-nombre="{{ i.nombre }} {{ i.apellido }}"
+                        onclick="abrirHistorialDesdeBoton(this)"
+                        class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-regular fa-eye"></i> Historial
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay clientes registrados</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cuando se registre un nuevo cliente aparecerá en este listado.</p>
+        </div>
+        {% endfor %}
    </div>
-
-
 </div>
 
+<!-- Modal global de Historial de Citas -->
+<div id="modalHistorial" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important;" class="flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-4 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <!-- Header del Modal con el ícono principal -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-darkCard">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modalHistorialTitulo">Historial de Citas</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Servicios programados y realizados</p>
+                </div>
+            </div>
+            <button onclick="cerrarHistorial()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 transition cursor-pointer text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
 
+        <!-- Contenido / Lista de Citas -->
+        <div class="p-6 overflow-y-auto space-y-3" id="modalHistorialContenido">
+            <div class="text-center py-8 text-gray-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                <p class="text-sm">Cargando citas...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function abrirHistorialDesdeBoton(btn) {
+        var clienteId = btn.getAttribute('data-id');
+        var clienteNombre = btn.getAttribute('data-nombre');
+        abrirHistorial(clienteId, clienteNombre);
+    }
+
+    function abrirHistorial(clienteId, clienteNombre) {
+        document.getElementById('modalHistorialTitulo').innerText = "Historial de: " + clienteNombre;
+        
+        var modal = document.getElementById('modalHistorial');
+        modal.classList.remove('hidden');
+        document.body.appendChild(modal);
+        
+        var contenedor = document.getElementById('modalHistorialContenido');
+        contenedor.innerHTML = `
+            <div class="text-center py-8 text-gray-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+                <p class="text-sm">Cargando citas...</p>
+            </div>
+        `;
+
+        let urlTemplate = "{% url 'agenda:obtener_citas_cliente_json' 0 %}";
+        let urlFinal = urlTemplate.replace('/0/', '/' + clienteId + '/');
+
+        fetch(urlFinal)
+            .then(response => response.json())
+            .then(data => {
+                if (data.citas && data.citas.length > 0) {
+                    let html = '';
+                    data.citas.forEach(cita => {
+                        let estadoLower = (cita.estado || '').toLowerCase();
+                        let badgeClass = '';
+                        let dotClass = '';
+                        let estadoTexto = '';
+
+                        if (estadoLower.includes('completada')) {
+                            badgeClass = 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50';
+                            dotClass = 'bg-emerald-500';
+                            estadoTexto = 'Completada';
+                        } else if (estadoLower.includes('cancelada')) {
+                            badgeClass = 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 border border-red-200/60 dark:border-red-800/50';
+                            dotClass = 'bg-red-500';
+                            estadoTexto = 'Cancelada';
+                        } else {
+                            badgeClass = 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/50';
+                            dotClass = 'bg-pink-500';
+                            estadoTexto = cita.estado ? (cita.estado.charAt(0).toUpperCase() + cita.estado.slice(1).toLowerCase()) : 'Programada';
+                        }
+
+                        let valorNumerico = parseFloat(cita.total) || 0;
+
+                        let precioFormateado = new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(valorNumerico);
+
+                        html += `
+                            <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex items-center justify-between gap-4">
+                                <div class="flex items-start gap-3">
+                                    <!-- Icono de agenda para cada tarjeta -->
+                                    <div class="w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-calendar-days text-sm"></i>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <!-- Nombre del servicio en negrita -->
+                                        <h4 class="text-sm font-bold text-gray-900 dark:text-white">
+                                            ${cita.servicio || 'Servicio'}
+                                        </h4>
+                                        <!-- Fecha y hora acompañadas del icono de reloj -->
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            <i class="fa-regular fa-clock text-pink-500 mr-1"></i> ${cita.fecha || ''} - ${cita.hora || ''}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0 pl-2">
+                                    <span class="text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 ${badgeClass}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
+                                        ${estadoTexto}
+                                    </span>
+                                    <span class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                                        <i class="fa-solid fa-coins text-pink-500 text-[10px]"></i> ${precioFormateado}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    contenedor.innerHTML = html;
+                } else {
+                    contenedor.innerHTML = `
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2"></i>
+                            <p class="text-sm">Este cliente no tiene citas registradas.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                contenedor.innerHTML = `
+                    <div class="text-center py-8 text-red-400">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+                        <p class="text-sm">Error al cargar el historial de citas.</p>
+                    </div>
+                `;
+            });
+    }
+
+    function cerrarHistorial() {
+        document.getElementById('modalHistorial').classList.add('hidden');
+    }
+</script>
 {% endblock %}
-
-

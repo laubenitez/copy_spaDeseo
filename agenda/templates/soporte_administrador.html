@@ -6,7 +6,7 @@
 <!-- CABECERA -->
 <!-- ========================================= -->
 
-<div class="mb-8 text-center max-w-3xl mx-auto">
+<div class="mb-8 max-w-5xl mx-auto text-left">
 
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
         Centro de Soporte
@@ -396,41 +396,6 @@
     </div>
 
 
-
-    <!-- ========================================= -->
-    <!-- MENSAJE FINAL -->
-    <!-- ========================================= -->
-
-    <div class="bg-pink-50/60 dark:bg-pink-950/20 rounded-2xl border border-pink-100 dark:border-pink-900/30 shadow-sm p-6">
-
-        <div class="flex items-center gap-3">
-
-            <div class="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-
-                <i class="fa-solid fa-headset text-pink-600"></i>
-
-            </div>
-
-
-            <div>
-
-                <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                    Atención de soporte
-                </h3>
-
-                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-
-                    Revisa cada solicitud y realiza el seguimiento necesario para ayudar a nuestros usuarios.
-
-                </p>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
 </div>
 
 
@@ -441,7 +406,7 @@
 
 <div
     id="modalSoporte"
-    class="hidden fixed inset-0 z-50"
+    class="hidden fixed inset-0 z-[9999]"
 >
 
     <!-- FONDO -->
@@ -1033,6 +998,7 @@
 
     const modal =
         document.getElementById("modalSoporte");
+    document.body.appendChild(modal);
 
     const modalFondo =
         document.getElementById("modalFondo");

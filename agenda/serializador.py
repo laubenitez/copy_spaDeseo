@@ -18,6 +18,11 @@ class ManicuristaSerializer(serializers.ModelSerializer):
         model = Manicurista
         fields = ["id", "nombre", "apellido", "telefono", "email", "especialidad", "fecha_ingreso", "estado"]
 
+class AdministradorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Administrador
+        fields = ["id", "nombre", "apellido", "telefono", "email"]
+
 class ServiciosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Servicios
@@ -31,6 +36,11 @@ class CitasSerializer(serializers.ModelSerializer):
 class InventarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventario
+        fields = '__all__'
+
+class MovimientoInventarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MovimientoInventario
         fields = '__all__'
 
 class PagosSerializer(serializers.ModelSerializer):
@@ -48,3 +58,4 @@ class GastosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gastos
         fields = '__all__'
+

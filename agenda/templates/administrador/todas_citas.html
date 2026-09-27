@@ -200,15 +200,14 @@
                 </form>
 
                 <!-- Cancelar -->
-                <form action="{% url 'agenda:cambiar_estado_admin' cita.id 'cancelada' %}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de cancelar esta cita?');">
-                    {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-xs">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 6l12 12M18 6L6 18" />
-                        </svg>
-                        Cancelar
-                    </button>
-                </form>
+                <button type="button" 
+                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-xs js-open-modal cursor-pointer"
+                        data-url="{% url 'agenda:cambiar_estado_admin' cita.id 'cancelada' %}">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                    Cancelar
+                </button>
 
                 <!-- WhatsApp -->
                 <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition shadow-xs">
@@ -251,7 +250,7 @@
             No tienes citas asignadas
         </h3>
         <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-            Когда tengas una cita asignada aparecerá aquí con toda la información del cliente y los pagos.
+            Cuando tengas una cita asignada aparecerá aquí con toda la información del cliente y los pagos.
         </p>
     </div>
 
@@ -259,4 +258,101 @@
 
 </div>
 
+{% endblock %}
+
+{% block modals %}
+<!-- Modal de confirmación para cancelar cita -->
+<div id="modalEliminar" class="fixed inset-0 hidden items-center justify-center bg-gray-900/60 backdrop-blur-sm z-[9999] px-4">
+    <div id="modalContenido" class="w-full max-w-md bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        
+        <!-- Encabezado -->
+        <div class="px-6 pt-6">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-11 h-11 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v4m0 4h.01M10.3 3.8l-8 14A2 2 0 004 21h16a2 2 0 001.7-3.2l-8-14a2 2 0 00-3.4 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                        Cancelar cita
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Esta acción cancelará la cita seleccionada.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="px-6 py-5">
+            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                ¿Estás segura de que deseas cancelar esta cita?
+                <span class="font-semibold text-gray-800 dark:text-white">
+                    Esta acción no se puede deshacer.
+                </span>
+            </p>
+        </div>
+
+        <!-- Formulario POST y Botones (Aquí está la corrección: se usa <form> para que el JS lo reconozca) -->
+        <form id="formConfirmarEliminar" method="POST" action="" class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+            {% csrf_token %}
+            <button type="button" class="js-close-modal w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-semibold bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer">
+                No, conservar
+            </button>
+            <button type="submit" class="w-full sm:w-auto text-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-sm cursor-pointer">
+                Sí, cancelar cita
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modalEliminar");
+    const formConfirmar = document.getElementById("formConfirmarEliminar");
+    const btnCerrar = document.querySelectorAll(".js-close-modal");
+
+    if (!modal || !formConfirmar) return;
+
+    function abrirModal(url) {
+        formConfirmar.action = url; // Asigna la URL al action del formulario POST
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.classList.add("overflow-hidden");
+    }
+
+    function cerrarModal() {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        formConfirmar.action = "";
+    }
+
+    document.querySelectorAll(".js-open-modal").forEach(button => {
+        button.addEventListener("click", function () {
+            const url = this.dataset.url;
+            if (url) {
+                abrirModal(url);
+            }
+        });
+    });
+
+    btnCerrar.forEach(button => {
+        button.addEventListener("click", cerrarModal);
+    });
+
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            cerrarModal();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+            cerrarModal();
+        }
+    });
+});
+</script>
 {% endblock %}
