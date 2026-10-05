@@ -1,0 +1,415 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+<div>
+
+    <!-- Encabezado -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Mi Portafolio
+            </h1>
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Administra y muestra tus trabajos realizados
+            </p>
+        </div>
+
+        <!-- Botón agregar trabajo -->
+        <a href="{% url 'agenda:agregar_trabajo_portafolio' %}"
+           class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+
+            <i class="fa-solid fa-plus"></i>
+            Agregar trabajo
+
+        </a>
+
+    </div>
+
+
+    <!-- Información de la manicurista -->
+    <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 mb-6">
+
+        <div class="flex items-center gap-4">
+
+            {% if manicurista.foto_perfil %}
+
+                <img src="{{ manicurista.foto_perfil.url }}"
+                     alt="{{ manicurista.nombre }}"
+                     class="w-14 h-14 rounded-full object-cover border-2 border-pink-200 dark:border-pink-900">
+
+            {% else %}
+
+                <div class="w-14 h-14 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-lg select-none">
+
+                    {{ manicurista.nombre|slice:":1"|upper }}{{ manicurista.apellido|slice:":1"|upper }}
+
+                </div>
+
+            {% endif %}
+
+
+            <div>
+
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                    {{ manicurista.nombre }} {{ manicurista.apellido }}
+                </h2>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ manicurista.especialidad }}
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Grid del portafolio -->
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for trabajo in trabajos %}
+
+        <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden hover:shadow-md transition">
+
+            <!-- Imagen -->
+            <div class="relative w-full h-64 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+
+                {% if trabajo.imagen %}
+
+                    <img src="{{ trabajo.imagen.url }}"
+                        alt="{{ trabajo.titulo }}"
+                        class="w-full h-full object-cover transition duration-300 hover:scale-105">
+
+                {% else %}
+
+                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+
+                        <i class="fa-regular fa-image text-4xl mb-2"></i>
+
+                        <span class="text-sm">
+                            Sin imagen
+                        </span>
+
+                    </div>
+
+                {% endif %}
+
+                <!-- Estado -->
+                <div class="absolute top-3 right-3">
+
+                    {% if trabajo.visible %}
+
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+
+                            <i class="fa-solid fa-eye mr-1"></i>
+                            Visible
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+
+                            <i class="fa-solid fa-eye-slash mr-1"></i>
+                            Oculto
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- Información -->
+            <div class="p-5">
+
+                <div class="mb-4">
+
+                    <h2 class="font-bold text-gray-900 dark:text-white text-base">
+                        {{ trabajo.titulo }}
+                    </h2>
+
+
+                    {% if trabajo.categoria %}
+
+                    <span class="inline-block mt-2 text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
+
+                        <i class="fa-solid fa-tag mr-1"></i>
+                        {{ trabajo.categoria }}
+
+                    </span>
+
+                    {% endif %}
+
+
+                    {% if trabajo.descripcion %}
+
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3 line-clamp-3">
+                        {{ trabajo.descripcion }}
+                    </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Fecha -->
+                <div class="flex items-center gap-2 text-xs text-gray-400 border-t border-gray-100 dark:border-gray-700/60 pt-3 mb-4">
+
+                    <i class="fa-regular fa-calendar"></i>
+
+                    <span>
+                        Publicado {{ trabajo.fecha_publicacion|date:"d/m/Y" }}
+                    </span>
+
+                </div>
+
+
+                <!-- Botones -->
+                <div class="flex items-center gap-2">
+
+                    <!-- Visibilidad -->
+                    <form method="POST"
+                        action="{% url 'agenda:cambiar_visibilidad_portafolio' trabajo.id %}"
+                        class="flex-1">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="w-full py-2 px-3 bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-900/40 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                            {% if trabajo.visible %}
+
+                                <i class="fa-solid fa-eye-slash"></i>
+                                Ocultar
+
+                            {% else %}
+
+                                <i class="fa-solid fa-eye"></i>
+                                Mostrar
+
+                            {% endif %}
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- Editar -->
+                    <a href="{% url 'agenda:editar_trabajo_portafolio' trabajo.id %}"
+                    class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+
+                        <i class="fa-solid fa-pen"></i>
+                        Editar
+
+                    </a>
+
+
+                    <!-- Eliminar -->
+                    <button type="button"
+                            class="js-open-modal flex-1 w-full py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                            data-url="{% url 'agenda:eliminar_trabajo_portafolio' trabajo.id %}">
+
+                        <i class="fa-solid fa-trash"></i>
+                        Eliminar
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+        {% empty %}
+
+        <!-- Estado vacío -->
+        <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+
+            <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+
+                <i class="fa-solid fa-images"></i>
+
+            </div>
+
+
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                Tu portafolio está vacío
+            </h3>
+
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-5">
+                Agrega tus primeros trabajos para mostrarlos a tus clientes.
+            </p>
+
+
+            <a href="{% url 'agenda:agregar_trabajo_portafolio' %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+
+                <i class="fa-solid fa-plus"></i>
+                Agregar primer trabajo
+
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+        <div id="modalEliminar"
+            class="fixed inset-0 hidden items-center justify-center bg-gray-900/60 backdrop-blur-sm z-[9999] px-4">
+
+            <div id="modalContenido"
+                class="w-full max-w-md bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                <!-- Encabezado -->
+                <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+
+                    <div class="flex items-center justify-center w-11 h-11 rounded-full bg-red-100 dark:bg-red-950/40">
+                        <i class="fa-solid fa-triangle-exclamation text-red-600 dark:text-red-400 text-lg"></i>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                            Eliminar trabajo
+                        </h3>
+
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Esta acción eliminará el trabajo de tu portafolio.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Contenido -->
+                <div class="px-6 py-5">
+
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                        ¿Estás segura de que deseas eliminar este trabajo?
+                        <span class="font-semibold text-gray-800 dark:text-white">
+                            Esta acción no se puede deshacer.
+                        </span>
+                    </p>
+
+                </div>
+
+                <!-- Botones -->
+                <div class="flex justify-end gap-3 px-6 py-4 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-700">
+
+                    <button type="button"
+                            class="js-close-modal px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-darkCard text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        No, conservar
+                    </button>
+
+                    <form id="formConfirmarEliminar"
+                        method="POST"
+                        action="#">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition shadow-sm">
+                            <i class="fa-solid fa-trash mr-1"></i>
+                            Sí, eliminar
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("modalEliminar");
+    const formConfirmar = document.getElementById("formConfirmarEliminar");
+    const btnCerrar = document.querySelectorAll(".js-close-modal");
+
+    if (!modal || !formConfirmar) return;
+
+    /*
+     * Sacamos el modal del contenedor del dashboard
+     * y lo colocamos directamente dentro de <body>.
+     */
+    document.body.appendChild(modal);
+
+    function abrirModal(url) {
+
+        formConfirmar.action = url;
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+    }
+
+    function cerrarModal() {
+
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+
+        document.body.classList.remove("overflow-hidden");
+
+        formConfirmar.action = "#";
+    }
+
+    // Abrir modal
+    document.querySelectorAll(".js-open-modal").forEach(button => {
+
+        button.addEventListener("click", function () {
+
+            const url = this.dataset.url;
+
+            if (url) {
+                abrirModal(url);
+            }
+
+        });
+
+    });
+
+    // Cerrar modal
+    btnCerrar.forEach(button => {
+
+        button.addEventListener("click", cerrarModal);
+
+    });
+
+    // Cerrar haciendo clic fuera
+    modal.addEventListener("click", function (event) {
+
+        if (event.target === modal) {
+            cerrarModal();
+        }
+
+    });
+
+    // Cerrar con ESC
+    document.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Escape" &&
+            !modal.classList.contains("hidden")
+        ) {
+            cerrarModal();
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}

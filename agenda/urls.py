@@ -48,6 +48,8 @@ urlpatterns = [
     path('crear_resena/<int:cita_id>/', views.crear_resena, name='crear_resena'),
     path('mis_resenas/', views.mis_resenas, name='mis_resenas'),
     path("mis_citas/", views.mis_citas, name="mis_citas"),
+    path('manicuristas/', views.manicuristas_cliente, name='manicuristas_cliente'),
+    path('manicuristas/<int:manicurista_id>/portafolio/', views.portafolio_manicurista_cliente, name='portafolio_manicurista_cliente'),
 
     #Citas
     path('ver_citas/', views.ver_citas, name="ver_citas"),
@@ -59,6 +61,11 @@ urlpatterns = [
     path('citas_asignadas', views.citas_asignadas, name="citas_asignadas"),
     path('cita/<int:cita_id>/estado/<str:nuevo_estado>/', views.cambiar_estado_cita, name='cambiar_estado_cita'),
     path('cita/pago/<int:cita_id>/', views.registrar_pago_cita, name='registrar_pago_cita'),
+    path('mi_portafolio/', views.mi_portafolio, name='mi_portafolio'),
+    path('mi_portafolio/agregar/', views.agregar_trabajo_portafolio, name='agregar_trabajo_portafolio'),
+    path('mi_portafolio/editar/<int:id>/', views.editar_trabajo_portafolio, name='editar_trabajo_portafolio'),
+    path('mi_portafolio/eliminar/<int:id>/', views.eliminar_trabajo_portafolio, name='eliminar_trabajo_portafolio'),
+    path('mi_portafolio/visibilidad/<int:id>/', views.cambiar_visibilidad_portafolio, name='cambiar_visibilidad_portafolio'),
 
 
     # Admin

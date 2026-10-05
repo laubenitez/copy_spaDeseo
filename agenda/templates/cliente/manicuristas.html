@@ -1,0 +1,145 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+    <!-- Encabezado -->
+    <div class="mb-8">
+
+        <div class="flex items-center gap-3 mb-2">
+
+            <div>
+
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Nuestras manicuristas
+                </h1>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Conoce a nuestras especialistas y descubre sus trabajos.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Contenido -->
+    {% if manicuristas %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+            {% for manicurista in manicuristas %}
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
+
+                    <!-- Foto -->
+                    <div class="relative h-64 bg-pink-50 dark:bg-pink-950/20">
+
+                        {% if manicurista.foto_perfil %}
+
+                            <img
+                                src="{{ manicurista.foto_perfil.url }}"
+                                alt="Foto de {{ manicurista.nombre }} {{ manicurista.apellido }}"
+                                class="w-full h-full object-cover"
+                                draggable="false">
+
+                        {% else %}
+
+                            <div class="w-full h-full flex items-center justify-center">
+
+                                <div class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
+
+                                    <span class="text-3xl font-bold text-pink-600 dark:text-pink-400">
+                                        {{ manicurista.nombre|slice:":1"|upper }}{{ manicurista.apellido|slice:":1"|upper }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Información -->
+                    <div class="p-5">
+
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                            {{ manicurista.nombre }} {{ manicurista.apellido }}
+                        </h2>
+
+                        {% if manicurista.especialidad %}
+
+                            <p class="text-sm text-pink-600 dark:text-pink-400 font-medium mt-1">
+                                {{ manicurista.especialidad }}
+                            </p>
+
+                        {% endif %}
+
+
+                        <!-- Cantidad de trabajos -->
+                        <div class="flex items-center gap-2 mt-4 text-sm text-gray-500 dark:text-gray-400">
+
+                            <i class="fa-regular fa-images text-pink-500"></i>
+
+                            <span>
+                                {{ manicurista.portafolio.all|length }}
+                                {% if manicurista.portafolio.all|length == 1 %}
+                                    trabajo publicado
+                                {% else %}
+                                    trabajos publicados
+                                {% endif %}
+                            </span>
+
+                        </div>
+
+
+                        <!-- Botón -->
+                        <a
+                            href="{% url 'agenda:portafolio_manicurista_cliente' manicurista.id %}"
+                            class="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-pink-600 text-white text-sm font-semibold hover:bg-pink-700 transition shadow-sm">
+
+                            <i class="fa-regular fa-images"></i>
+
+                            Ver portafolio
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <!-- Estado vacío -->
+        <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 p-10 text-center">
+
+            <div class="w-16 h-16 mx-auto rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center mb-4">
+
+                <i class="fa-solid fa-hand-sparkles text-pink-600 dark:text-pink-400 text-2xl"></i>
+
+            </div>
+
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                No hay manicuristas disponibles
+            </h2>
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                En este momento no hay manicuristas activas disponibles.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

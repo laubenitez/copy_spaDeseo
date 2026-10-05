@@ -1,0 +1,433 @@
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+
+<!-- Encabezado -->
+    <div class="mb-6">
+
+        <!-- Título + volver -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+
+            <!-- Título -->
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                    Editar Trabajo
+                </h1>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Actualiza la información de este trabajo de tu portafolio
+                </p>
+            </div>
+
+
+            <!-- Volver -->
+            <a href="{% url 'agenda:mi_portafolio' %}"
+            class="inline-flex items-center justify-center gap-2
+                    px-4 py-2.5
+                    rounded-lg
+                    border border-gray-200 dark:border-gray-700
+                    bg-white dark:bg-darkCard
+                    text-sm font-medium
+                    text-gray-600 dark:text-gray-300
+                    hover:border-pink-300
+                    hover:bg-pink-50
+                    hover:text-pink-600
+                    dark:hover:bg-pink-950/30
+                    dark:hover:text-pink-400
+                    transition
+                    shadow-sm">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                <span>Volver a mi portafolio</span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Contenedor principal -->
+    <div class="bg-white dark:bg-darkCard
+                rounded-2xl
+                border border-gray-200 dark:border-gray-700
+                shadow-sm
+                overflow-hidden">
+
+        <!-- Cabecera decorativa -->
+        <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-pink-50 to-white dark:from-pink-950/30 dark:to-darkCard">
+
+            <div class="flex items-center gap-3 text-white">
+
+                <div class="w-11 h-11 rounded-xl bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+                    <i class="fa-solid fa-pen-to-square text-lg"></i>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-gray-900 dark:text-white">
+                        Editar trabajo del portafolio
+                    </h2>
+
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Modifica los detalles de tu trabajo.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- Formulario -->
+        <form method="POST"
+              enctype="multipart/form-data"
+              class="p-6">
+
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+
+                <!-- ========================= -->
+                <!-- IMAGEN -->
+                <!-- ========================= -->
+
+                <div>
+
+                    <label class="block text-sm font-semibold
+                                  text-gray-700 dark:text-gray-200 mb-3">
+                        Imagen del trabajo
+                    </label>
+
+                    <div class="relative">
+
+                        <!-- Vista previa -->
+                        <div id="preview-container"
+                             class="relative
+                                    w-full
+                                    aspect-square
+                                    rounded-2xl
+                                    overflow-hidden
+                                    border-2 border-dashed
+                                    border-pink-200 dark:border-pink-900/50
+                                    bg-pink-50 dark:bg-gray-800">
+
+                            {% if trabajo.imagen %}
+
+                                <img id="preview"
+                                     src="{{ trabajo.imagen.url }}"
+                                     alt="{{ trabajo.titulo }}"
+                                     class="w-full h-full object-cover">
+
+                            {% else %}
+
+                                <div id="preview-placeholder"
+                                     class="w-full h-full
+                                            flex flex-col
+                                            items-center
+                                            justify-center
+                                            text-gray-400">
+
+                                    <i class="fa-solid fa-image text-5xl mb-3"></i>
+
+                                    <p class="text-sm">
+                                        Selecciona una imagen
+                                    </p>
+
+                                </div>
+
+                            {% endif %}
+
+                            <!-- Botón cambiar imagen -->
+                            <label for="imagen"
+                                   class="absolute bottom-4 right-4
+                                          w-11 h-11
+                                          rounded-full
+                                          bg-pink-600 hover:bg-pink-700
+                                          text-white
+                                          flex items-center justify-center
+                                          shadow-lg
+                                          cursor-pointer
+                                          transition"
+                                   title="Cambiar imagen">
+
+                                <i class="fa-solid fa-camera"></i>
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Input -->
+                    <input type="file"
+                           id="imagen"
+                           name="imagen"
+                           accept="image/jpeg,image/png,image/webp"
+                           class="hidden">
+
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                        Puedes conservar la imagen actual o seleccionar una nueva.
+                    </p>
+
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        JPG, PNG o WEBP · Máximo 5 MB · Máximo 5000 × 5000 px
+                    </p>
+
+                </div>
+
+
+
+                <!-- ========================= -->
+                <!-- INFORMACIÓN -->
+                <!-- ========================= -->
+
+                <div class="space-y-5">
+
+                    <!-- Título -->
+                    <div>
+
+                        <label for="titulo"
+                               class="block text-sm font-semibold
+                                      text-gray-700 dark:text-gray-200 mb-2">
+                            Título del trabajo
+                            <span class="text-pink-600">*</span>
+                        </label>
+
+                        <input type="text"
+                               id="titulo"
+                               name="titulo"
+                               value="{{ trabajo.titulo }}"
+                               maxlength="100"
+                               required
+                               placeholder="Ej. Uñas acrílicas francesas"
+                               class="w-full px-4 py-3
+                                      rounded-xl
+                                      border border-gray-300 dark:border-gray-600
+                                      bg-white dark:bg-gray-800
+                                      text-gray-900 dark:text-white
+                                      placeholder-gray-400
+                                      focus:ring-2 focus:ring-pink-500
+                                      focus:border-pink-500
+                                      outline-none
+                                      transition">
+
+                    </div>
+
+
+                    <!-- Categoría -->
+                    <div>
+
+                        <label for="categoria"
+                               class="block text-sm font-semibold
+                                      text-gray-700 dark:text-gray-200 mb-2">
+                            Categoría
+                        </label>
+
+                        <input type="text"
+                               id="categoria"
+                               name="categoria"
+                               value="{{ trabajo.categoria|default:'' }}"
+                               maxlength="50"
+                               placeholder="Ej. Acrílicas, Nail Art, Semipermanente..."
+                               class="w-full px-4 py-3
+                                      rounded-xl
+                                      border border-gray-300 dark:border-gray-600
+                                      bg-white dark:bg-gray-800
+                                      text-gray-900 dark:text-white
+                                      placeholder-gray-400
+                                      focus:ring-2 focus:ring-pink-500
+                                      focus:border-pink-500
+                                      outline-none
+                                      transition">
+
+                    </div>
+
+
+                    <!-- Descripción -->
+                    <div>
+
+                        <label for="descripcion"
+                               class="block text-sm font-semibold
+                                      text-gray-700 dark:text-gray-200 mb-2">
+                            Descripción
+                        </label>
+
+                        <textarea id="descripcion"
+                                  name="descripcion"
+                                  rows="6"
+                                  placeholder="Cuéntale a tus clientes sobre este trabajo..."
+                                  class="w-full px-4 py-3
+                                         rounded-xl
+                                         border border-gray-300 dark:border-gray-600
+                                         bg-white dark:bg-gray-800
+                                         text-gray-900 dark:text-white
+                                         placeholder-gray-400
+                                         focus:ring-2 focus:ring-pink-500
+                                         focus:border-pink-500
+                                         outline-none
+                                         resize-none
+                                         transition">{{ trabajo.descripcion|default:'' }}</textarea>
+
+                    </div>
+
+
+                    <!-- Información -->
+                    <div class="flex items-start gap-3
+                                p-4 rounded-xl
+                                bg-pink-50 dark:bg-pink-900/10
+                                border border-pink-100 dark:border-pink-900/30">
+
+                        <i class="fa-solid fa-circle-info
+                                  text-pink-600 dark:text-pink-400 mt-0.5"></i>
+
+                        <p class="text-xs leading-5
+                                  text-gray-600 dark:text-gray-400">
+
+                            Los cambios se guardarán inmediatamente y
+                            el trabajo continuará disponible en tu portafolio.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================= -->
+            <!-- BOTONES -->
+            <!-- ========================= -->
+
+            <div class="flex flex-col sm:flex-row
+                        justify-end gap-3
+                        mt-8 pt-6
+                        border-t border-gray-200 dark:border-gray-700">
+
+                <a href="{% url 'agenda:mi_portafolio' %}"
+                   class="px-5 py-3
+                          rounded-xl
+                          border border-gray-300 dark:border-gray-600
+                          text-gray-700 dark:text-gray-200
+                          hover:bg-gray-50 dark:hover:bg-gray-800
+                          font-semibold text-sm
+                          flex items-center justify-center gap-2
+                          transition">
+
+                    <i class="fa-solid fa-xmark"></i>
+                    Cancelar
+
+                </a>
+
+
+                <button type="submit"
+                        class="px-5 py-3
+                               rounded-xl
+                               bg-pink-600 hover:bg-pink-700
+                               text-white
+                               font-semibold text-sm
+                               flex items-center justify-center gap-2
+                               shadow-sm
+                               transition">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Guardar cambios
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- VISTA PREVIA DE IMAGEN -->
+<!-- ========================= -->
+
+<script>
+
+const inputImagen = document.getElementById("imagen");
+const previewContainer = document.getElementById("preview-container");
+
+inputImagen.addEventListener("change", function () {
+
+    const archivo = this.files[0];
+
+    if (!archivo) {
+        return;
+    }
+
+    const tiposPermitidos = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (!tiposPermitidos.includes(archivo.type)) {
+
+        alert("Solo se permiten imágenes JPG, PNG o WEBP.");
+
+        this.value = "";
+
+        return;
+    }
+
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (archivo.size > maxSize) {
+
+        alert("La imagen no puede superar los 5 MB.");
+
+        this.value = "";
+
+        return;
+    }
+
+
+    const lector = new FileReader();
+
+    lector.onload = function (e) {
+
+        previewContainer.innerHTML = `
+            <img
+                id="preview"
+                src="${e.target.result}"
+                alt="Vista previa"
+                class="w-full h-full object-cover"
+            >
+
+            <label for="imagen"
+                   class="absolute bottom-4 right-4
+                          w-11 h-11
+                          rounded-full
+                          bg-pink-600 hover:bg-pink-700
+                          text-white
+                          flex items-center justify-center
+                          shadow-lg
+                          cursor-pointer
+                          transition"
+                   title="Cambiar imagen">
+
+                <i class="fa-solid fa-camera"></i>
+
+            </label>
+        `;
+    };
+
+    lector.readAsDataURL(archivo);
+
+});
+
+</script>
+
+{% endblock %}

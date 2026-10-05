@@ -8,6 +8,7 @@ from drf_spectacular.views import (
 from rest_framework.authtoken.views import obtain_auth_token
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     # Admin Django
@@ -22,6 +23,11 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    path('accounts/3rdparty/login/cancelled/', RedirectView.as_view(pattern_name='agenda:login', permanent=False)),
+
+    # Rutas de Autenticación Social (Google con django-allauth)
+    path('accounts/', include('allauth.urls')),
 
     # Rutas de la App (Vistas HTML + API del Router)
     # DEBE IR AL FINAL porque maneja path('')

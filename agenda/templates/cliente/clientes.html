@@ -12,10 +12,12 @@
         </div>
 
         <!-- Botón para registrar cliente -->
-        <a href="{% url 'agenda:crear_cliente' %}"
-            class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
-            <i class="fa-solid fa-plus"></i> Nuevo Cliente
-        </a>
+         {% if request.session.logueado.rol == "Administrador" %}
+            <a href="{% url 'agenda:crear_cliente' %}"
+                class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+                <i class="fa-solid fa-plus"></i> Nuevo Cliente
+            </a>
+        {% endif %}
    </div>
 
    <!-- Grid de Clientes -->

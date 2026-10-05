@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
-load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'drf_spectacular',
     'rest_framework',
     'rest_framework.authtoken', 
@@ -54,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF ='spa_deseo.urls'
@@ -131,8 +139,6 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'agenda:dashboard'
-LOGOUT_REDIRECT_URL = 'agenda:index'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -170,3 +176,32 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # El correo de Gmail del spa
 EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD')  # Una contraseña de aplicación de Gmail
 DEFAULT_FROM_EMAIL =  os.getenv('DEFAULT_FROM_EMAIL','Spa Deseo <spadeseo.oficial@gmail.com>')
+
+# Iniciar sesión con Google
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Redirecciones después de iniciar sesión o registrarse con Google
+LOGIN_REDIRECT_URL = 'agenda:dashboard'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'agenda:login'
+SOCIALACCOUNT_ADAPTER = 'agenda.adapter.MySocialAccountAdapter'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# Permite asociar la cuenta de Google automáticamente si el correo ya existe en el sistema
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'prompt': 'select_account',  # Obliga a Google a mostrar el selector siempre
+        }
+    }
+}

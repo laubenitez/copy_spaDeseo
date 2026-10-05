@@ -36,6 +36,11 @@
         }
     </script>
 
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'img/site.webmanifest' %}">
+
 </head>
 
 <body class="bg-gray-100 dark:bg-darkBg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
@@ -160,6 +165,25 @@
 
                         </li>
 
+                        <li>
+
+                            <a href="{% url 'agenda:manicuristas_cliente' %}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 transition font-medium
+                                {% if '/manicuristas/' in request.path %}
+                                    border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                                {% else %}
+                                    hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400
+                                {% endif %}">
+
+                                <i class="fa-solid fa-hand-sparkles"></i>
+
+                                <span>Manicuristas</span>
+
+                            </a>
+
+                        </li>
+
+
 
                         <!-- Mis reseñas -->
 
@@ -237,6 +261,24 @@
                                 <i class="fa-solid fa-users"></i>
 
                                 <span>Clientes</span>
+
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <a href="{% url 'agenda:mi_portafolio' %}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400 transition font-medium
+                                {% if '/mi_portafolio/' in request.path %}
+                                    border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                                {% else %}
+                                    hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400
+                                {% endif %}">
+
+                                <i class="fa-solid fa-palette"></i>
+
+                                <span>Mi portafolio</span>
 
                             </a>
 
@@ -716,16 +758,10 @@
         function renderCalendar() {
 
             const year = currentDate.getFullYear();
-
             const month = currentDate.getMonth();
-
-
             const firstDayIndex = new Date(year, month, 1).getDay();
-
             const lastDay = new Date(year, month + 1, 0).getDate();
-
             const prevLastDay = new Date(year, month, 0).getDate();
-
 
             monthYearDisplay.innerText = `${meses[month]} ${year}`;
 
@@ -733,33 +769,20 @@
 
 
             // Rellenar días apagados mes anterior
-
             for (let i = firstDayIndex; i > 0; i--) {
-
                 daysHTML += `<div class="p-3 text-gray-300 dark:text-gray-600 select-none">${prevLastDay - i + 1}</div>`;
-
             }
 
 
             // Rellenar días mes actual
-
             const today = new Date();
-
             for (let day = 1; day <= lastDay; day++) {
-
                 const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-
-
                 if (isToday) {
-
                     daysHTML += `<div class="p-3 bg-pink-600 text-white font-bold rounded-lg cursor-pointer shadow-sm">${day}</div>`;
-
                 } else {
-
                     daysHTML += `<div class="p-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer transition">${day}</div>`;
-
                 }
-
             }
 
 

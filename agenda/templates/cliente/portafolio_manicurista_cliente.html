@@ -1,0 +1,353 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto">
+
+
+<!-- Encabezado -->
+<div class="mb-8">
+
+
+
+
+    <!-- Información de la manicurista -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+
+        <!-- Foto -->
+        <div class="flex-shrink-0">
+
+            {% if manicurista.foto_perfil %}
+
+                <img
+                    src="{{ manicurista.foto_perfil.url }}"
+                    alt="Foto de {{ manicurista.nombre }} {{ manicurista.apellido }}"
+                    class="w-24 h-24 rounded-full object-cover border-4 border-pink-100 dark:border-pink-950/40 shadow-sm"
+                    draggable="false">
+
+            {% else %}
+
+                <div class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
+
+                    <span class="text-2xl font-bold text-pink-600 dark:text-pink-400">
+                        {{ manicurista.nombre|slice:":1"|upper }}{{ manicurista.apellido|slice:":1"|upper }}
+                    </span>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- Datos -->
+        <div>
+
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Portafolio de {{ manicurista.nombre }} {{ manicurista.apellido }}
+            </h1>
+
+            {% if manicurista.especialidad %}
+
+                <p class="text-sm text-pink-600 dark:text-pink-400 font-medium mt-1">
+                    {{ manicurista.especialidad }}
+                </p>
+
+            {% endif %}
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                Descubre algunos de sus trabajos y diseños.
+            </p>
+
+        </div>
+
+        <!-- Botón volver -->
+        <div class="flex-shrink-0 sm:ml-auto sm:self-center">
+
+            <a
+                href="{% url 'agenda:manicuristas_cliente' %}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 text-sm font-semibold transition">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Volver a manicuristas
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Portafolio -->
+{% if trabajos %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for trabajo in trabajos %}
+
+            <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm hover:shadow-lg transition duration-300">
+
+                <!-- Imagen -->
+                <div
+                    class="relative h-72 bg-pink-50 dark:bg-pink-950/20 cursor-pointer group js-open-image"
+                    data-image="{{ trabajo.imagen.url }}"
+                    data-title="{{ trabajo.titulo }}">
+
+                    <img
+                        src="{{ trabajo.imagen.url }}"
+                        alt="{{ trabajo.titulo }}"
+                        class="w-full h-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                        draggable="false">
+
+                    <!-- Indicador de ampliar -->
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition duration-300">
+
+                        <div class="w-11 h-11 rounded-full bg-white/90 dark:bg-gray-900/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300 shadow-lg">
+
+                            <i class="fa-solid fa-expand text-gray-700 dark:text-gray-200"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Información -->
+                <div class="p-5">
+
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                        {{ trabajo.titulo }}
+                    </h2>
+
+
+                    {% if trabajo.categoria %}
+
+                        <p class="text-sm text-pink-600 dark:text-pink-400 font-medium mt-1">
+                            {{ trabajo.categoria }}
+                        </p>
+
+                    {% endif %}
+
+
+                    {% if trabajo.descripcion %}
+
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-3 leading-relaxed">
+                            {{ trabajo.descripcion }}
+                        </p>
+
+                    {% endif %}
+
+
+                    <div class="flex items-center gap-2 mt-4 text-xs text-gray-400 dark:text-gray-500">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        <span>
+                            {{ trabajo.fecha_publicacion|date:"d/m/Y" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <!-- Estado vacío -->
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 p-10 text-center">
+
+        <div class="w-16 h-16 mx-auto rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center mb-4">
+
+            <i class="fa-regular fa-images text-pink-600 dark:text-pink-400 text-2xl"></i>
+
+        </div>
+
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+            Portafolio en construcción
+        </h2>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">
+            Esta manicurista todavía no tiene trabajos publicados en su portafolio.
+        </p>
+
+        <a
+            href="{% url 'agenda:manicuristas_cliente' %}"
+            class="inline-flex items-center justify-center gap-2 mt-6 px-4 py-2.5 rounded-lg bg-pink-600 text-white text-sm font-semibold hover:bg-pink-700 transition shadow-sm">
+
+            <i class="fa-solid fa-arrow-left"></i>
+
+            Ver manicuristas
+
+        </a>
+
+    </div>
+
+{% endif %}
+```
+
+</div>
+
+<!-- ========================================================= -->
+
+<!-- MODAL PARA VER IMAGEN -->
+
+<!-- ========================================================= -->
+
+<div
+    id="modalImagenPortafolio"
+    class="fixed inset-0 hidden items-center justify-center bg-gray-950/80 backdrop-blur-sm z-[9999] px-4 py-6">
+
+```
+<!-- Botón cerrar -->
+<button
+    type="button"
+    id="cerrarModalImagen"
+    class="absolute top-5 right-5 z-10 w-11 h-11 rounded-full bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 flex items-center justify-center shadow-lg transition"
+    aria-label="Cerrar imagen">
+
+    <i class="fa-solid fa-xmark text-lg"></i>
+
+</button>
+
+
+<!-- Imagen ampliada -->
+<div
+    id="contenidoModalImagen"
+    class="relative max-w-6xl max-h-full flex items-center justify-center">
+
+    <img
+        id="imagenAmpliada"
+        src=""
+        alt=""
+        class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+        draggable="false">
+
+</div>
+```
+
+</div>
+
+<!-- ========================================================= -->
+
+<!-- JAVASCRIPT -->
+
+<!-- ========================================================= -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("modalImagenPortafolio");
+    const imagenAmpliada = document.getElementById("imagenAmpliada");
+    const cerrarModal = document.getElementById("cerrarModalImagen");
+    const contenidoModal = document.getElementById("contenidoModalImagen");
+
+    if (!modal || !imagenAmpliada || !cerrarModal) {
+        return;
+    }
+
+
+    /*
+     * Movemos el modal directamente al body.
+     * Esto evita problemas con el overflow del dashboard.
+     */
+    document.body.appendChild(modal);
+
+
+    function abrirImagen(url, titulo) {
+
+        imagenAmpliada.src = url;
+        imagenAmpliada.alt = titulo || "Trabajo del portafolio";
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+
+        document.body.classList.add("overflow-hidden");
+    }
+
+
+    function cerrarImagen() {
+
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+
+        imagenAmpliada.src = "";
+        imagenAmpliada.alt = "";
+
+        document.body.classList.remove("overflow-hidden");
+    }
+
+
+    /*
+     * Abrir imagen al hacer clic.
+     */
+    document.querySelectorAll(".js-open-image").forEach(function (element) {
+
+        element.addEventListener("click", function () {
+
+            const url = this.dataset.image;
+            const titulo = this.dataset.title;
+
+            if (url) {
+                abrirImagen(url, titulo);
+            }
+
+        });
+
+    });
+
+
+    /*
+     * Cerrar con X.
+     */
+    cerrarModal.addEventListener("click", cerrarImagen);
+
+
+    /*
+     * Cerrar haciendo clic fuera de la imagen.
+     */
+    modal.addEventListener("click", function (event) {
+
+        if (event.target === modal) {
+            cerrarImagen();
+        }
+
+    });
+
+
+    /*
+     * Evita que el clic sobre la imagen cierre el modal.
+     */
+    contenidoModal.addEventListener("click", function (event) {
+
+        event.stopPropagation();
+
+    });
+
+
+    /*
+     * Cerrar presionando Escape.
+     */
+    document.addEventListener("keydown", function (event) {
+
+        if (
+            event.key === "Escape" &&
+            !modal.classList.contains("hidden")
+        ) {
+            cerrarImagen();
+        }
+
+    });
+
+});
+</script>
+
+{% endblock %}

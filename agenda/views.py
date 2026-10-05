@@ -26,10 +26,12 @@ from rest_framework.decorators import action
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from drf_spectacular.utils import extend_schema
+from django.core.exceptions import ValidationError
+from django.db.models import Prefetch
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte, PortafolioManicurista,
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -397,115 +399,210 @@ def citas_asignadas(request):
 
 
 @login_required(login_url="agenda:login")
-@requiere_rol("CLIENTE", "MANICURISTA","ADMINISTRADOR")
+@requiere_rol("CLIENTE", "MANICURISTA", "ADMINISTRADOR")
 @transaction.atomic
 def editar_perfil(request):
     """
-    Edición de perfil unificada para Cliente y Manicurista.
+    Edición de perfil unificada para Cliente, Manicurista y Administrador.
     """
+
     usuario = request.user
-    
+
     try:
-        rol = usuario.perfil.rol.nombre.upper()
+        rol = usuario.perfil.rol.nombre.strip().upper()
     except (AttributeError, PerfilUsuario.DoesNotExist):
-        messages.error(request, "Error de autenticación: El usuario no posee un rol válido.")
+        messages.error(
+            request,
+            "Error de autenticación: El usuario no posee un rol válido."
+        )
         return redirect("agenda:login")
 
-    # 1. Obtener perfil según el rol
+    # =========================================================
+    # 1. OBTENER PERFIL SEGÚN EL ROL
+    # =========================================================
+
     if rol == "CLIENTE":
         perfil = get_object_or_404(Clientes, user=usuario)
+
     elif rol == "MANICURISTA":
         perfil = get_object_or_404(Manicurista, user=usuario)
-    
+
     elif rol == "ADMINISTRADOR":
         perfil = get_object_or_404(Administrador, user=usuario)
+
     else:
-        messages.error(request, "No tienes permisos para editar este perfil.")
+        messages.error(
+            request,
+            "No tienes permisos para editar este perfil."
+        )
         return redirect("agenda:dashboard")
 
+    # =========================================================
+    # 2. GUARDAR CAMBIOS
+    # =========================================================
+
     if request.method == "POST":
+
         nuevo_email = request.POST.get("email", "").strip()
         nuevo_nombre = request.POST.get("nombre", "").strip()
         nuevo_apellido = request.POST.get("apellido", "").strip()
         nuevo_telefono = request.POST.get("telefono", "").strip()
 
-        # 2. Control de Seguridad: Validar unicidad de Email
-        if nuevo_email and nuevo_email.lower() != usuario.email.lower():
-            if User.objects.filter(email__iexact=nuevo_email).exclude(pk=usuario.pk).exists():
-                messages.error(request, "El correo electrónico ingresado ya está registrado por otro usuario.")
-                return redirect("agenda:editar_perfil")
+        # =====================================================
+        # VALIDACIONES BÁSICAS
+        # =====================================================
 
-        # 3. Control de Seguridad: Manejo de Foto (Eliminar o Actualizar)
+        if not nuevo_nombre:
+            messages.error(request, "El nombre es obligatorio.")
+            return redirect("agenda:editar_perfil")
+
+        if not nuevo_apellido:
+            messages.error(request, "El apellido es obligatorio.")
+            return redirect("agenda:editar_perfil")
+
+        if not nuevo_email:
+            messages.error(request, "El correo electrónico es obligatorio.")
+            return redirect("agenda:editar_perfil")
+
+        if not nuevo_telefono:
+            messages.error(request, "El teléfono es obligatorio.")
+            return redirect("agenda:editar_perfil")
+
+        # =====================================================
+        # 3. VALIDAR QUE EL CORREO NO PERTENEZCA A OTRO USER
+        # =====================================================
+
+        correo_en_uso = (
+            User.objects
+            .filter(email__iexact=nuevo_email)
+            .exclude(pk=usuario.pk)
+            .exists()
+        )
+
+        if correo_en_uso:
+            messages.error(
+                request,
+                "El correo electrónico ingresado ya está registrado por otro usuario."
+            )
+            return redirect("agenda:editar_perfil")
+
+        # =====================================================
+        # 4. MANEJO DE FOTO
+        # =====================================================
+
         eliminar_foto = request.POST.get("eliminar_foto") == "true"
         foto = request.FILES.get("foto_perfil")
 
         if eliminar_foto:
+
             if perfil.foto_perfil:
                 perfil.foto_perfil.delete(save=False)
+
             perfil.foto_perfil = None
+
         elif foto:
+
             ext = os.path.splitext(foto.name)[1].lower()
-            if ext not in ['.jpg', '.jpeg', '.png', '.webp']:
-                messages.error(request, "Formato de imagen no permitido. Usa JPG, PNG o WEBP.")
+
+            if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+                messages.error(
+                    request,
+                    "Formato de imagen no permitido. Usa JPG, PNG o WEBP."
+                )
                 return redirect("agenda:editar_perfil")
-            
+
             if perfil.foto_perfil:
                 perfil.foto_perfil.delete(save=False)
+
             perfil.foto_perfil = foto
 
-        # 4. Actualización en lote (Consistencia en DB)
+        # =====================================================
+        # 5. ACTUALIZAR PERFIL
+        # =====================================================
+
         try:
+
             perfil.nombre = nuevo_nombre
             perfil.apellido = nuevo_apellido
             perfil.telefono = nuevo_telefono
             perfil.email = nuevo_email
             perfil.save()
 
+            # =================================================
+            # 6. ACTUALIZAR USUARIO DE DJANGO
+            # =================================================
+
             usuario.first_name = nuevo_nombre
             usuario.last_name = nuevo_apellido
             usuario.email = nuevo_email
-            usuario.username = nuevo_email 
-            usuario.save()
 
-            # Actualizar la sesión para que el header refleje los cambios al instante
-            if 'logueado' in request.session:
-                request.session['logueado']['nombre'] = nuevo_nombre
-                request.session['logueado']['apellido'] = nuevo_apellido
+            # IMPORTANTE:
+            # No modificar usuario.username aquí.
+            usuario.save(
+                update_fields=[
+                    "first_name",
+                    "last_name",
+                    "email"
+                ]
+            )
+
+            # =================================================
+            # 7. ACTUALIZAR SESIÓN
+            # =================================================
+
+            if "logueado" in request.session:
+
+                request.session["logueado"]["nombre"] = nuevo_nombre
+                request.session["logueado"]["apellido"] = nuevo_apellido
+                request.session["logueado"]["email"] = nuevo_email
+                request.session["logueado"]["rol"] = rol.capitalize()
+
                 request.session.modified = True
 
-            messages.success(request, "Perfil actualizado correctamente.")
+            messages.success(
+                request,
+                "Perfil actualizado correctamente."
+            )
+
             return redirect("agenda:editar_perfil")
 
         except IntegrityError:
-            messages.error(request, "Error al guardar los datos. Intenta nuevamente.")
+
+            messages.error(
+                request,
+                "Error al guardar los datos. Intenta nuevamente."
+            )
+
             return redirect("agenda:editar_perfil")
 
-    # >>> ESTO ES LO QUE FALTABA O FALLABA EN LAS PETICIONES GET <<<
+    # =========================================================
+    # 8. CONTEXTO PARA EL TEMPLATE
+    # =========================================================
+
     contexto = {
         "usuario": usuario,
         "perfil": perfil,
         "rol": rol,
     }
 
-    return render(request, "cliente/editar_perfil.html", contexto)
+    return render(
+        request,
+        "cliente/editar_perfil.html",
+        contexto
+    )
+
+
 
 
 
 
 def login(request):
-    # Si el usuario ya está logueado, lo mandamos al dashboard
+    # Si ya está autenticado
     if request.user.is_authenticated:
         return redirect("agenda:dashboard")
 
     if request.method == "POST":
 
-        # Verificar términos y condiciones
-        if not request.POST.get("terminos"):
-            messages.error(request, "Debes aceptar los términos y condiciones.")
-            return redirect("agenda:login")
-
-
-        # El formulario envía el correo en el campo "user"
         correo = request.POST.get("user", "").strip()
         clave = request.POST.get("password", "")
 
@@ -516,9 +613,15 @@ def login(request):
             )
             return redirect("agenda:login")
 
-        # Buscar el usuario por correo
+        # =====================================================
+        # BUSCAR USUARIO POR CORREO
+        # =====================================================
+
         try:
-            usuario = User.objects.get(email__iexact=correo)
+            usuario = User.objects.get(
+                email__iexact=correo
+            )
+
         except User.DoesNotExist:
             messages.error(
                 request,
@@ -526,7 +629,10 @@ def login(request):
             )
             return redirect("agenda:login")
 
-        # Autenticar utilizando el username real de Django
+        # =====================================================
+        # AUTENTICAR
+        # =====================================================
+
         user = authenticate(
             request,
             username=usuario.username,
@@ -540,7 +646,10 @@ def login(request):
             )
             return redirect("agenda:login")
 
-        # Verificar si la cuenta está activa
+        # =====================================================
+        # VERIFICAR CUENTA
+        # =====================================================
+
         if not user.is_active:
             messages.error(
                 request,
@@ -548,17 +657,27 @@ def login(request):
             )
             return redirect("agenda:login")
 
-        # Verificar que tenga perfil
+        # =====================================================
+        # PERFIL
+        # =====================================================
+
         try:
             perfil = user.perfil
-        except (AttributeError, PerfilUsuario.DoesNotExist):
+
+        except (
+            AttributeError,
+            PerfilUsuario.DoesNotExist
+        ):
             messages.error(
                 request,
                 "El usuario no tiene un perfil asignado."
             )
             return redirect("agenda:login")
 
-        # Verificar que tenga rol
+        # =====================================================
+        # ROL
+        # =====================================================
+
         if not perfil.rol:
             messages.error(
                 request,
@@ -566,25 +685,65 @@ def login(request):
             )
             return redirect("agenda:login")
 
-        rol = perfil.rol.nombre.capitalize()
+        rol = perfil.rol.nombre.strip().upper()
 
-        # Iniciar sesión con Django
+        # =====================================================
+        # INICIAR SESIÓN DJANGO
+        # =====================================================
+
         auth_login(request, user)
 
-        # Crear sesión compatible con el sistema anterior
+        # =====================================================
+        # CLIENTE
+        # =====================================================
+
+        cliente = None
+
+        if rol == "CLIENTE":
+
+            try:
+                cliente = Clientes.objects.get(
+                    user=user
+                )
+            except Clientes.DoesNotExist:
+                cliente = None
+
+        # =====================================================
+        # FOTO
+        # =====================================================
+
+        foto = ""
+
+        if cliente and cliente.foto_perfil:
+            foto = cliente.foto_perfil.url
+
+        # =====================================================
+        # SESIÓN UNIFICADA
+        # =====================================================
+
         request.session["logueado"] = {
             "id": user.id,
             "nombre": user.first_name or user.username,
             "apellido": user.last_name or "",
-            "rol": rol,
-            "email": user.email,
+            "nombre_completo": (
+                user.get_full_name()
+                or user.username
+            ),
+            "rol": rol.capitalize(),
+            "email": user.email or "",
+            "foto": foto,
         }
 
         request.session.modified = True
 
         return redirect("agenda:dashboard")
 
-    return render(request, "login.html")
+    return render(
+        request,
+        "login.html"
+    )
+
+
 
 
 @transaction.atomic
@@ -595,6 +754,17 @@ def register(request):
         return redirect("agenda:dashboard")
 
     if request.method == "POST":
+
+        # Verificar términos y condiciones
+        if not request.POST.get("terminos"):
+            messages.error(request, "Debes aceptar los términos y condiciones.")
+            # Pasamos los datos actuales para repoblar el formulario
+            return render(request, "register.html", {
+                "nombre": request.POST.get("nombre", ""),
+                "apellido": request.POST.get("apellido", ""),
+                "email": request.POST.get("email", ""),
+                "telefono": request.POST.get("telefono", ""),
+            })
 
         password = request.POST.get("password")
         email = request.POST.get("email", "").strip()
@@ -680,59 +850,284 @@ def register(request):
 
 
 @login_required(login_url="agenda:login")
-@requiere_rol("CLIENTE", "MANICURISTA", "ADMINISTRADOR")
 def dashboard(request):
 
-    try:
-        rol = request.user.perfil.rol.nombre.upper()
-    except (AttributeError, PerfilUsuario.DoesNotExist):
-        messages.error(request, "Tu usuario no tiene un rol asignado.")
-        return redirect("agenda:login")
+    # =========================================================
+    # 1. OBTENER O CREAR EL PERFIL DEL USUARIO
+    # =========================================================
 
-    citas = Citas.objects.none()
-    cliente_id_logueado = None
+    perfil_usuario, _ = PerfilUsuario.objects.get_or_create(
+        user=request.user
+    )
+
+    # =========================================================
+    # 2. SI NO TIENE ROL, SE ASIGNA CLIENTE
+    #    Esto permite que los usuarios de Google entren
+    #    automáticamente como CLIENTE.
+    # =========================================================
+
+    if not perfil_usuario.rol:
+        rol_cliente, _ = Rol.objects.get_or_create(
+            nombre="CLIENTE",
+            defaults={
+                "descripcion": "Cliente registrado en el sistema"
+            }
+        )
+
+        perfil_usuario.rol = rol_cliente
+        perfil_usuario.save(update_fields=["rol"])
+
+    rol = perfil_usuario.rol.nombre.strip().upper()
+
+    # Variables generales
+    cliente = None
     manicurista_logueada = None
+    citas = []
+    servicios_disponibles = []
+    manicuristas_disponibles = []
 
-    # 1. Filtro dinámico de Citas según el Rol del usuario logueado
+    # =========================================================
+    # 3. CLIENTE
+    # =========================================================
+
     if rol == "CLIENTE":
-        try:
-            cliente = Clientes.objects.get(user=request.user)
-            cliente_id_logueado = cliente.id
-            citas = Citas.objects.filter(
-                cliente=cliente
-            ).select_related('manicurista', 'servicios').order_by('-fecha', '-hora')[:5]
-        except Clientes.DoesNotExist:
-            messages.error(request, "No existe información de cliente asociada a tu usuario.")
-            return redirect("agenda:login")
+
+        cliente, creado = Clientes.objects.get_or_create(
+            user=request.user,
+            defaults={
+                "nombre": request.user.first_name or request.user.username,
+                "apellido": request.user.last_name or "",
+                "email": request.user.email or "",
+                "telefono": "Por registrar",
+                "password": ""
+            }
+        )
+
+        # -----------------------------------------------------
+        # Sincronizar datos provenientes de Google/Django
+        # -----------------------------------------------------
+
+        cambios = []
+
+        nombre_google = request.user.first_name or request.user.username
+        apellido_google = request.user.last_name or ""
+        email_google = request.user.email or ""
+
+        if nombre_google and cliente.nombre != nombre_google:
+            cliente.nombre = nombre_google
+            cambios.append("nombre")
+
+        if cliente.apellido != apellido_google:
+            cliente.apellido = apellido_google
+            cambios.append("apellido")
+
+        if email_google and cliente.email != email_google:
+            cliente.email = email_google
+            cambios.append("email")
+
+        if cambios:
+            cliente.save(update_fields=cambios)
+
+        # -----------------------------------------------------
+        # Citas del cliente
+        # -----------------------------------------------------
+
+        citas = Citas.objects.filter(
+            cliente=cliente
+        ).select_related(
+            "manicurista",
+            "servicios"
+        ).order_by(
+            "-fecha",
+            "-hora"
+        )[:5]
+
+        # -----------------------------------------------------
+        # Datos para la sesión
+        # -----------------------------------------------------
+
+        foto = ""
+
+        if cliente.foto_perfil:
+            foto = cliente.foto_perfil.url
+
+        request.session["logueado"] = {
+            "id": request.user.id,
+            "nombre": cliente.nombre,
+            "apellido": cliente.apellido,
+            "nombre_completo": f"{cliente.nombre} {cliente.apellido}".strip(),
+            "email": cliente.email,
+            "rol": rol.capitalize(),
+            "foto": foto,
+        }
+
+        request.session.modified = True
+
+        # -----------------------------------------------------
+        # Si todavía no tiene teléfono
+        # -----------------------------------------------------
+
+        if not cliente.telefono or cliente.telefono == "Por registrar":
+
+            messages.warning(
+                request,
+                "Por favor, completa tu número de teléfono para continuar."
+            )
+
+            return redirect("agenda:editar_perfil")
+
+        contexto = {
+            "rol": rol,
+            "cliente": cliente,
+            "perfil": perfil_usuario,
+            "citas": citas,
+            "usuario": request.user,
+        }
+
+        return render(
+            request,
+            "dashboard_copy.html",
+            contexto
+        )
+
+    # =========================================================
+    # 4. MANICURISTA
+    # =========================================================
 
     elif rol == "MANICURISTA":
+
         try:
-            manicurista_logueada = Manicurista.objects.get(user=request.user)
-            citas = Citas.objects.filter(
-                manicurista=manicurista_logueada
-            ).select_related('cliente', 'servicios').order_by('-fecha', '-hora')[:5]
+
+            manicurista_logueada = Manicurista.objects.get(
+                user=request.user
+            )
+
         except Manicurista.DoesNotExist:
-            messages.error(request, "No existe información de manicurista asociada a tu usuario.")
+
+            messages.error(
+                request,
+                "No existe información de manicurista asociada a tu usuario."
+            )
+
             return redirect("agenda:login")
 
+        citas = Citas.objects.filter(
+            manicurista=manicurista_logueada
+        ).select_related(
+            "cliente",
+            "servicios"
+        ).order_by(
+            "-fecha",
+            "-hora"
+        )[:5]
+
+        foto = ""
+
+        if hasattr(manicurista_logueada, "foto_perfil") and manicurista_logueada.foto_perfil:
+            foto = manicurista_logueada.foto_perfil.url
+
+        request.session["logueado"] = {
+            "id": request.user.id,
+            "nombre": request.user.first_name or request.user.username,
+            "apellido": request.user.last_name or "",
+            "email": request.user.email or "",
+            "rol": rol.capitalize(),
+            "foto": foto,
+        }
+
+        request.session.modified = True
+
+        contexto = {
+            "rol": rol,
+            "perfil": perfil_usuario,
+            "citas": citas,
+            "manicurista": manicurista_logueada,
+            "usuario": request.user,
+        }
+
+        return render(
+            request,
+            "dashboard_copy.html",
+            contexto
+        )
+
+    # =========================================================
+    # 5. ADMINISTRADOR
+    # =========================================================
+
     elif rol == "ADMINISTRADOR":
-        # El administrador puede visualizar el panorama general de citas recientes
-        citas = Citas.objects.select_related('cliente', 'manicurista', 'servicios').order_by('-fecha', '-hora')[:10]
 
-    # 2. Catálogos globales de apoyo
-    servicios_disponibles = Servicios.objects.filter(estado="Activo")[:6]
-    manicuristas_disponibles = Manicurista.objects.filter(estado="Activa")[:6]
+        citas = Citas.objects.select_related(
+            "cliente",
+            "manicurista",
+            "servicios"
+        ).order_by(
+            "-fecha",
+            "-hora"
+        )[:10]
 
-    contexto = {
-        "usuario": request.user.get_full_name() or request.user.username,
-        "rol": rol,
-        "citas": citas,
-        "servicios": servicios_disponibles,
-        "manicuristas": manicuristas_disponibles,
-        "cliente_id_logueado": cliente_id_logueado,
+        servicios_disponibles = Servicios.objects.filter(
+            estado="Activo"
+        )[:6]
+
+        manicuristas_disponibles = Manicurista.objects.filter(
+            estado="Activa"
+        )[:6]
+
+        request.session["logueado"] = {
+            "id": request.user.id,
+            "nombre": request.user.first_name or request.user.username,
+            "apellido": request.user.last_name or "",
+            "nombre_completo": request.user.get_full_name() or request.user.username,
+            "email": request.user.email or "",
+            "rol": rol.capitalize(),
+        }
+
+        request.session.modified = True
+
+        contexto = {
+            "usuario": request.user.get_full_name() or request.user.username,
+            "rol": rol,
+            "perfil": perfil_usuario,
+            "citas": citas,
+            "servicios": servicios_disponibles,
+            "manicuristas": manicuristas_disponibles,
+            "cliente_id_logueado": None,
+        }
+
+        return render(
+            request,
+            "dashboard_copy.html",
+            contexto
+        )
+
+    # =========================================================
+    # 6. RESPALDO
+    # =========================================================
+
+    request.session["logueado"] = {
+        "id": request.user.id,
+        "nombre": request.user.first_name or request.user.username,
+        "apellido": request.user.last_name or "",
+        "email": request.user.email or "",
+        "rol": rol.capitalize(),
     }
 
-    return render(request, "dashboard_copy.html", contexto)
+    request.session.modified = True
+
+    contexto = {
+        "rol": rol,
+        "cliente": cliente,
+        "perfil": perfil_usuario,
+        "citas": citas,
+        "usuario": request.user,
+    }
+
+    return render(
+        request,
+        "dashboard_copy.html",
+        contexto
+    )
 
 
 @login_required(login_url="agenda:login")
@@ -1471,6 +1866,86 @@ def ver_manicuristas(request):
         )
         return redirect("agenda:dashboard")
 
+# CATÁLOGO DE MANICURISTAS PARA CLIENTES
+@login_required(login_url="agenda:login")
+@requiere_rol("CLIENTE")
+def manicuristas_cliente(request):
+    try:
+        manicuristas = (
+            Manicurista.objects
+            .filter(estado="Activa")
+            .select_related("user")
+            .prefetch_related(
+                Prefetch(
+                    "portafolio",
+                    queryset=PortafolioManicurista.objects.filter(visible=True)
+                )
+            )
+        )
+
+        contexto = {
+            "manicuristas": manicuristas,
+        }
+
+        return render(
+            request,
+            "cliente/manicuristas.html",
+            contexto
+        )
+
+    except Exception as e:
+        print(
+            f"--- ERROR EXACTO EN MANICURISTAS_CLIENTE: "
+            f"{type(e).__name__} -> {e} ---"
+        )
+
+        messages.error(
+            request,
+            "Ocurrió un error al cargar las manicuristas."
+        )
+
+        return redirect("agenda:dashboard")
+
+@login_required(login_url="agenda:login")
+@requiere_rol("CLIENTE")
+def portafolio_manicurista_cliente(request, manicurista_id):
+
+    try:
+        manicurista = get_object_or_404(
+            Manicurista,
+            id=manicurista_id,
+            estado="Activa"
+        )
+
+        trabajos = PortafolioManicurista.objects.filter(
+            manicurista=manicurista,
+            visible=True
+        ).order_by("-fecha_publicacion")
+
+        contexto = {
+            "manicurista": manicurista,
+            "trabajos": trabajos,
+        }
+
+        return render(
+            request,
+            "cliente/portafolio_manicurista_cliente.html",
+            contexto
+        )
+
+    except Exception as e:
+        print(
+            f"--- ERROR EXACTO EN PORTAFOLIO_MANICURISTA_CLIENTE: "
+            f"{type(e).__name__} -> {e} ---"
+        )
+
+        messages.error(
+            request,
+            "Ocurrió un error al cargar el portafolio."
+        )
+
+        return redirect("agenda:manicuristas_cliente")
+
 
 # 2. CREAR MANICURISTA
 @login_required(login_url="agenda:login")
@@ -1822,7 +2297,277 @@ def registrar_pago_cita(request, cita_id):
 
     return redirect('agenda:citas_asignadas')
 
+# ---------PORTAFOLIO MANICURISTA ----------------
+@login_required(login_url="agenda:login")
+@requiere_rol("MANICURISTA")
+def mi_portafolio(request):
+    try:
+        manicurista = get_object_or_404(
+            Manicurista,
+            user=request.user
+        )
 
+        trabajos = PortafolioManicurista.objects.filter(
+            manicurista=manicurista
+        ).order_by("-fecha_publicacion")
+
+        contexto = {
+            "manicurista": manicurista,
+            "trabajos": trabajos,
+        }
+
+        return render(
+            request,
+            "manicurista/mi_portafolio.html",
+            contexto
+        )
+
+    except Exception:
+        messages.error(
+            request,
+            "Ocurrió un error al cargar tu portafolio."
+        )
+        return redirect("agenda:dashboard")
+
+@login_required(login_url="agenda:login")
+@requiere_rol("MANICURISTA")
+@require_http_methods(["GET", "POST"])
+def agregar_trabajo_portafolio(request):
+
+    manicurista = get_object_or_404(
+        Manicurista,
+        user=request.user
+    )
+
+    if request.method == "POST":
+        try:
+            titulo = request.POST.get("titulo", "").strip()
+            descripcion = request.POST.get("descripcion", "").strip()
+            categoria = request.POST.get("categoria", "").strip()
+            imagen = request.FILES.get("imagen")
+
+            if not titulo:
+                messages.error(
+                    request,
+                    "El título del trabajo es obligatorio."
+                )
+                return redirect(
+                    "agenda:agregar_trabajo_portafolio"
+                )
+
+            if not imagen:
+                messages.error(
+                    request,
+                    "Debes seleccionar una imagen."
+                )
+                return redirect(
+                    "agenda:agregar_trabajo_portafolio"
+                )
+
+            trabajo = PortafolioManicurista(
+                manicurista=manicurista,
+                titulo=titulo,
+                descripcion=descripcion,
+                categoria=categoria,
+                imagen=imagen,
+                visible=True
+            )
+
+            trabajo.full_clean()
+            trabajo.save()
+
+            messages.success(
+                request,
+                "El trabajo se agregó correctamente."
+            )
+
+            return redirect(
+                "agenda:mi_portafolio"
+            )
+
+        except ValidationError as e:
+
+            messages.error(
+                request,
+                e.messages[0]
+            )
+
+            return redirect(
+                "agenda:agregar_trabajo_portafolio"
+            )
+
+        except Exception:
+
+            messages.error(
+                request,
+                "Ocurrió un error al guardar el trabajo."
+            )
+
+            return redirect(
+                "agenda:agregar_trabajo_portafolio"
+            )
+
+    return render(
+        request,
+        "manicurista/agregar_trabajo_portafolio.html",
+        {
+            "manicurista": manicurista
+        }
+    )
+
+@login_required(login_url="agenda:login")
+@requiere_rol("MANICURISTA")
+@require_http_methods(["POST"])
+def cambiar_visibilidad_portafolio(request, id):
+
+    manicurista = get_object_or_404(
+        Manicurista,
+        user=request.user
+    )
+
+    trabajo = get_object_or_404(
+        PortafolioManicurista,
+        id=id,
+        manicurista=manicurista
+    )
+
+    try:
+        trabajo.visible = not trabajo.visible
+        trabajo.save(update_fields=["visible"])
+
+        if trabajo.visible:
+            messages.success(
+                request,
+                "El trabajo ahora es visible para los clientes."
+            )
+        else:
+            messages.success(
+                request,
+                "El trabajo se ocultó para los clientes."
+            )
+
+    except Exception:
+        messages.error(
+            request,
+            "No fue posible cambiar la visibilidad del trabajo."
+        )
+
+    return redirect("agenda:mi_portafolio")
+
+@login_required(login_url="agenda:login")
+@requiere_rol("MANICURISTA")
+@require_http_methods(["GET", "POST"])
+def editar_trabajo_portafolio(request, id):
+
+    manicurista = get_object_or_404(
+        Manicurista,
+        user=request.user
+    )
+
+    trabajo = get_object_or_404(
+        PortafolioManicurista,
+        id=id,
+        manicurista=manicurista
+    )
+
+    if request.method == "POST":
+        try:
+            titulo = request.POST.get("titulo", "").strip()
+            descripcion = request.POST.get("descripcion", "").strip()
+            categoria = request.POST.get("categoria", "").strip()
+            imagen = request.FILES.get("imagen")
+
+            if not titulo:
+                messages.error(
+                    request,
+                    "El título del trabajo es obligatorio."
+                )
+
+                return redirect(
+                    "agenda:editar_trabajo_portafolio",
+                    id=id
+                )
+
+            trabajo.titulo = titulo
+            trabajo.descripcion = descripcion
+            trabajo.categoria = categoria
+
+            if imagen:
+                trabajo.imagen = imagen
+
+            trabajo.full_clean()
+            trabajo.save()
+
+            messages.success(
+                request,
+                "El trabajo se actualizó correctamente."
+            )
+
+            return redirect(
+                "agenda:mi_portafolio"
+            )
+
+        except ValidationError as e:
+
+            messages.error(
+                request,
+                e.messages[0]
+            )
+
+            return redirect(
+                "agenda:editar_trabajo_portafolio",
+                id=id
+            )
+
+        except Exception:
+
+            messages.error(
+                request,
+                "Ocurrió un error al actualizar el trabajo."
+            )
+
+    return render(
+        request,
+        "manicurista/editar_trabajo_portafolio.html",
+        {
+            "trabajo": trabajo,
+            "manicurista": manicurista
+        }
+    )
+
+@login_required(login_url="agenda:login")
+@requiere_rol("MANICURISTA")
+@require_http_methods(["POST"])
+def eliminar_trabajo_portafolio(request, id):
+
+    manicurista = get_object_or_404(
+        Manicurista,
+        user=request.user
+    )
+
+    trabajo = get_object_or_404(
+        PortafolioManicurista,
+        id=id,
+        manicurista=manicurista
+    )
+
+    try:
+        trabajo.delete()
+
+        messages.success(
+            request,
+            "El trabajo se eliminó correctamente."
+        )
+
+    except Exception:
+        messages.error(
+            request,
+            "No fue posible eliminar el trabajo."
+        )
+
+    return redirect("agenda:mi_portafolio")
+
+#################################################################
 
 
 @login_required(login_url="agenda:login")
