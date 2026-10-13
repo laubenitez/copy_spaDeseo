@@ -116,6 +116,8 @@ urlpatterns = [
     path('eliminar_gastos/<int:id>/', views.eliminar_gastos, name="eliminar_gastos"),
     path('actualizar_gastos/<int:id>/', views.actualizar_gastos, name="actualizar_gastos"),
 
+    path("cambiar_contrasena/", views.cambiar_contrasena, name="cambiar_contrasena"),
+
 
     # Envío de correos para recuperación de contraseña
     # 1. Vista donde el usuario introduce su correo
@@ -142,5 +144,6 @@ urlpatterns = [
         template_name='password_reset_complete.html'
     ), name='password_reset_complete'),
 
+    
 
 ]

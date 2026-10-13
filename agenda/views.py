@@ -31,7 +31,7 @@ from django.db.models import Prefetch
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte, PortafolioManicurista,
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte, PortafolioManicurista, PreferenciasUsuario
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -40,6 +40,8 @@ from .serializador import (
 )
 from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
 from .utils import validar_password, requiere_rol
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 logger = logging.getLogger(__name__)
 
@@ -227,8 +229,133 @@ class GastosViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
+
+@login_required
 def ajustes(request):
-    return render(request, 'ajustes.html')
+    preferencias, creada = PreferenciasUsuario.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == "POST":
+        # Notificaciones y privacidad
+        preferencias.recordatorios_whatsapp = (
+            "recordatorios_whatsapp" in request.POST
+        )
+        preferencias.permitir_comunicaciones = (
+            "permitir_comunicaciones" in request.POST
+        )
+
+        # Preferencias generales
+        formato_fecha = request.POST.get("formato_fecha", "DMY")
+        formato_hora = request.POST.get("formato_hora", "12")
+        idioma = request.POST.get("idioma", "es")
+
+        # Accesibilidad
+        tamano_texto = request.POST.get("tamano_texto", "normal")
+        contraste = request.POST.get("contraste", "estandar")
+        animaciones = request.POST.get("animaciones", "activadas")
+        modo_lectura = request.POST.get("modo_lectura", "desactivado")
+
+        # Validar las opciones antes de guardarlas
+        opciones_validas = {
+            "formato_fecha": {
+                "DMY", "MDY"
+            },
+            "formato_hora": {
+                "12", "24"
+            },
+            "idioma": {
+                "es", "en"
+            },
+            "tamano_texto": {
+                "normal", "grande", "pequeno"
+            },
+            "contraste": {
+                "estandar", "alto"
+            },
+            "animaciones": {
+                "activadas", "reducidas"
+            },
+            "modo_lectura": {
+                "desactivado", "activado"
+            },
+        }
+
+        valores_recibidos = {
+            "formato_fecha": formato_fecha,
+            "formato_hora": formato_hora,
+            "idioma": idioma,
+            "tamano_texto": tamano_texto,
+            "contraste": contraste,
+            "animaciones": animaciones,
+            "modo_lectura": modo_lectura,
+        }
+
+        errores = []
+
+        for campo, valor in valores_recibidos.items():
+            if valor not in opciones_validas[campo]:
+                errores.append(campo)
+
+        if errores:
+            messages.error(
+                request,
+                "No se pudieron guardar los ajustes porque hay opciones inválidas."
+            )
+        else:
+            for campo, valor in valores_recibidos.items():
+                setattr(preferencias, campo, valor)
+
+            preferencias.save()
+
+            messages.success(
+                request,
+                "Tus ajustes se guardaron correctamente."
+            )
+
+            return redirect("agenda:ajustes")
+
+    contexto = {
+        "preferencias": preferencias,
+        "ultimo_acceso": request.user.last_login,
+    }
+
+    return render(request, "ajustes.html", contexto)
+
+@login_required(login_url="agenda:login")
+def cambiar_contrasena(request):
+    if request.method == "POST":
+        formulario = PasswordChangeForm(
+            user=request.user,
+            data=request.POST
+        )
+
+        if formulario.is_valid():
+            usuario = formulario.save()
+
+            # Mantiene la sesión iniciada después del cambio
+            update_session_auth_hash(request, usuario)
+
+            messages.success(
+                request,
+                "Tu contraseña se cambió correctamente."
+            )
+
+            return redirect("agenda:ajustes")
+
+        messages.error(
+            request,
+            "No se pudo cambiar la contraseña. "
+            "Revisa los campos e inténtalo nuevamente."
+        )
+    else:
+        formulario = PasswordChangeForm(user=request.user)
+
+    return render(
+        request,
+        "cambiar_contrasena.html",
+        {"formulario": formulario}
+    )
 
 @login_required(login_url="agenda:login")
 @requiere_rol("CLIENTE", "MANICURISTA")

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from .validators import validar_imagen_portafolio
+from django.conf import settings
 
 class Rol(models.Model):
     # Ejemplo de registros: 'ADMINISTRADOR', 'VENDEDOR', 'CLIENTE'
@@ -319,5 +320,101 @@ class SolicitudSoporte(models.Model):
 
     def __str__(self):
         return f"#{self.id:04d} - {self.asunto}"
+
+
+
+class PreferenciasUsuario(models.Model):
+    """Preferencias personales de cada usuario de Spa Deseo."""
+
+    FORMATO_FECHA_CHOICES = [
+        ("DMY", "DD/MM/AAAA"),
+        ("MDY", "MM/DD/AAAA"),
+    ]
+
+    FORMATO_HORA_CHOICES = [
+        ("12", "12 horas (AM/PM)"),
+        ("24", "24 horas"),
+    ]
+
+    TAMANO_TEXTO_CHOICES = [
+        ("normal", "Normal"),
+        ("grande", "Grande"),
+        ("pequeno", "Pequeño"),
+    ]
+
+    CONTRASTE_CHOICES = [
+        ("estandar", "Estándar"),
+        ("alto", "Alto contraste"),
+    ]
+
+    ANIMACIONES_CHOICES = [
+        ("activadas", "Habilitadas"),
+        ("reducidas", "Reducir animaciones"),
+    ]
+
+    MODO_LECTURA_CHOICES = [
+        ("desactivado", "Desactivado"),
+        ("activado", "Activado"),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="preferencias_spa"
+    )
+
+    recordatorios_whatsapp = models.BooleanField(default=True)
+    permitir_comunicaciones = models.BooleanField(default=True)
+
+    formato_fecha = models.CharField(
+        max_length=3,
+        choices=FORMATO_FECHA_CHOICES,
+        default="DMY"
+    )
+
+    formato_hora = models.CharField(
+        max_length=2,
+        choices=FORMATO_HORA_CHOICES,
+        default="12"
+    )
+
+    idioma = models.CharField(
+        max_length=10,
+        default="es"
+    )
+
+    tamano_texto = models.CharField(
+        max_length=10,
+        choices=TAMANO_TEXTO_CHOICES,
+        default="normal"
+    )
+
+    contraste = models.CharField(
+        max_length=10,
+        choices=CONTRASTE_CHOICES,
+        default="estandar"
+    )
+
+    animaciones = models.CharField(
+        max_length=10,
+        choices=ANIMACIONES_CHOICES,
+        default="activadas"
+    )
+
+    modo_lectura = models.CharField(
+        max_length=12,
+        choices=MODO_LECTURA_CHOICES,
+        default="desactivado"
+    )
+
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Preferencias de {self.user.username}"
+
+    class Meta:
+        verbose_name = "Preferencia de usuario"
+        verbose_name_plural = "Preferencias de usuarios"
+
 
 
