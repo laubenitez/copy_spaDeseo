@@ -35,7 +35,7 @@ def requiere_rol(*roles):
 
             if rol_usuario not in roles_permitidos:
                 messages.error(request, "No tienes permisos para acceder a esta sección.")
-                return redirect("agenda:login")
+                return redirect("agenda:dashboard")
 
             return view_func(request, *args, **kwargs)
 

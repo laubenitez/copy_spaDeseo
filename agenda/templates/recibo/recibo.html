@@ -121,31 +121,65 @@
         </div>
     </div>
 
-    <!-- Totales (Alineados a los extremos del contenedor principal) -->
-    <div class="w-full pt-2">
-        <div class="w-full space-y-2 text-sm">
-            <div class="flex justify-between items-center text-gray-500 dark:text-gray-400">
-                <span>Subtotal:</span>
-                <span class="font-semibold text-gray-800 dark:text-gray-200">${{ cita.total|floatformat:0 }} COP</span>
-            </div>
-            <div class="flex justify-between items-center text-gray-500 dark:text-gray-400">
-                <span>Descuento / Impuestos:</span>
-                <span class="font-semibold text-gray-800 dark:text-gray-200">$0 COP</span>
-            </div>
-            <div class="flex justify-between items-center text-base font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-800">
-                <span class="text-pink-600 dark:text-pink-400">Total Pagado:</span>
-                <span>${{ cita.total|floatformat:0 }} COP</span>
-            </div>
+    
+
+<!-- Totales y descuento -->
+
+<!-- Resumen de precios y descuento -->
+<div class="w-full pt-4">
+    <div class="w-full space-y-4 text-sm">
+
+        <!-- Subtotal original -->
+        <div class="flex justify-between items-center gap-4">
+            <span class="text-gray-500 dark:text-gray-400">
+                Subtotal (precio original)
+            </span>
+
+            <span class="font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                ${{ cita.precio_original|default:cita.total|floatformat:0 }} COP
+            </span>
         </div>
-    </div>
 
-    <!-- Mensaje y Términos al Pie -->
-    <div class="text-center pt-6 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500 space-y-1">
-        <p class="font-bold text-gray-700 dark:text-gray-300">¡Gracias por tu preferencia!</p>
-        <p>Este recibo sirve como comprobante de pago oficial de tu cita en Spa Deseo.</p>
-    </div>
 
+        <!-- Descuento aplicado -->
+        {% if cita.descuento_aplicado > 0 %}
+        <div class="flex justify-between items-start gap-4">
+            <div class="min-w-0">
+                <p class="font-semibold text-pink-600 dark:text-pink-400">
+                    Descuento aplicado
+                    {% if cita.descuento and cita.descuento.tipo_beneficio == "PORCENTAJE" %}
+                        ({{ cita.descuento.valor|floatformat:0 }} %)
+                    {% endif %}
+                </p>
+
+                {% if cita.descuento %}
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Promoción por {{ cita.descuento.nombre }}
+                </p>
+                {% endif %}
+            </div>
+
+            <span class="font-semibold text-pink-600 dark:text-pink-400 whitespace-nowrap">
+                ${{ cita.descuento_aplicado|floatformat:0 }} COP
+            </span>
+        </div>
+        {% endif %}
+
+        <!-- Total final -->
+        <div class="flex justify-between items-center gap-4 pt-4
+                    border-t border-gray-200 dark:border-gray-700">
+            <span class="text-lg font-bold text-gray-900 dark:text-white">
+                Total de la cita
+            </span>
+
+            <span class="text-2xl font-bold text-pink-600 dark:text-pink-400 whitespace-nowrap">
+                ${{ cita.total|floatformat:0 }} COP
+            </span>
+        </div>
+
+    </div>
 </div>
+
 
 <!-- Estilos de Impresión CSS -->
 <style>

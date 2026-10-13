@@ -2,67 +2,100 @@
 
 {% block content %}
 
-<div class="max-w-2xl mx-auto px-4 py-6">
+<div class="max-w-4xl mx-auto space-y-6">
 
-    <!-- Encabezado -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            Dejar reseña
-        </h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Cuéntanos cómo fue tu experiencia en Spa Deseo.
-        </p>
+    <!-- Encabezado SIN línea divisora -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                Dejar reseña
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Cuéntanos cómo fue tu experiencia en Spa Deseo.
+            </p>
+        </div>
+
+        <!-- Botón Volver con Hover Rosa -->
+        <div>
+            <a href="{% url 'agenda:mis_citas' %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+
+                Volver a Mis Citas
+
+            </a>
+        </div>
+
+
     </div>
 
-    <!-- Información de la cita -->
-    <div class="mb-6 rounded-2xl border border-pink-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 sm:p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Detalles de tu cita
+    <!-- Banner opcional de mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="p-4 rounded-xl border border-pink-200 bg-pink-50 text-pink-800 dark:bg-pink-900/30 dark:border-pink-800 dark:text-pink-200 text-sm">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Tarjeta: Detalles de la cita -->
+    <div class="rounded-2xl border border-pink-100 dark:border-gray-700/80 bg-white dark:bg-gray-800/90 p-5 sm:p-6 shadow-xs">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Detalles de tu cita realizada
         </h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             
             <!-- Servicio -->
-            <div class="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50/50 dark:hover:bg-gray-700">
-                <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 transition-colors duration-300 group-hover:bg-pink-200 dark:group-hover:bg-pink-900/60">
+            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-pink-50/40 dark:bg-gray-700/40 border border-pink-100/60 dark:border-gray-700">
+                <div class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Servicio</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors group-hover:text-pink-600 dark:group-hover:text-pink-400">{{ cita.servicios.nombre }}</p>
+                <div class="min-w-0">
+                    <p class="text-[11px] font-medium uppercase text-gray-400 dark:text-gray-400">Servicio</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{{ cita.servicios.nombre }}</p>
                 </div>
             </div>
 
             <!-- Manicurista -->
-            <div class="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50/50 dark:hover:bg-gray-700">
-                <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 transition-colors duration-300 group-hover:bg-pink-200 dark:group-hover:bg-pink-900/60">
+            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-pink-50/40 dark:bg-gray-700/40 border border-pink-100/60 dark:border-gray-700">
+                <div class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Manicurista</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors group-hover:text-pink-600 dark:group-hover:text-pink-400">{{ cita.manicurista.nombre }} {{ cita.manicurista.apellido }}</p>
+                <div class="min-w-0">
+                    <p class="text-[11px] font-medium uppercase text-gray-400 dark:text-gray-400">Manicurista</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{{ cita.manicurista.nombre }} {{ cita.manicurista.apellido }}</p>
                 </div>
             </div>
 
-            <!-- Fecha -->
-            <div class="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50/50 dark:hover:bg-gray-700">
-                <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 transition-colors duration-300 group-hover:bg-pink-200 dark:group-hover:bg-pink-900/60">
+            <!-- Fecha (Formateada DD/MM/YYYY) -->
+            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-pink-50/40 dark:bg-gray-700/40 border border-pink-100/60 dark:border-gray-700">
+                <div class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Fecha</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors group-hover:text-pink-600 dark:group-hover:text-pink-400">{{ cita.fecha }}</p>
+                <div class="min-w-0">
+                    <p class="text-[11px] font-medium uppercase text-gray-400 dark:text-gray-400">Fecha</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+                        {{ cita.fecha|date:"d/m/Y"|default:cita.fecha }}
+                    </p>
                 </div>
             </div>
 
             <!-- Hora -->
-            <div class="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-pink-200 dark:hover:border-pink-800 hover:bg-pink-50/50 dark:hover:bg-gray-700">
-                <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 transition-colors duration-300 group-hover:bg-pink-200 dark:group-hover:bg-pink-900/60">
+            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-pink-50/40 dark:bg-gray-700/40 border border-pink-100/60 dark:border-gray-700">
+                <div class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <div>
-                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Hora</p>
-                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-200 transition-colors group-hover:text-pink-600 dark:group-hover:text-pink-400">{{ cita.hora }}</p>
+                <div class="min-w-0">
+                    <p class="text-[11px] font-medium uppercase text-gray-400 dark:text-gray-400">Hora</p>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{{ cita.hora }}</p>
                 </div>
             </div>
 
@@ -70,105 +103,153 @@
     </div>
 
     <!-- Formulario -->
-    <form method="POST" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+    <form method="POST" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8 space-y-6">
 
         {% csrf_token %}
 
-        <!-- Calificación -->
-        <div class="mb-6">
-            <label class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                ¿Cómo calificas tu experiencia?
+        <!-- Selector de Calificación (Estrellas Interactivas) -->
+        <div>
+            <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                ¿Qué tal estuvo tu experiencia? <span class="text-pink-500">*</span>
             </label>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Selecciona una calificación del 1 al 5.</p>
 
-            <div class="grid grid-cols-5 gap-2">
+            <div class="flex flex-col items-start gap-2">
+                <div class="flex items-center gap-1 sm:gap-2 rating-group" id="ratingContainer">
+                    
+                    {% for i in "12345" %}
+                    <label class="cursor-pointer group relative p-1">
+                        <input type="radio" name="calificacion" value="{{ i }}" class="sr-only peer" required>
+                        <svg class="w-8 h-8 sm:w-10 h-10 text-gray-300 dark:text-gray-600 transition-all duration-200 peer-checked:text-pink-500 group-hover:scale-110 peer-checked:scale-105" 
+                             fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </label>
+                    {% endfor %}
 
-                <!-- Botones de radio -->
-                <label class="cursor-pointer">
-                    <input type="radio" name="calificacion" value="1" class="peer hidden" required>
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 p-3 transition peer-checked:border-pink-500 peer-checked:bg-pink-50 dark:peer-checked:bg-pink-900/30 hover:border-pink-300">
-                        <span class="text-2xl">😞</span>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-300">1</span>
-                    </div>
-                </label>
-
-                <label class="cursor-pointer">
-                    <input type="radio" name="calificacion" value="2" class="peer hidden">
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 p-3 transition peer-checked:border-pink-500 peer-checked:bg-pink-50 dark:peer-checked:bg-pink-900/30 hover:border-pink-300">
-                        <span class="text-2xl">😕</span>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-300">2</span>
-                    </div>
-                </label>
-
-                <label class="cursor-pointer">
-                    <input type="radio" name="calificacion" value="3" class="peer hidden">
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 p-3 transition peer-checked:border-pink-500 peer-checked:bg-pink-50 dark:peer-checked:bg-pink-900/30 hover:border-pink-300">
-                        <span class="text-2xl">😐</span>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-300">3</span>
-                    </div>
-                </label>
-
-                <label class="cursor-pointer">
-                    <input type="radio" name="calificacion" value="4" class="peer hidden">
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 p-3 transition peer-checked:border-pink-500 peer-checked:bg-pink-50 dark:peer-checked:bg-pink-900/30 hover:border-pink-300">
-                        <span class="text-2xl">😊</span>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-300">4</span>
-                    </div>
-                </label>
-
-                <label class="cursor-pointer">
-                    <input type="radio" name="calificacion" value="5" class="peer hidden">
-                    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 dark:border-gray-600 p-3 transition peer-checked:border-pink-500 peer-checked:bg-pink-50 dark:peer-checked:bg-pink-900/30 hover:border-pink-300">
-                        <span class="text-2xl">😍</span>
-                        <span class="mt-1 text-xs text-gray-600 dark:text-gray-300">5</span>
-                    </div>
-                </label>
-
+                </div>
+                
+                <span id="ratingText" class="text-xs font-semibold text-pink-600 dark:text-pink-400 h-4 transition-opacity">
+                    Haz clic para calificar
+                </span>
             </div>
         </div>
 
+        <hr class="border-gray-100 dark:border-gray-700/60" />
+
         <!-- Comentario -->
-        <div class="mb-6">
-            <label for="comentario" class="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                Cuéntanos tu experiencia
-            </label>
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <label for="comentario" class="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Tu opinión / Comentarios
+                </label>
+                <span id="charCount" class="text-xs text-gray-400 dark:text-gray-500 font-mono">
+                    0 / 500
+                </span>
+            </div>
 
             <textarea
                 id="comentario"
                 name="comentario"
-                rows="5"
+                rows="4"
                 maxlength="500"
-                placeholder="Escribe aquí tu opinión sobre el servicio..."
-                class="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 resize-none"
+                placeholder="¿Qué fue lo que más te gustó? ¿Hay algo que podamos mejorar?"
+                class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 p-4 text-sm focus:bg-white dark:focus:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500/40 focus:border-pink-500 transition-all resize-none"
             ></textarea>
-
-            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                Máximo 500 caracteres.
-            </p>
         </div>
 
-        <!-- Botones -->
-        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-
+        <!-- Acciones -->
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
             <a
                 href="{% url 'agenda:mis_citas' %}"
-                class="w-full sm:w-auto text-center px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                class="w-full sm:w-auto text-center px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 font-medium text-sm transition"
             >
-                Volver
+                Cancelar
             </a>
 
-            <!-- Botón con etiqueta i -->
             <button
                 type="submit"
-                class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold shadow-sm transition"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 active:bg-pink-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
             >
-                <i class="fas fa-save"></i>
-                <span>Publicar reseña</span>
+                <i class="fas fa-paper-plane text-xs"></i>
+                <span>Publicar Reseña</span>
             </button>
-
         </div>
 
     </form>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Contador de Caracteres
+        const textarea = document.getElementById('comentario');
+        const charCount = document.getElementById('charCount');
+
+        if (textarea && charCount) {
+            textarea.addEventListener('input', () => {
+                const length = textarea.value.length;
+                charCount.textContent = `${length} / 500`;
+            });
+        }
+
+        // 2. Comportamiento de Estrellas (Hover + Selection)
+        const labels = document.querySelectorAll('#ratingContainer label');
+        const ratingText = document.getElementById('ratingText');
+        const labelsMap = {
+            '1': 'Pésimo 😞',
+            '2': 'Regular 😕',
+            '3': 'Bueno 😐',
+            '4': 'Muy Bueno 😊',
+            '5': '¡Excelente! 😍'
+        };
+
+        function highlightStars(index) {
+            labels.forEach((label, idx) => {
+                const svg = label.querySelector('svg');
+                if (idx <= index) {
+                    svg.classList.add('text-pink-500');
+                    svg.classList.remove('text-gray-300', 'dark:text-gray-600');
+                } else {
+                    svg.classList.remove('text-pink-500');
+                    svg.classList.add('text-gray-300', 'dark:text-gray-600');
+                }
+            });
+        }
+
+        function resetStars() {
+            const checkedInput = document.querySelector('#ratingContainer input:checked');
+            if (checkedInput) {
+                const index = parseInt(checkedInput.value) - 1;
+                highlightStars(index);
+                ratingText.textContent = labelsMap[checkedInput.value];
+            } else {
+                labels.forEach(label => {
+                    const svg = label.querySelector('svg');
+                    svg.classList.remove('text-pink-500');
+                    svg.classList.add('text-gray-300', 'dark:text-gray-600');
+                });
+                ratingText.textContent = 'Haz clic para calificar';
+            }
+        }
+
+        labels.forEach((label, index) => {
+            const input = label.querySelector('input');
+
+            label.addEventListener('mouseenter', () => {
+                highlightStars(index);
+                ratingText.textContent = labelsMap[input.value];
+            });
+
+            label.addEventListener('mouseleave', () => {
+                resetStars();
+            });
+
+            input.addEventListener('change', () => {
+                resetStars();
+            });
+        });
+    });
+</script>
 
 {% endblock %}

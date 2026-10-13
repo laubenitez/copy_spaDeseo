@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from .validators import validar_imagen_portafolio
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class Rol(models.Model):
     # Ejemplo de registros: 'ADMINISTRADOR', 'VENDEDOR', 'CLIENTE'
@@ -18,7 +21,7 @@ class PerfilUsuario(models.Model):
     def __str__(self):
         return f"{self.user.username} - Rol: {self.rol.nombre if self.rol else 'Sin Rol'}"
 
-    
+
 class Clientes(models.Model):
     user = models.OneToOneField(
         User,
@@ -32,7 +35,9 @@ class Clientes(models.Model):
     telefono = models.CharField(max_length=20)
     email = models.EmailField(max_length=100)
     password = models.CharField(max_length=100, blank=True, null=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True, verbose_name="Fecha de nacimiento")
     foto_perfil = models.ImageField(upload_to='perfiles/',null=True, blank=True)
+
 
 
     def __str__(self):
@@ -115,8 +120,6 @@ class Servicios(models.Model):
 
 
 
-
-
 class Citas(models.Model):
     ESTADOS_CITA = [
         ('programada', 'Programada'),
@@ -131,15 +134,67 @@ class Citas(models.Model):
     fecha = models.DateField()
     hora = models.TimeField()
     total = models.IntegerField()
+
+    # Valores económicos de la cita
+    precio_original = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Precio del servicio antes del descuento"
+    )
+
+    descuento_aplicado = models.IntegerField(
+        default=0,
+        help_text="Valor del descuento aplicado a la cita"
+    )
+
+    descuento = models.ForeignKey(
+        "Descuentos",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="citas"
+    )
+
+    descuento_anio_uso = models.PositiveIntegerField(
+    null=True,
+    blank=True,
+    editable=False
+    )
+
     estado = models.CharField(max_length=20, choices=ESTADOS_CITA, default='programada')
+
 
     class Meta:
         constraints = [
+            # Evita dos citas de una manicurista a la misma hora.
             models.UniqueConstraint(
                 fields=["manicurista", "fecha", "hora"],
                 name="unique_manicurista_fecha_hora"
-            )
+            ),
+
+            # Una clienta no puede reservar dos veces la misma promoción
+            # mientras la cita anterior no esté cancelada.
+            models.UniqueConstraint(
+                fields=["cliente", "descuento"],
+                condition=(
+                    models.Q(descuento__isnull=False)
+                    & ~models.Q(estado="cancelada")
+                ),
+                name="unique_cliente_descuento_activo"
+            ),
+
+            # Una clienta solo puede reservar un descuento de cumpleaños
+            # por año. Las citas canceladas liberan el beneficio.
+            models.UniqueConstraint(
+                fields=["cliente", "descuento_anio_uso"],
+                condition=(
+                    models.Q(descuento_anio_uso__isnull=False)
+                    & ~models.Q(estado="cancelada")
+                ),
+                name="unique_cliente_descuento_anio"
+            ),
         ]
+
 
     @property
     def tiene_pago(self):
@@ -148,7 +203,7 @@ class Citas(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.cliente.nombre} {self.cliente.apellido} - {self.fecha} {self.hora} {self.estado}"
-    
+
 class Resena(models.Model):
     cita = models.OneToOneField(Citas, on_delete=models.CASCADE, related_name='resena')
     calificacion = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)]) # Del 1 al 5
@@ -157,6 +212,82 @@ class Resena(models.Model):
 
     def __str__(self):
         return f"Reseña de {self.cita.cliente.nombre} {self.cita.cliente.apellido} - Calificación: {self.calificacion} - Comentario: {self.comentario if self.comentario else 'Sin comentario'}"
+
+class Descuentos(models.Model):
+    class Tipo(models.TextChoices):
+        CUMPLEAÑOS = 'CUMPLEAÑOS', 'Cumpleaños'
+        PRIMERA_CITA = 'PRIMERA_CITA', 'Primera Cita'
+        FECHA_ESPECIAL = 'FECHA_ESPECIAL', 'Fecha Especial'
+        TEMPORADA = 'TEMPORADA', 'Temporada'
+        PERSONALIZADO = 'PERSONALIZADO', 'Promoción del Administrador'
+
+    class TipoBeneficio(models.TextChoices):
+        PORCENTAJE = 'PORCENTAJE', 'Porcentaje'
+        VALOR_FIJO = 'VALOR_FIJO', 'Valor Fijo'
+
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+
+    tipo = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.PERSONALIZADO
+    )
+
+    tipo_beneficio = models.CharField(
+        max_length=15,
+        choices=TipoBeneficio.choices,
+        default=TipoBeneficio.PORCENTAJE
+    )
+
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[
+            MinValueValidator(0.01),
+        ]
+    )
+
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+
+    activo = models.BooleanField(default=True)
+
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["fecha_inicio", "nombre"]
+        verbose_name = "Descuento"
+        verbose_name_plural = "Descuentos"
+
+    def clean(self):
+        super().clean()
+
+        if self.fecha_inicio and self.fecha_fin:
+            if self.fecha_fin < self.fecha_inicio:
+                raise ValidationError({
+                    "fecha_fin": "La fecha final no puede ser anterior a la inicial."
+                })
+
+        if self.tipo_beneficio == self.TipoBeneficio.PORCENTAJE:
+            if self.valor is not None and self.valor > 100:
+                raise ValidationError({
+                    "valor": "El porcentaje no puede superar el 100 %."
+                })
+
+    @property
+    def vigente(self):
+        hoy = timezone.localdate()
+        return (
+            self.activo
+            and self.fecha_inicio <= hoy
+            and self.fecha_fin >= hoy
+        )
+
+    def __str__(self):
+        return f"{self.nombre} - {self.valor}"
+
 
 class Inventario(models.Model):
     CATEGORIAS = [
@@ -233,7 +364,7 @@ class Pagos(models.Model):
 
     def __str__(self):
         return f"Pago #{self.id} - Cita #{self.citas.id} - {self.estado}"
-    
+
 class Recibo(models.Model):
     pago = models.OneToOneField(Pagos, on_delete=models.CASCADE, related_name="recibo")
     fecha_emision = models.DateTimeField(auto_now_add=True)
@@ -320,7 +451,6 @@ class SolicitudSoporte(models.Model):
 
     def __str__(self):
         return f"#{self.id:04d} - {self.asunto}"
-
 
 
 class PreferenciasUsuario(models.Model):
@@ -415,6 +545,64 @@ class PreferenciasUsuario(models.Model):
     class Meta:
         verbose_name = "Preferencia de usuario"
         verbose_name_plural = "Preferencias de usuarios"
+
+
+class Notificacion(models.Model):
+
+    class Tipo(models.TextChoices):
+        CITA_AGENDADA = "CITA_AGENDADA", "Cita agendada"
+        RECORDATORIO = "RECORDATORIO", "Recordatorio de cita"
+        CITA_CANCELADA = "CITA_CANCELADA", "Cita cancelada"
+        CITA_MODIFICADA = "CITA_MODIFICADA", "Cita modificada"
+        RECIBO_DISPONIBLE = "RECIBO_DISPONIBLE", "Recibo disponible"
+        RESENA_PENDIENTE = "RESENA_PENDIENTE", "Reseña pendiente"
+        INVENTARIO_BAJO = "INVENTARIO_BAJO", "Inventario bajo"
+        PAGO = "PAGO", "Notificación de pago"
+        SOPORTE = "SOPORTE", "Solicitud de soporte"
+        GENERAL = "GENERAL", "General"
+
+    destinatario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notificaciones"
+    )
+
+    titulo = models.CharField(max_length=150)
+    mensaje = models.TextField()
+
+    tipo = models.CharField(
+        max_length=30,
+        choices=Tipo.choices,
+        default=Tipo.GENERAL
+    )
+
+    url = models.CharField(
+        max_length=255,
+        blank=True,
+        default=""
+    )
+
+    cita = models.ForeignKey(
+        Citas,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notificaciones"
+    )
+
+    leida = models.BooleanField(default=False)
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ["-fecha_creacion"]
+        verbose_name = "Notificación"
+        verbose_name_plural = "Notificaciones"
+
+    def __str__(self):
+        return f"{self.titulo} - {self.destinatario.username}"
 
 
 

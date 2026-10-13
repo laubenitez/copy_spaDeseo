@@ -258,6 +258,27 @@
 
                     </div>
 
+                    {% if rol == "CLIENTE" %}
+                    <!-- FECHA DE NACIMIENTO -->
+                    <div>
+                        <label for="fecha_nacimiento"
+                            class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+                            Fecha de nacimiento
+                        </label>
+
+                        <input type="date"
+                            id="fecha_nacimiento"
+                            name="fecha_nacimiento"
+                            value="{{ perfil.fecha_nacimiento|date:'Y-m-d' }}"
+                            max="{% now 'Y-m-d' %}"
+                            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition">
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Registra tu fecha de nacimiento para acceder a promociones de cumpleaños.
+                        </p>
+                    </div>
+                {% endif %}
+
                 </div>
 
             </div>
@@ -380,245 +401,164 @@
 <!-- JAVASCRIPT -->
 <!-- ========================================================= -->
 
-<script>
 
+<script>
     let cropper;
 
     const inputFile = document.getElementById('input-file');
-
     const cropModal = document.getElementById('crop-modal');
-
     const imageToCrop = document.getElementById('image-to-crop');
-
     const profileForm = document.getElementById('profile-form');
-
     const removePhotoBtn = document.getElementById('btn-remove-photo');
-
     const eliminarInput = document.getElementById('eliminar_foto_input');
 
+    // Seleccionar imagen
+    if (inputFile && cropModal && imageToCrop) {
+        inputFile.addEventListener('change', function (e) {
+            const files = e.target.files;
 
-    // =========================================================
-    // SELECCIONAR IMAGEN
-    // =========================================================
+            if (files && files.length > 0) {
+                const reader = new FileReader();
 
-    inputFile.addEventListener('change', function (e) {
+                reader.onload = function (event) {
+                    imageToCrop.src = event.target.result;
+                    cropModal.classList.remove('hidden');
 
-        const files = e.target.files;
-
-        if (files && files.length > 0) {
-
-            const reader = new FileReader();
-
-
-            reader.onload = function (event) {
-
-                imageToCrop.src = event.target.result;
-
-                cropModal.classList.remove('hidden');
-
-
-                if (cropper) {
-
-                    cropper.destroy();
-
-                }
-
-
-                cropper = new Cropper(imageToCrop, {
-
-                    aspectRatio: 1,
-
-                    viewMode: 1,
-
-                    background: false
-
-                });
-
-            };
-
-
-            reader.readAsDataURL(files[0]);
-
-        }
-
-    });
-
-
-    // =========================================================
-    // CERRAR MODAL
-    // =========================================================
-
-    const closeCrop = () => {
-
-        cropModal.classList.add('hidden');
-
-        if (cropper) {
-
-            cropper.destroy();
-
-        }
-
-        inputFile.value = '';
-
-    };
-
-
-    document
-        .getElementById('btn-cancel-crop')
-        .addEventListener('click', closeCrop);
-
-
-    document
-        .getElementById('btn-cancel-crop-2')
-        .addEventListener('click', closeCrop);
-
-
-    // =========================================================
-    // APLICAR RECORTE
-    // =========================================================
-
-    document
-        .getElementById('btn-apply-crop')
-        .addEventListener('click', function () {
-
-
-            const canvas = cropper.getCroppedCanvas({
-
-                width: 300,
-
-                height: 300
-
-            });
-
-
-            canvas.toBlob(function (blob) {
-
-
-                const croppedFile = new File(
-
-                    [blob],
-
-                    'foto_perfil.jpg',
-
-                    {
-                        type: 'image/jpeg'
+                    if (cropper) {
+                        cropper.destroy();
                     }
 
-                );
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        background: false
+                    });
+                };
 
+                reader.readAsDataURL(files[0]);
+            }
+        });
+    }
 
-                const dataTransfer = new DataTransfer();
+    // Cerrar modal
+    const closeCrop = () => {
+        if (cropModal) {
+            cropModal.classList.add('hidden');
+        }
 
-                dataTransfer.items.add(croppedFile);
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
 
+        if (inputFile) {
+            inputFile.value = '';
+        }
+    };
 
-                // Crear input real para enviar la foto
-                let realInput =
-                    document.getElementById('foto_perfil_final');
+    const cancelCropBtn = document.getElementById('btn-cancel-crop');
+    const cancelCropBtn2 = document.getElementById('btn-cancel-crop-2');
 
+    if (cancelCropBtn) {
+        cancelCropBtn.addEventListener('click', closeCrop);
+    }
 
-                if (!realInput) {
+    if (cancelCropBtn2) {
+        cancelCropBtn2.addEventListener('click', closeCrop);
+    }
 
-                    realInput =
-                        document.createElement('input');
+    // Aplicar recorte
+    const applyCropBtn = document.getElementById('btn-apply-crop');
 
-                    realInput.type = 'file';
+    if (applyCropBtn) {
+        applyCropBtn.addEventListener('click', function () {
+            if (!cropper || !profileForm || !eliminarInput) {
+                return;
+            }
 
-                    realInput.name = 'foto_perfil';
+            const canvas = cropper.getCroppedCanvas({
+                width: 300,
+                height: 300
+            });
 
-                    realInput.id = 'foto_perfil_final';
+            if (!canvas) {
+                return;
+            }
 
-                    realInput.className = 'hidden';
-
-                    profileForm.appendChild(realInput);
-
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    return;
                 }
 
+                const croppedFile = new File(
+                    [blob],
+                    'foto_perfil.jpg',
+                    { type: 'image/jpeg' }
+                );
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+
+                let realInput = document.getElementById('foto_perfil_final');
+
+                if (!realInput) {
+                    realInput = document.createElement('input');
+                    realInput.type = 'file';
+                    realInput.name = 'foto_perfil';
+                    realInput.id = 'foto_perfil_final';
+                    realInput.className = 'hidden';
+                    profileForm.appendChild(realInput);
+                }
 
                 realInput.files = dataTransfer.files;
 
-
-                // =================================================
-                // ACTUALIZAR PREVIEW
-                // =================================================
-
-                const previewAvatar =
-                    document.getElementById('preview-avatar');
-
-                const placeholderAvatar =
-                    document.getElementById('placeholder-avatar');
-
+                const previewAvatar = document.getElementById('preview-avatar');
+                const placeholderAvatar = document.getElementById('placeholder-avatar');
 
                 if (previewAvatar) {
-
-                    previewAvatar.src =
-                        canvas.toDataURL();
-
+                    previewAvatar.src = canvas.toDataURL('image/jpeg');
                     previewAvatar.classList.remove('hidden');
-
                 }
-
 
                 if (placeholderAvatar) {
-
                     placeholderAvatar.classList.add('hidden');
-
                 }
 
-
-                eliminarInput.value = "false";
-
-
+                eliminarInput.value = 'false';
                 closeCrop();
-
             }, 'image/jpeg');
-
         });
+    }
 
+    // Eliminar foto
+    if (removePhotoBtn) {
+        removePhotoBtn.addEventListener('click', function () {
+            if (eliminarInput) {
+                eliminarInput.value = 'true';
+            }
 
-    // =========================================================
-    // ELIMINAR FOTO
-    // =========================================================
+            const previewAvatar = document.getElementById('preview-avatar');
+            const placeholderAvatar = document.getElementById('placeholder-avatar');
 
-    removePhotoBtn.addEventListener('click', function () {
+            if (previewAvatar) {
+                previewAvatar.classList.add('hidden');
+            }
 
+            if (placeholderAvatar) {
+                placeholderAvatar.classList.remove('hidden');
+            }
 
-        eliminarInput.value = "true";
+            const realInput = document.getElementById('foto_perfil_final');
 
+            if (realInput) {
+                realInput.remove();
+            }
 
-        const previewAvatar =
-            document.getElementById('preview-avatar');
-
-        const placeholderAvatar =
-            document.getElementById('placeholder-avatar');
-
-
-        if (previewAvatar) {
-
-            previewAvatar.classList.add('hidden');
-
-        }
-
-
-        if (placeholderAvatar) {
-
-            placeholderAvatar.classList.remove('hidden');
-
-        }
-
-
-        const realInput =
-            document.getElementById('foto_perfil_final');
-
-
-        if (realInput) {
-
-            realInput.remove();
-
-        }
-
-    });
-
+            if (inputFile) {
+                inputFile.value = '';
+            }
+        });
+    }
 </script>
 
 {% endblock %}

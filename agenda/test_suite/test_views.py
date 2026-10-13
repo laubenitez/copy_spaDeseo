@@ -27,7 +27,8 @@ class RegistroTest(TestCase):
             "apellido": "Prueba",
             "email": "laura_test@example.com",
             "telefono": "3001234567",
-            "password": "Laura1234!"
+            "password": "Laura1234!",
+            "terminos": "on",
         }
 
         response = self.client.post(
@@ -80,7 +81,8 @@ class RegistroTest(TestCase):
             "apellido": "Persona",
             "email": "laura_test@example.com",
             "telefono": "3009876543",
-            "password": "Otra1234!"
+            "password": "Otra1234!",
+            "terminos": "on",
         }
 
         response = self.client.post(
@@ -325,11 +327,15 @@ class PermisosTest(TestCase):
 
     def test_cliente_no_puede_acceder_a_inventario(self):
 
-        self.client.login(
+        login_exitoso = self.client.login(
             username="permisos_test@example.com",
             password="Permisos1234!"
         )
 
+        self.assertTrue(
+            login_exitoso,
+            "El usuario de prueba no pudo iniciar sesión."
+        )
         response = self.client.get("/ver_inventario/")
 
         self.assertEqual(response.status_code, 302)

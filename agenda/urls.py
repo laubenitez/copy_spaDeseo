@@ -37,6 +37,8 @@ urlpatterns = [
     path('soporte/responder/<int:id>/',views.responder_solicitud_soporte, name='responder_solicitud_soporte'),
     path('calendario/', views.ver_calendario, name='ver_calendario'),
     path('api/citas/', views.obtener_citas_json, name='obtener_citas_json'),
+    path('notificaciones/<int:notificacion_id>/abrir/', views.abrir_notificacion, name='abrir_notificacion'),
+
 
 
     #Clientes
@@ -50,6 +52,10 @@ urlpatterns = [
     path("mis_citas/", views.mis_citas, name="mis_citas"),
     path('manicuristas/', views.manicuristas_cliente, name='manicuristas_cliente'),
     path('manicuristas/<int:manicurista_id>/portafolio/', views.portafolio_manicurista_cliente, name='portafolio_manicurista_cliente'),
+    path('mis_descuentos/', views.mis_descuentos, name='mis_descuentos'),
+    path('mis_descuentos/<int:descuento_id>/usar/', views.usar_descuento, name='usar_descuento'),
+
+
 
     #Citas
     path('ver_citas/', views.ver_citas, name="ver_citas"),

@@ -2,9 +2,10 @@ import os
 import re
 import json
 import logging
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from datetime import datetime, date, time, timedelta
 from django.utils.timezone import now
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -28,15 +29,26 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from drf_spectacular.utils import extend_schema
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
+from django.utils.dateparse import parse_date
+from django.db import transaction
+from django.utils.http import url_has_allowed_host_and_scheme
 
 # Importaciones locales explícitas
 from .models import (
-    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo, Gastos, Resena, SolicitudSoporte, PortafolioManicurista, PreferenciasUsuario
+    Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo,
+    Gastos, Resena, SolicitudSoporte, PortafolioManicurista,  PreferenciasUsuario, Descuentos, Notificacion,
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
     CitasSerializer, InventarioSerializer, MovimientoInventarioSerializer, PagosSerializer,
     ReciboSerializer, GastosSerializer
+)
+from .notificaciones_utils import (
+    notificar_cita_agendada,
+    notificar_cita_modificada,
+    notificar_cita_cancelada,
+    notificar_resena_pendiente,
+    crear_recibo_y_notificar,
 )
 from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
 from .utils import validar_password, requiere_rol
@@ -57,12 +69,12 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response(
-            {"message": "Sesión cerrada correctamente. Token destruido."}, 
+            {"message": "Sesión cerrada correctamente. Token destruido."},
             status=status.HTTP_200_OK
         )
 
 
-    
+
 # Vistas para las APIs
 class ClientesViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
@@ -85,7 +97,7 @@ class ManicuristaViewSet(viewsets.ModelViewSet):
 class ServiciosViewSet(viewsets.ModelViewSet):
     queryset = Servicios.objects.all()
     serializer_class = ServiciosSerializer
-        
+
     # Combinamos IsAuthenticated para obligar a usar token, e IsStaffOrReadOnly para el rol
     permission_classes = [IsAuthenticated, IsStaffOrReadOnly, TieneRolDB]
 
@@ -138,24 +150,24 @@ class ServiciosViewSet(viewsets.ModelViewSet):
 
         if not query_texto:
             return Response(
-                {"error": "Debes proporcionar un término de búsqueda en el parámetro 'q'."}, 
+                {"error": "Debes proporcionar un término de búsqueda en el parámetro 'q'."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         # Filtro con compuerta lógica OR buscando coincidencias parciales (case-insensitive)
         resultados = self.queryset.filter(
-            Q(nombre__icontains=query_texto) | 
+            Q(nombre__icontains=query_texto) |
             Q(descripcion__icontains=query_texto)
         )
 
         serializer = self.get_serializer(resultados, many=True)
-        
+
         return Response({
             "termino_buscado": query_texto,
             "total_coincidencias": resultados.count(),
             "resultados": serializer.data
         }, status=status.HTTP_200_OK)
-    
+
 
     @extend_schema(
         summary="Lista de todos los servicios"
@@ -194,7 +206,7 @@ class PagosViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, TieneRolDB]
 
     queryset = Pagos.objects.all()
-    serializer_class = PagosSerializer  
+    serializer_class = PagosSerializer
 
     @extend_schema(
         summary="Lista de todos los pagos"
@@ -575,6 +587,27 @@ def editar_perfil(request):
         nuevo_apellido = request.POST.get("apellido", "").strip()
         nuevo_telefono = request.POST.get("telefono", "").strip()
 
+        # Fecha de nacimiento: solo aplica a clientes.
+        nuevo_fecha_nacimiento = None
+
+        if rol == "CLIENTE":
+            fecha_recibida = request.POST.get("fecha_nacimiento", "").strip()
+
+            if fecha_recibida:
+                nuevo_fecha_nacimiento = parse_date(fecha_recibida)
+
+                if nuevo_fecha_nacimiento is None:
+                    messages.error(request, "Ingresa una fecha de nacimiento válida.")
+                    return redirect("agenda:editar_perfil")
+
+                if nuevo_fecha_nacimiento > timezone.localdate():
+                    messages.error(
+                        request,
+                        "La fecha de nacimiento no puede ser futura."
+                    )
+                    return redirect("agenda:editar_perfil")
+
+
         # =====================================================
         # VALIDACIONES BÁSICAS
         # =====================================================
@@ -653,6 +686,8 @@ def editar_perfil(request):
             perfil.apellido = nuevo_apellido
             perfil.telefono = nuevo_telefono
             perfil.email = nuevo_email
+            if rol == "CLIENTE":
+                perfil.fecha_nacimiento = nuevo_fecha_nacimiento
             perfil.save()
 
             # =================================================
@@ -1006,6 +1041,18 @@ def dashboard(request):
 
     rol = perfil_usuario.rol.nombre.strip().upper()
 
+    # =========================================================
+    # NOTIFICACIONES DEL USUARIO AUTENTICADO
+    # =========================================================
+    notificaciones = Notificacion.objects.filter(
+        destinatario=request.user
+    ).order_by("-fecha_creacion")[:10]
+
+    notificaciones_no_leidas = Notificacion.objects.filter(
+        destinatario=request.user,
+        leida=False
+    ).count()
+
     # Variables generales
     cliente = None
     manicurista_logueada = None
@@ -1109,6 +1156,8 @@ def dashboard(request):
             "perfil": perfil_usuario,
             "citas": citas,
             "usuario": request.user,
+            "notificaciones": notificaciones,
+            "notificaciones_no_leidas": notificaciones_no_leidas,
         }
 
         return render(
@@ -1170,6 +1219,9 @@ def dashboard(request):
             "citas": citas,
             "manicurista": manicurista_logueada,
             "usuario": request.user,
+
+            "notificaciones": notificaciones,
+            "notificaciones_no_leidas": notificaciones_no_leidas,
         }
 
         return render(
@@ -1220,6 +1272,9 @@ def dashboard(request):
             "servicios": servicios_disponibles,
             "manicuristas": manicuristas_disponibles,
             "cliente_id_logueado": None,
+
+            "notificaciones": notificaciones,
+            "notificaciones_no_leidas": notificaciones_no_leidas,
         }
 
         return render(
@@ -1248,6 +1303,8 @@ def dashboard(request):
         "perfil": perfil_usuario,
         "citas": citas,
         "usuario": request.user,
+        "notificaciones": notificaciones,
+        "notificaciones_no_leidas": notificaciones_no_leidas,
     }
 
     return render(
@@ -1368,7 +1425,7 @@ def eliminar_cliente(request, id):
         with transaction.atomic():
             q = Clientes.objects.get(pk=id)
             nombre_cliente = f"{q.nombre} {q.apellido}"
-            
+
             # Si el cliente tiene un usuario asociado, al borrar el User se borra en cascada
             if q.user:
                 q.user.delete()
@@ -1431,7 +1488,7 @@ def actualizar_cliente(request, id):
                     q.user.save()
 
             messages.success(request, "¡Cliente actualizado correctamente!")
-            
+
             # Redirección según el rol que edita
             if rol_actual == "CLIENTE":
                 return redirect("agenda:dashboard")
@@ -1610,6 +1667,174 @@ def ver_todas_citas(request):
     }
     return render(request, "administrador/todas_citas.html", contexto)
 
+
+
+def calcular_descuento_cita(cliente, servicio, fecha_cita):
+    """
+    Retorna la promoción elegida y el importe descontado.
+    Solo se aplica una promoción por cita.
+    """
+
+    descuentos = Descuentos.objects.filter(
+        activo=True,
+        fecha_inicio__lte=fecha_cita,
+        fecha_fin__gte=fecha_cita
+    )
+
+    prioridad = {
+        Descuentos.Tipo.CUMPLEAÑOS: 1,
+        Descuentos.Tipo.PRIMERA_CITA: 2,
+        Descuentos.Tipo.FECHA_ESPECIAL: 3,
+        Descuentos.Tipo.TEMPORADA: 4,
+        Descuentos.Tipo.PERSONALIZADO: 5,
+    }
+
+    descuentos = sorted(
+        descuentos,
+        key=lambda d: (prioridad.get(d.tipo, 99), d.fecha_fin)
+    )
+
+    for descuento in descuentos:
+
+        # Validar cumpleaños: por ahora, solo el día exacto.
+        if descuento.tipo == Descuentos.Tipo.CUMPLEAÑOS:
+            nacimiento = cliente.fecha_nacimiento
+
+            if not nacimiento:
+                continue
+
+            if (
+                nacimiento.month != fecha_cita.month
+                or nacimiento.day != fecha_cita.day
+            ):
+                continue
+
+        # Validar que no haya tenido una cita completada
+        # antes de la fecha de la nueva reserva.
+        elif descuento.tipo == Descuentos.Tipo.PRIMERA_CITA:
+            ya_tuvo_cita = Citas.objects.filter(
+                cliente=cliente,
+                estado="completada",
+                fecha__lte=fecha_cita
+            ).exists()
+
+            ya_utilizo_promocion = Citas.objects.filter(
+                cliente=cliente,
+                descuento=descuento
+            ).exclude(estado="cancelada").exists()
+
+            if ya_tuvo_cita or ya_utilizo_promocion:
+                continue
+
+        # Calcular el valor del descuento.
+        if descuento.tipo_beneficio == Descuentos.TipoBeneficio.PORCENTAJE:
+            valor_descuento = int(
+                (Decimal(servicio.precio) * descuento.valor / Decimal("100"))
+                .quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            )
+        else:
+            valor_descuento = int(
+                descuento.valor.quantize(
+                    Decimal("1"),
+                    rounding=ROUND_HALF_UP
+                )
+            )
+
+        # El descuento nunca puede superar el precio.
+        valor_descuento = min(valor_descuento, servicio.precio)
+
+        if valor_descuento > 0:
+            return descuento, valor_descuento
+
+    return None, 0
+
+
+
+
+def validar_uso_descuento(cliente, descuento, fecha_cita):
+    """
+    Devuelve un mensaje si la clienta no puede utilizar el descuento.
+    Devuelve None si cumple las condiciones.
+    """
+
+    # 1. La promoción debe estar activa.
+    if not descuento.activo:
+        return "Esta promoción ya no está activa."
+
+    # 2. La cita debe estar dentro de la vigencia.
+    if not (
+        descuento.fecha_inicio <= fecha_cita <= descuento.fecha_fin
+    ):
+        return "La fecha de la cita está fuera de la vigencia de la promoción."
+
+    # 3. Consultar usos anteriores no cancelados.
+    citas_con_descuento = Citas.objects.filter(
+        cliente=cliente,
+        descuento=descuento
+    ).exclude(
+        estado__iexact="cancelada"
+    )
+
+    # 4. Primera cita.
+    if descuento.tipo == Descuentos.Tipo.PRIMERA_CITA:
+        ya_completo_cita = Citas.objects.filter(
+            cliente=cliente,
+            estado__iexact="completada",
+            fecha__lte=fecha_cita
+        ).exists()
+
+        if ya_completo_cita:
+            return (
+                "La promoción de primera cita es exclusiva para "
+                "clientes que aún no han completado una cita."
+            )
+
+        if citas_con_descuento.exists():
+            return "Ya tienes esta promoción reservada o utilizada."
+
+    # 5. Cumpleaños: una vez por año calendario.
+    elif descuento.tipo == Descuentos.Tipo.CUMPLEAÑOS:
+        nacimiento = cliente.fecha_nacimiento
+
+        if not nacimiento:
+            return (
+                "Registra tu fecha de nacimiento para utilizar "
+                "esta promoción."
+            )
+
+        if (
+            fecha_cita.month != nacimiento.month
+            or fecha_cita.day != nacimiento.day
+        ):
+            return (
+                "Esta promoción solo se puede utilizar "
+                "el día de tu cumpleaños."
+            )
+
+        ya_utilizo_ese_anio = Citas.objects.filter(
+            cliente=cliente,
+            descuento__tipo=Descuentos.Tipo.CUMPLEAÑOS,
+            fecha__year=fecha_cita.year
+        ).exclude(
+            estado__iexact="cancelada"
+        ).exists()
+
+        if ya_utilizo_ese_anio:
+            return (
+                "Ya tienes un descuento de cumpleaños reservado "
+                "o utilizado durante ese año."
+            )
+
+    # 6. Temporada, fecha especial y personalizado.
+    else:
+        if citas_con_descuento.exists():
+            return "Ya tienes esta promoción reservada o utilizada."
+
+    return None
+
+
+
+
 # CONSTANTES DE NEGOCIO
 MAX_CITAS_DIARIAS_LOCAL = 50
 MAX_CITAS_DIARIAS_MANICURISTA = 6  # Rango de 4 a 6 citas por día
@@ -1681,7 +1906,9 @@ def crear_citas(request):
                 # Bloquear lecturas concurrentes para evaluar la capacidad de forma real
                 citas_del_dia = Citas.objects.select_for_update().filter(
                     fecha=fecha_obj
-                ).exclude(estado="Cancelada")
+                ).exclude(
+                    estado__iexact="cancelada"
+                )
 
                 # 6. CONTROL 4: Capacidad Máxima Global del Spa
                 if citas_del_dia.count() >= MAX_CITAS_DIARIAS_LOCAL:
@@ -1727,37 +1954,161 @@ def crear_citas(request):
                         )
                         return redirect("agenda:crear_citas")
 
-                # 10. Persistencia
-                Citas.objects.create(
+
+
+                # 10. Aplicar el descuento pendiente, si existe.
+                precio_original = servicio.precio
+                descuento = None
+                valor_descuento = 0
+
+                descuento_pendiente_id = request.session.get(
+                    "descuento_pendiente_id"
+                )
+
+                if descuento_pendiente_id:
+                    descuento = Descuentos.objects.filter(
+                        pk=descuento_pendiente_id,
+                        activo=True,
+                        fecha_inicio__lte=fecha_obj,
+                        fecha_fin__gte=fecha_obj
+                    ).first()
+
+
+
+
+                    if not descuento:
+                        request.session.pop("descuento_pendiente_id", None)
+                        request.session.modified = True
+
+                        messages.error(
+                            request,
+                            "La promoción ya no está disponible para la fecha seleccionada. "
+                            "Elige otra promoción vigente."
+                        )
+                        return redirect("agenda:crear_citas")
+
+
+
+                    # Validar todas las reglas de la promoción.
+                    error_descuento = validar_uso_descuento(
+                        cliente,
+                        descuento,
+                        fecha_obj
+                    )
+
+                    if error_descuento:
+                        request.session.pop("descuento_pendiente_id", None)
+                        request.session.modified = True
+
+                        messages.error(request, error_descuento)
+                        return redirect("agenda:crear_citas")
+
+
+
+                    # Calcular el valor del descuento.
+                    from decimal import Decimal, ROUND_HALF_UP
+
+                    precio_decimal = Decimal(str(precio_original))
+
+                    if descuento.tipo_beneficio == Descuentos.TipoBeneficio.PORCENTAJE:
+                        valor_descuento = int(
+                            (
+                                precio_decimal * descuento.valor
+                                / Decimal("100")
+                            ).quantize(
+                                Decimal("1"),
+                                rounding=ROUND_HALF_UP
+                            )
+                        )
+                    else:
+                        valor_descuento = int(
+                            descuento.valor.quantize(
+                                Decimal("1"),
+                                rounding=ROUND_HALF_UP
+                            )
+                        )
+
+                    valor_descuento = min(
+                        valor_descuento,
+                        int(precio_original)
+                    )
+
+                    if valor_descuento <= 0:
+                        messages.error(
+                            request,
+                            "No se pudo calcular un descuento válido."
+                        )
+                        return redirect("agenda:crear_citas")
+
+                # Guardar la cita con el descuento calculado.
+                cita = Citas.objects.create(
                     cliente=cliente,
                     manicurista=manicurista,
                     servicios=servicio,
                     fecha=fecha_obj,
                     hora=hora_obj,
-                    total=servicio.precio,
+                    precio_original=precio_original,
+                    descuento_aplicado=valor_descuento,
+                    descuento=descuento,
+                    total=int(precio_original) - valor_descuento,
                     estado="programada"
                 )
+
+                notificar_cita_agendada(cita)
+
+                # Limpiar la promoción pendiente después de guardar la cita.
+                if descuento_pendiente_id:
+                    request.session.pop("descuento_pendiente_id", None)
+                    request.session.modified = True
+
+
+
 
             messages.success(request, "Cita agendada correctamente.")
             return redirect("agenda:mis_citas")
 
         except Exception:
-            messages.error(request, "Ocurrió un problema al agendar la cita. Inténtalo de nuevo.")
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "Error inesperado al agendar la cita"
+            )
+
+            messages.error(
+                request,
+                "Ocurrió un problema al agendar la cita. Inténtalo de nuevo."
+            )
             return redirect("agenda:crear_citas")
 
     # GET
     manicurista = Manicurista.objects.filter(estado="Activa")
     servicios = Servicios.objects.filter(estado__iexact="Activo")
 
+    descuento_pendiente = None
+    descuento_pendiente_id = request.session.get(
+        "descuento_pendiente_id"
+    )
+
+    if descuento_pendiente_id:
+        descuento_pendiente = Descuentos.objects.filter(
+            pk=descuento_pendiente_id,
+            activo=True
+        ).first()
+
+        if not descuento_pendiente:
+            request.session.pop("descuento_pendiente_id", None)
+
     return render(request, "cliente/crear_cita.html", {
         "cliente": cliente,
         "manicurista": manicurista,
-        "servicios": servicios
+        "servicios": servicios,
+        "descuento_pendiente": descuento_pendiente
     })
 
 
+
 @login_required(login_url="agenda:login")
-@requiere_rol("CLIENTE") # <-- Asegúrate de incluir ADMINISTRADOR aquí
+@requiere_rol("CLIENTE", "ADMINISTRADOR") # <-- Asegúrate de incluir ADMINISTRADOR aquí
 @require_http_methods(["GET", "POST"])
 @transaction.atomic
 def eliminar_citas(request, id):
@@ -1781,7 +2132,7 @@ def eliminar_citas(request, id):
 
         # Cancelación lógica
         cita.estado = "Cancelada"
-        cita.save()
+        cita.save(update_fields=["estado"])
 
         messages.success(request, "La cita se ha cancelado correctamente y el horario ha sido liberado.")
 
@@ -1802,7 +2153,7 @@ MAX_CITAS_DIARIAS_MANICURISTA = 6
 @require_http_methods(["GET", "POST"])
 def actualizar_citas(request, id):
     cliente = get_object_or_404(Clientes, user=request.user)
-    
+
     # Buscar cita perteneciente estrictamente al cliente
     cita = get_object_or_404(Citas, pk=id, cliente=cliente)
 
@@ -1845,7 +2196,7 @@ def actualizar_citas(request, id):
 
             if fecha_obj == date.today() and inicio_nueva_cita < (ahora + timedelta(hours=2)):
                 messages.error(
-                    request, 
+                    request,
                     "Para citas de hoy, la reprogramación requiere al menos 2 horas de anticipación."
                 )
                 return redirect("agenda:actualizar_citas", id=id)
@@ -1933,6 +2284,7 @@ def actualizar_citas(request, id):
                 cita.hora = hora_obj
                 cita.total = servicio.precio
                 cita.save()
+                notificar_cita_modificada(cita)
 
             messages.success(request, "Cita actualizada correctamente.")
             return redirect("agenda:mis_citas")
@@ -1986,9 +2338,9 @@ def ver_manicuristas(request):
     except Exception as e:
         # Imprime la traza exacta en la terminal/consola de Django
         print(f"--- ERROR EXACTO EN VER_MANICURISTAS: {type(e).__name__} -> {e} ---")
-        
+
         messages.error(
-            request, 
+            request,
             f"Ocurrió un error al cargar el catálogo: {e}"  # Muestra el error en pantalla temporalmente
         )
         return redirect("agenda:dashboard")
@@ -2351,10 +2703,10 @@ def cambiar_estado_cita(request, cita_id, nuevo_estado):
 
     # Seguridad: Obtener la cita asegurando que pertenezca a la manicurista en sesión
     cita = get_object_or_404(Citas, id=cita_id, manicurista=manicurista_actual)
-    
+
     # Validar que el nuevo estado sea válido dentro de las opciones del modelo
     estados_validos = dict(Citas.ESTADOS_CITA)
-    
+
     if nuevo_estado not in estados_validos:
         messages.error(request, "El estado seleccionado no es válido.")
         return redirect('agenda:citas_asignadas')
@@ -2367,15 +2719,25 @@ def cambiar_estado_cita(request, cita_id, nuevo_estado):
     try:
         # Robustez: Usar transacción atómica para asegurar la integridad en base de datos
         with transaction.atomic():
+            estado_anterior = cita.estado
             cita.estado = nuevo_estado
             cita.save()
+
+            if (
+                estado_anterior != "completada"
+                and cita.estado == "completada"
+            ):
+                notificar_resena_pendiente(cita)
+                crear_recibo_y_notificar(cita)
+
             messages.success(request, f"Estado actualizado exitosamente a '{estados_validos[nuevo_estado]}'.")
-            
+
     except Exception as e:
         # Control de errores y excepciones inesperadas
         messages.error(request, "Ocurrió un error interno al intentar actualizar el estado de la cita.")
-        
+
     return redirect('agenda:citas_asignadas')
+
 
 @require_POST  # Seguridad: Evita accesos por URL GET, garantizando que solo se ejecute mediante envío de formulario
 @requiere_rol("MANICURISTA")
@@ -2394,35 +2756,43 @@ def registrar_pago_cita(request, cita_id):
 
     # Seguridad: Obtener la cita validando que pertenezca estrictamente a la manicurista en sesión
     cita = get_object_or_404(Citas, id=cita_id, manicurista=manicurista_actual)
-    
+
     try:
         # Robustez: Usar transacción atómica para proteger la creación o actualización del pago
         with transaction.atomic():
             pago, creado = Pagos.objects.get_or_create(
                 citas=cita,
                 defaults={
-                    'valor': cita.total, 
-                    'estado': 'Realizado', 
+                    'valor': cita.total,
+                    'estado': 'Realizado',
                     'metodo_pago': 'Efectivo'
                 }
             )
-            
+
             # Si ya existía, validamos si requiere actualización de estado
             if not creado:
                 if pago.estado == 'Realizado':
+                    # Recuperar el recibo o la notificación si faltan
+                    crear_recibo_y_notificar(cita)
+
                     messages.info(request, "El pago de esta cita ya se encontraba registrado como realizado.")
                     return redirect('agenda:citas_asignadas')
-                
+
+                pago.valor = cita.total
                 pago.estado = 'Realizado'
                 pago.save()
-                
+
+            # Crear el recibo y notificar al cliente si la cita está completada y el pago realizado
+            crear_recibo_y_notificar(cita)
+
             messages.success(request, "Pago registrado correctamente.")
-            
+
     except Exception as e:
         # Control de excepciones ante fallos de base de datos
         messages.error(request, "Ocurrió un error inesperado al procesar el registro del pago.")
 
     return redirect('agenda:citas_asignadas')
+
 
 # ---------PORTAFOLIO MANICURISTA ----------------
 @login_required(login_url="agenda:login")
@@ -2699,7 +3069,7 @@ def eliminar_trabajo_portafolio(request, id):
 
 @login_required(login_url="agenda:login")
 @requiere_rol("ADMINISTRADOR")
-@require_POST  
+@require_POST
 @transaction.atomic
 def cambiar_estado_cita_admin(request, cita_id, nuevo_estado):
     if not cita_id:
@@ -2707,12 +3077,12 @@ def cambiar_estado_cita_admin(request, cita_id, nuevo_estado):
         return redirect('agenda:ver_todas_citas')
 
     cita = get_object_or_404(Citas, id=cita_id)
-    
+
     # Normalizamos el estado recibido (minúsculas y sin espacios) para evitar fallos de coincidencia
     nuevo_estado_normalizado = nuevo_estado.strip().lower()
-    
+
     estados_validos = dict(Citas.ESTADOS_CITA)
-    
+
     if nuevo_estado_normalizado not in estados_validos:
         messages.error(request, f"El estado seleccionado '{nuevo_estado}' no es válido.")
         return redirect('agenda:ver_todas_citas')
@@ -2723,10 +3093,20 @@ def cambiar_estado_cita_admin(request, cita_id, nuevo_estado):
 
     try:
         with transaction.atomic():
+            estado_anterior = cita.estado
+
             cita.estado = nuevo_estado_normalizado
             cita.save()
+
+            if (
+                estado_anterior != "completada"
+                and cita.estado == "completada"
+            ):
+                notificar_resena_pendiente(cita)
+                crear_recibo_y_notificar(cita)
+
             messages.success(request, f"Estado actualizado a '{estados_validos[nuevo_estado_normalizado]}'.")
-            
+
     except Exception as e:
         messages.error(request, "Ocurrió un error interno al intentar actualizar el estado de la cita.")
 
@@ -2735,53 +3115,73 @@ def cambiar_estado_cita_admin(request, cita_id, nuevo_estado):
 
 
 
-@require_POST  # Seguridad nativa: Rechaza cualquier acceso por GET directamente a nivel de decorador
+
+@require_POST # Seguridad nativa: Rechaza cualquier acceso por GET directamente a nivel de decorador
 @requiere_rol("ADMINISTRADOR")
 def registrar_pago_admin(request, cita_id):
-    # Control de seguridad: Validar que el ID exista
     if not cita_id:
         messages.error(request, "Identificador de cita no válido.")
-        return redirect('agenda:ver_todas_citas')
+        return redirect("agenda:ver_todas_citas")
 
-    # Obtener la cita globalmente para el rol de administrador
     cita = get_object_or_404(Citas, id=cita_id)
-    
-    # Capturar y limpiar el método de pago elegido en el <select> del HTML
-    metodo_seleccionado = request.POST.get('metodo_pago', 'Efectivo').strip()
-    
-    # Validar que el método de pago no esté vacío por seguridad o manipulación del DOM
+
+    metodo_seleccionado = request.POST.get(
+        "metodo_pago", "Efectivo"
+    ).strip()
+
     if not metodo_seleccionado:
-        metodo_seleccionado = 'Efectivo'
+        metodo_seleccionado = "Efectivo"
 
     try:
-        # Robustez: Transacción atómica para blindar la operación en base de datos
         with transaction.atomic():
             pago, creado = Pagos.objects.get_or_create(
                 citas=cita,
                 defaults={
-                    'valor': cita.total,
-                    'estado': 'Realizado',
-                    'metodo_pago': metodo_seleccionado
-                }
+                    "valor": cita.total,
+                    "estado": "Realizado",
+                    "metodo_pago": metodo_seleccionado,
+                },
             )
-            
-            # Si ya existía, actualizamos estado y método seleccionado
+
             if not creado:
-                if pago.estado == 'Realizado' and pago.metodo_pago == metodo_seleccionado:
-                    messages.info(request, "El pago de esta cita ya se encontraba registrado con los mismos datos.")
-                    return redirect('agenda:ver_todas_citas')
-                
-                pago.estado = 'Realizado'
+                if (
+                    pago.estado == "Realizado"
+                    and pago.metodo_pago == metodo_seleccionado
+                ):
+                    crear_recibo_y_notificar(cita)
+
+                    messages.info(
+                        request,
+                        "El pago de esta cita ya se encontraba "
+                        "registrado con los mismos datos."
+                    )
+                    return redirect("agenda:ver_todas_citas")
+
+                pago.valor = cita.total
+                pago.estado = "Realizado"
                 pago.metodo_pago = metodo_seleccionado
                 pago.save()
-                
-            messages.success(request, f"Pago registrado correctamente por {metodo_seleccionado}.")
-            
-    except Exception as e:
-        # Control de excepciones ante fallos imprevistos de base de datos
-        messages.error(request, "Ocurrió un error interno al intentar registrar el pago de la cita.")
 
-    return redirect('agenda:ver_todas_citas')
+            # Se ejecuta tanto para pagos nuevos como actualizados.
+            # El helper debe verificar que la cita esté completada
+            # y que el pago esté realizado antes de crear el recibo.
+            crear_recibo_y_notificar(cita)
+
+            messages.success(
+                request,
+                f"Pago registrado correctamente por "
+                f"{metodo_seleccionado}."
+            )
+
+    except Exception:
+        messages.error(
+            request,
+            "Ocurrió un error interno al intentar registrar "
+            "el pago de la cita."
+        )
+
+    return redirect("agenda:ver_todas_citas")
+
 
 
 #CRUD SERVICIOS
@@ -2792,7 +3192,7 @@ def ver_servicio(request):
     try:
         # Robustez: Consulta segura de los servicios registrados
         s = Servicios.objects.all()
-        
+
         contexto = {
             "datos": s
         }
@@ -2832,19 +3232,19 @@ def crear_servicio(request):
                 )
                 s.save()
                 messages.success(request, f"Servicio '{nombre}' creado con éxito!")
-                
+
         except DatabaseError as e:
             # Control ante fallos específicos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar guardar el servicio.")
         except Exception as e:
             # Control ante cualquier eventualidad imprevista
             messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
-            
+
         return redirect("agenda:servicios")
-    
+
     # Si la petición es GET, renderizamos el formulario con normalidad
     return render(request, "servicio/formulario_servicio.html")
-   
+
 
 
 @require_POST  # Seguridad crítica: Impide que se eliminen servicios mediante una petición GET o enlaces directos
@@ -2862,7 +3262,7 @@ def eliminar_servicio(request, id):
             nombre_servicio = s.nombre  # Guardamos el nombre antes de borrarlo para el mensaje
             s.delete()
             messages.success(request, f"Servicio '{nombre_servicio}' eliminado correctamente.")
-            
+
     except IntegrityError:
         # Control de integridad: Salta si el servicio está asociado a citas u otras tablas foráneas
         messages.info(request, "No es posible eliminar el servicio porque se encuentra asociado a registros existentes.")
@@ -2904,18 +3304,18 @@ def actualizar_servicio(request, id):
                 s.descripcion = descripcion
                 s.duracion = duracion
                 s.save()
-                
+
                 messages.success(request, f"Servicio '{s.nombre}' actualizado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar actualizar el servicio.")
         except Exception as e:
             # Control genérico ante eventualidades imprevistas
             messages.error(request, "Ocurrió un error inesperado al procesar la actualización.")
-           
+
         return redirect("agenda:servicios")
-    
+
     # Si la petición es GET, enviamos el objeto actual al formulario para prellenarlo
     contexto = {
         "datos": s
@@ -2930,13 +3330,13 @@ def ver_inventario(request):
     try:
         # Capturamos la categoría seleccionada desde los botones de filtro de la URL
         categoria_seleccionada = request.GET.get('categoria', 'todos')
-        
+
         # Filtramos los productos según la categoría o traemos todos
         if categoria_seleccionada and categoria_seleccionada != 'todos':
             i = Inventario.objects.filter(categoria=categoria_seleccionada)
         else:
             i = Inventario.objects.all()
-            
+
         # Definimos la lista de categorías para los botones de filtro superior
         lista_categorias = [
             {'nombre': 'Esmaltes y Geles'},
@@ -2945,7 +3345,7 @@ def ver_inventario(request):
             {'nombre': 'Decoraciones'},
             {'nombre': 'Preparadores'},
         ]
-        
+
         contexto = {
             "datos": i,
             "lista_categorias": lista_categorias,
@@ -2972,7 +3372,7 @@ def crear_inventario(request):
         categoria = request.POST.get('categoria', '').strip()
         cantidad = request.POST.get('cantidad', '').strip()
         stock_minimo = request.POST.get('stock_minimo', '').strip()
-        
+
         # Capturar la imagen enviada por FILES (puede venir vacía si no se selecciona ninguna)
         imagen = request.FILES.get('imagen')
 
@@ -2993,7 +3393,7 @@ def crear_inventario(request):
                 )
                 i.save()
                 messages.success(request, f"Producto '{nombre}' agregado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar guardar el producto.")
@@ -3001,9 +3401,9 @@ def crear_inventario(request):
             # Control genérico ante cualquier eventualidad imprevista
             logger.error(f"Error inesperado al crear inventario: {str(e)}")
             messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
-            
+
         return redirect("agenda:ver_inventario")
-    
+
     # Si la petición es GET, renderizamos el formulario con normalidad
     return render(request, "inventario/formulario_inventario.html")
 
@@ -3023,7 +3423,7 @@ def eliminar_inventario(request, id):
             nombre_prod = i.nombre
             i.delete()
             messages.success(request, f"Producto '{nombre_prod}' se eliminó correctamente.")
-            
+
     except IntegrityError:
         # Control de integridad: Salta si el producto está vinculado a otras tablas del sistema
         messages.info(request, "No es posible eliminar el producto porque tiene registros asociados.")
@@ -3045,15 +3445,15 @@ def registrar_movimiento(request):
     tipo = request.POST.get('tipo')
     cantidad_str = request.POST.get('cantidad')
     motivo = request.POST.get('motivo', '').strip()
-    
+
     # 1. Validar que el tipo de movimiento sea estrictamente los permitidos
     if tipo not in ['Entrada', 'Salida']:
         messages.error(request, "Tipo de movimiento no válido.")
         return redirect('agenda:ver_inventario')
-    
+
     # 2. Validar que el producto exista (evita manipulación de IDs ajenos o inexistentes)
     producto = get_object_or_404(Inventario, id=producto_id)
-    
+
     # 3. Validar cantidad numérica y positiva (Blindaje contra inyección de negativos desde el cliente)
     try:
         cantidad = int(cantidad_str)
@@ -3062,25 +3462,25 @@ def registrar_movimiento(request):
     except (TypeError, ValueError):
         messages.error(request, "La cantidad ingresada no es válida.")
         return redirect('agenda:registrar_movimiento')
-    
+
     # 4. Validar motivo obligatorio y longitud mínima/máxima para seguridad
     if not motivo or len(motivo) < 3:
         messages.error(request, "Debes proporcionar un motivo válido (mínimo 3 caracteres).")
         return redirect('agenda:registrar_movimiento')
-    
+
     # 5. Validación estricta de stock en salidas (Evita stock negativo en backend)
     if tipo == 'Salida' and producto.cantidad < cantidad:
         messages.error(request, f"Acción denegada: Stock insuficiente. Stock actual de '{producto.nombre}': {producto.cantidad}.")
         return redirect('agenda:registrar_movimiento')
-    
+
     # 6. Actualización segura de inventario
     if tipo == 'Entrada':
         producto.cantidad += cantidad
     elif tipo == 'Salida':
         producto.cantidad -= cantidad
-    
+
     producto.save()
-    
+
     # 7. Registrar el movimiento oficial
     MovimientoInventario.objects.create(
         producto=producto,
@@ -3088,7 +3488,7 @@ def registrar_movimiento(request):
         cantidad=cantidad,
         motivo=motivo
     )
-    
+
     messages.success(request, f"Movimiento de {tipo.lower()} registrado con éxito para '{producto.nombre}'.")
     return redirect('agenda:ver_inventario')
 
@@ -3114,7 +3514,7 @@ def actualizar_inventario(request, id):
         categoria = request.POST.get('categoria', '').strip()
         cantidad = request.POST.get('cantidad', '').strip()
         stock_minimo = request.POST.get('stock_minimo', '').strip()
-        
+
         # Capturar la imagen nueva enviada por FILES (si el usuario seleccionó una)
         imagen = request.FILES.get('imagen')
 
@@ -3130,15 +3530,15 @@ def actualizar_inventario(request, id):
                 i.categoria = categoria
                 i.cantidad = cantidad
                 i.stock_minimo = stock_minimo
-                
+
                 # ¡Importante! Solo actualizamos la imagen si el usuario subió una nueva
                 if imagen:
                     i.imagen = imagen
-                    
+
                 i.save()
-                
+
                 messages.success(request, f"Producto '{i.nombre}' actualizado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar actualizar el producto.")
@@ -3146,7 +3546,7 @@ def actualizar_inventario(request, id):
             # Control genérico ante eventualidades imprevistas
             logger.error(f"Error inesperado al actualizar inventario: {str(e)}")
             messages.error(request, "Ocurrió un error inesperado al procesar la actualización.")
-       
+
         return redirect("agenda:ver_inventario")
     else:
         # Petición GET: renderizamos el formulario con el objeto existente
@@ -3159,34 +3559,56 @@ def actualizar_inventario(request, id):
 
 
 
-# ----VISTA RECIBO----
+
+# ---- VISTA RECIBO ----
 @login_required(login_url="agenda:login")
 @requiere_rol("CLIENTE")
 def recibo(request, id):
     if not id:
         messages.error(request, "Identificador de cita no válido.")
-        return redirect('agenda:mis_citas')
+        return redirect("agenda:mis_citas")
 
     try:
-        # 1. Obtener el cliente actual para asegurar que la cita le pertenezca
         cliente = Clientes.objects.filter(user=request.user).first()
-        cita = get_object_or_404(Citas, pk=id, cliente=cliente)
 
-        # 2. Obtener el pago relacionado usando la relación inversa
-        pago = cita.pagos.first()
+        if not cliente:
+            messages.error(request, "No se encontró tu perfil de cliente.")
+            return redirect("agenda:mis_citas")
 
-        # 3. Validaciones corregidas (minúscula en estado y existencia de pago)
-        if cita.estado != "completada" or not pago:
-            messages.warning(request, "El recibo solo está disponible para citas completadas y pagadas.")
-            return redirect('agenda:mis_citas')
-
-        # 4. Obtener o crear el recibo
-        recibo_obj, created = Recibo.objects.get_or_create(
-            pago=pago,
-            defaults={
-                'detalle': f"Servicio realizado: {cita.servicios.nombre}"
-            }
+        cita = get_object_or_404(
+            Citas.objects.select_related(
+                "cliente",
+                "cliente__user",
+                "manicurista",
+                "servicios",
+                "descuento",
+            ),
+            pk=id,
+            cliente=cliente,
         )
+
+        # Buscar un pago efectivamente realizado
+        pago = cita.pagos.filter(
+            estado="Realizado"
+        ).order_by("-fecha_pago", "-id").first()
+
+        if cita.estado != "completada" or not pago:
+            messages.warning(
+                request,
+                "El recibo solo está disponible para citas completadas y pagadas."
+            )
+            return redirect("agenda:mis_citas")
+
+        # Crear o recuperar el recibo y generar la notificación si falta
+        recibo_obj = crear_recibo_y_notificar(cita)
+
+        # Validar que se haya podido obtener el recibo
+        if recibo_obj is None:
+            messages.warning(
+                request,
+                "No fue posible generar el recibo de esta cita."
+            )
+            return redirect("agenda:mis_citas")
 
         contexto = {
             "recibo": recibo_obj,
@@ -3195,10 +3617,15 @@ def recibo(request, id):
         }
 
     except DatabaseError:
-        messages.error(request, "Ocurrió un error al intentar generar el recibo de la cita.")
-        return redirect('agenda:mis_citas')
+        messages.error(
+            request,
+            "Ocurrió un error al intentar generar el recibo de la cita."
+        )
+        return redirect("agenda:mis_citas")
 
     return render(request, "recibo/recibo.html", contexto)
+
+
 
 
 #-----CRUD GASTOS----
@@ -3207,7 +3634,7 @@ def ver_gasto(request):
     try:
         # Robustez: Consulta segura de todos los registros de gastos
         g = Gastos.objects.all()
-        
+
         contexto = {
             "datos": g
         }
@@ -3248,16 +3675,16 @@ def crear_gastos(request):
                 )
                 g.save()
                 messages.success(request, "Gasto registrado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar registrar el gasto.")
         except Exception as e:
             # Control genérico ante cualquier eventualidad imprevista
             messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
-            
+
         return redirect("agenda:gastos")
-    
+
     # Si la petición es GET, renderizamos el formulario con normalidad
     return render(request, "gastos/formulario_gastos.html")
 
@@ -3275,7 +3702,7 @@ def eliminar_gastos(request, id):
             g = get_object_or_404(Gastos, pk=id)
             g.delete()
             messages.success(request, "Gasto eliminado correctamente.")
-            
+
     except IntegrityError:
         # Control de integridad: Salta si el gasto está vinculado a restricciones foráneas
         messages.info(request, "No es posible eliminar el gasto porque tiene registros asociados.")
@@ -3321,16 +3748,16 @@ def actualizar_gastos(request, id):
                 g.fecha = fecha
                 g.descripcion = descripcion
                 g.save()
-                
+
                 messages.success(request, "Gasto actualizado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar actualizar el gasto.")
         except Exception as e:
             # Control genérico ante eventualidades imprevistas
             messages.error(request, "Ocurrió un error inesperado al procesar la actualización.")
-       
+
         return redirect("agenda:gastos")
     else:
         # Petición GET: reutilizamos directamente el objeto 'g' que ya consultamos al inicio
@@ -3349,7 +3776,7 @@ def ver_pagos(request):
     try:
         # Robustez: Consulta segura de todos los registros de pagos
         p = Pagos.objects.all()
-        
+
         contexto = {
             "datos": p
         }
@@ -3383,7 +3810,7 @@ def crear_pago(request):
             # Robustez: Transacción atómica combinada con get_object_or_404 para verificar la cita de forma segura
             with transaction.atomic():
                 citas = get_object_or_404(Citas, pk=citas_id)
-                
+
                 # Validación de duplicidad con bloqueo transaccional
                 existe = Pagos.objects.filter(citas_id=citas_id).exists()
                 if existe:
@@ -3398,8 +3825,14 @@ def crear_pago(request):
                     valor=citas.total
                 )
                 p.save()
+
+                # Crear el recibo y notificar al cliente solo si el pago fue realizado
+                # El helper también debe verificar que la cita esté completada
+                if p.estado == "Realizado":
+                    crear_recibo_y_notificar(citas)
+
                 messages.success(request, "Pago registrado correctamente.")
-                
+
         except DatabaseError:
             # Control específico ante fallos de base de datos
             messages.error(request, "Ocurrió un error en la base de datos al intentar registrar el pago.")
@@ -3407,9 +3840,9 @@ def crear_pago(request):
             # Control genérico ante eventualidades imprevistas
             logger.error(f"Error inesperado en pagos: {str(e)}")
             messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
-            
+
         return redirect("agenda:pagos")
-    
+
     else:
         try:
             # Petición GET: consulta segura de las citas disponibles para asociar en el formulario
@@ -3423,8 +3856,9 @@ def crear_pago(request):
                 "citas": citas
             }
             messages.error(request, "Ocurrió un error al cargar el listado de citas.")
-            
+
         return render(request, "pago/formulario_pago.html", contexto)
+
 
 
 @require_POST  # Seguridad crítica: Impide que se eliminen pagos mediante peticiones GET o enlaces directos
@@ -3441,7 +3875,7 @@ def eliminar_pago(request, id):
             p = get_object_or_404(Pagos, pk=id)
             p.delete()
             messages.success(request, "Pago eliminado correctamente.")
-            
+
     except IntegrityError:
         # Control de integridad: Salta si el pago tiene dependencias o restricciones foráneas
         messages.info(request, "No es posible eliminar el pago porque tiene registros asociados.")
@@ -3494,8 +3928,13 @@ def actualizar_pago(request, id):
 
                 pago.save()
 
+                # Crear el recibo y notificar al cliente solo si el pago fue realizado
+                # El helper también debe verificar que la cita esté completada
+                if pago.estado == "Realizado":
+                    crear_recibo_y_notificar(cita)
+
                 messages.success(request, "Pago actualizado correctamente.")
-                
+
         except DatabaseError:
             messages.error(request, "Ocurrió un error en la base de datos al intentar actualizar el pago.")
             return redirect("agenda:actualizar_pago", id=id)
@@ -3521,11 +3960,12 @@ def actualizar_pago(request, id):
 
 
 
+
 # ----------------- MÓDULO DE CONTABILIDAD ----------------
 @requiere_rol("ADMINISTRADOR")
 def modulo_contabilidad(request):
     hoy = now().date()
-    
+
     # Obtenemos los parámetros de forma segura limpiando puntos o comas
     mes_str = request.GET.get('mes', str(hoy.month)).replace('.', '').replace(',', '')
     anio_str = request.GET.get('anio', str(hoy.year)).replace('.', '').replace(',', '')
@@ -3544,7 +3984,7 @@ def modulo_contabilidad(request):
             fecha_pago__year=anio_actual,
             estado='Realizado'
         ).select_related('citas', 'citas__servicios')
-        
+
         ingresos_totales = pagos_mes.aggregate(total=Sum('valor'))['total'] or 0
 
         # Desglose por método de pago según tus choices (Efectivo, Nequi, Bancolombia, Transferencia)
@@ -3575,16 +4015,16 @@ def modulo_contabilidad(request):
             # Usa el porcentaje configurado en tu modelo Servicios (por defecto 50%)
             porcentaje = cita.servicios.porcentaje_comision / 100
             comision_cita = float(cita.total) * porcentaje
-            
+
             comisiones_totales += comision_cita
-            
+
             nombre_completo = f"{manicurista.nombre} {manicurista.apellido}"
             if nombre_completo not in resumen_manicuristas:
                 resumen_manicuristas[nombre_completo] = {
-                    'servicios_realizados': 0, 
+                    'servicios_realizados': 0,
                     'total_comision': 0
                 }
-            
+
             resumen_manicuristas[nombre_completo]['servicios_realizados'] += 1
             resumen_manicuristas[nombre_completo]['total_comision'] += comision_cita
 
@@ -3685,14 +4125,14 @@ def obtener_citas_json(request):
     for cita in citas:
         # Crear timestamp de inicio
         start_dt = datetime.combine(cita.fecha, cita.hora)
-        
+
         # Duración segura
         if cita.servicios and hasattr(cita.servicios, 'duracion_horas'):
             duracion_min = int(cita.servicios.duracion_horas * 60)
         elif cita.servicios and hasattr(cita.servicios, 'duracion') and cita.servicios.duracion:
             duracion_min = cita.servicios.duracion
         else:
-            duracion_min = 60 
+            duracion_min = 60
 
         end_dt = start_dt + timedelta(minutes=duracion_min)
 
@@ -3728,7 +4168,7 @@ def obtener_citas_cliente_json(request, cliente_id):
         cliente = Clientes.objects.get(id=cliente_id)
         # Obtenemos todas sus citas ordenadas por fecha reciente
         citas = Citas.objects.filter(cliente=cliente).select_related('servicios', 'manicurista').order_by('-fecha', '-hora')
-        
+
         citas_data = []
         for cita in citas:
             total_valor = float(cita.total) if hasattr(cita, 'total') and cita.total else 0.0
@@ -3739,9 +4179,400 @@ def obtener_citas_cliente_json(request, cliente_id):
                 "estado": getattr(cita, 'estado', 'Programada'),
                 "total": total_valor
             })
-            
+
         return JsonResponse({'citas': citas_data})
     except Clientes.DoesNotExist:
         return JsonResponse({'citas': [], 'error': 'Cliente no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'citas': [], 'error': str(e)}, status=400)
+
+
+@login_required(login_url="agenda:login")
+@requiere_rol("CLIENTE")
+def mis_descuentos(request):
+    """
+    Muestra las promociones vigentes y calcula
+    si la clienta puede utilizarlas.
+    """
+    cliente = get_object_or_404(
+        Clientes,
+        user=request.user
+    )
+
+    hoy = timezone.localdate()
+
+    descuentos = Descuentos.objects.filter(
+        activo=True,
+        fecha_fin__gte=hoy
+    ).order_by("fecha_inicio", "fecha_fin")
+
+    for descuento in descuentos:
+        # Estado inicial.
+        descuento.estado_cliente = "disponible"
+
+        # La promoción todavía no comienza.
+        if descuento.fecha_inicio > hoy:
+            descuento.estado_cliente = "proximamente"
+            continue
+
+        # Revisar si ya utilizó o reservó la promoción.
+        if descuento.tipo == Descuentos.Tipo.CUMPLEAÑOS:
+            nacimiento = cliente.fecha_nacimiento
+
+            if not nacimiento:
+                descuento.estado_cliente = "sin_fecha_nacimiento"
+                continue
+
+            ya_utilizo = Citas.objects.filter(
+                cliente=cliente,
+                descuento__tipo=Descuentos.Tipo.CUMPLEAÑOS,
+                fecha__year=hoy.year
+            ).exclude(
+                estado__iexact="cancelada"
+            ).exists()
+
+            if ya_utilizo:
+                descuento.estado_cliente = "utilizado"
+
+        elif descuento.tipo == Descuentos.Tipo.PRIMERA_CITA:
+            ya_completo_cita = Citas.objects.filter(
+                cliente=cliente,
+                estado__iexact="completada"
+            ).exists()
+
+            ya_utilizo = Citas.objects.filter(
+                cliente=cliente,
+                descuento=descuento
+            ).exclude(
+                estado__iexact="cancelada"
+            ).exists()
+
+            if ya_completo_cita or ya_utilizo:
+                descuento.estado_cliente = "utilizado"
+
+        else:
+            ya_utilizo = Citas.objects.filter(
+                cliente=cliente,
+                descuento=descuento
+            ).exclude(
+                estado__iexact="cancelada"
+            ).exists()
+
+            if ya_utilizo:
+                descuento.estado_cliente = "utilizado"
+
+    contexto = {
+        "descuentos": descuentos,
+        "hoy": hoy,
+    }
+
+    return render(
+        request,
+        "cliente/mis_descuentos.html",
+        contexto
+    )
+
+
+
+
+@login_required(login_url="agenda:login")
+@requiere_rol("CLIENTE")
+@require_http_methods(["GET", "POST"])
+def usar_descuento(request, descuento_id):
+    cliente = get_object_or_404(
+        Clientes,
+        user=request.user
+    )
+
+    hoy = timezone.localdate()
+
+    # 1. Comprobar que la promoción esté activa y no haya vencido.
+    descuento = get_object_or_404(
+        Descuentos,
+        pk=descuento_id,
+        activo=True,
+        fecha_fin__gte=hoy
+    )
+
+    # 2. Validar si la clienta puede usar esta promoción.
+
+    # 2. Validar condiciones que no dependen de una cita concreta.
+    if descuento.tipo == Descuentos.Tipo.PRIMERA_CITA:
+        ya_tuvo_cita = Citas.objects.filter(
+            cliente=cliente,
+            estado__iexact="completada"
+        ).exists()
+
+        ya_utilizo_promocion = Citas.objects.filter(
+            cliente=cliente,
+            descuento=descuento
+        ).exclude(
+            estado__iexact="cancelada"
+        ).exists()
+
+        if ya_tuvo_cita or ya_utilizo_promocion:
+            messages.error(
+                request,
+                "Esta promoción es exclusiva para tu primera cita."
+            )
+            return redirect("agenda:mis_descuentos")
+
+    elif descuento.tipo == Descuentos.Tipo.CUMPLEAÑOS:
+        nacimiento = cliente.fecha_nacimiento
+
+        if not nacimiento:
+            messages.error(
+                request,
+                "Registra tu fecha de nacimiento para utilizar "
+                "la promoción de cumpleaños."
+            )
+            return redirect("agenda:mis_descuentos")
+
+        ya_utilizo_ese_anio = Citas.objects.filter(
+            cliente=cliente,
+            descuento__tipo=Descuentos.Tipo.CUMPLEAÑOS,
+            fecha__year=hoy.year
+        ).exclude(
+            estado__iexact="cancelada"
+        ).exists()
+
+        if ya_utilizo_ese_anio:
+            messages.error(
+                request,
+                "Ya utilizaste tu descuento de cumpleaños este año."
+            )
+            return redirect("agenda:mis_descuentos")
+
+    else:
+        ya_utilizo_promocion = Citas.objects.filter(
+            cliente=cliente,
+            descuento=descuento
+        ).exclude(
+            estado__iexact="cancelada"
+        ).exists()
+
+        if ya_utilizo_promocion:
+            messages.error(
+                request,
+                "Ya tienes esta promoción reservada o utilizada."
+            )
+            return redirect("agenda:mis_descuentos")
+
+
+    # 3. Mostrar únicamente citas futuras sin otro descuento,
+    # dentro de la vigencia de la promoción.
+    citas_elegibles = Citas.objects.filter(
+    cliente=cliente,
+    estado="programada",
+    fecha__gte=max(hoy, descuento.fecha_inicio),
+    fecha__lte=descuento.fecha_fin,
+    descuento__isnull=True,
+    descuento_aplicado=0
+    ).select_related(
+        "servicios",
+        "manicurista"
+    ).order_by("fecha", "hora")
+
+    # 4. Para cumpleaños, la cita debe ser el día y mes exactos.
+    if descuento.tipo == Descuentos.Tipo.CUMPLEAÑOS:
+        citas_elegibles = citas_elegibles.filter(
+            fecha__month=nacimiento.month,
+            fecha__day=nacimiento.day
+        )
+
+    # 5. Procesar el formulario cuando la clienta selecciona una cita.
+    if request.method == "POST":
+        cita_id = request.POST.get("cita_id")
+
+        if not cita_id:
+            messages.error(request, "Selecciona una cita para continuar.")
+            return redirect("agenda:usar_descuento", descuento_id=descuento.id)
+
+        cita = get_object_or_404(
+            Citas,
+            pk=cita_id,
+            cliente=cliente
+        )
+
+        error_descuento = validar_uso_descuento(
+            cliente,
+            descuento,
+            cita.fecha
+        )
+
+        if error_descuento:
+            messages.error(request, error_descuento)
+            return redirect("agenda:usar_descuento", descuento_id=descuento.id)
+
+
+        with transaction.atomic():
+            cita = get_object_or_404(
+                Citas.objects.select_for_update(),
+                pk=cita_id,
+                cliente=cliente
+            )
+
+            # Comprobar nuevamente que la cita siga disponible.
+            if (
+                cita.estado != "programada"
+                or cita.fecha < hoy
+                or cita.descuento_id is not None
+                or cita.descuento_aplicado != 0
+            ):
+                messages.error(
+                    request,
+                    "Esta cita ya no está disponible para aplicar "
+                    "el descuento."
+                )
+                return redirect(
+                    "agenda:usar_descuento",
+                    descuento_id=descuento.id
+                )
+
+            # La cita debe estar dentro de la vigencia.
+            if not (
+                descuento.fecha_inicio <= cita.fecha
+                <= descuento.fecha_fin
+            ):
+                messages.error(
+                    request,
+                    "La fecha de la cita no está dentro de la "
+                    "vigencia de la promoción."
+                )
+                return redirect(
+                    "agenda:usar_descuento",
+                    descuento_id=descuento.id
+                )
+
+
+            # Validar nuevamente todas las reglas del descuento.
+            # Se repite dentro de la transacción para evitar
+            # utilizar una promoción que ya fue reservada.
+            error_descuento = validar_uso_descuento(
+                cliente,
+                descuento,
+                cita.fecha
+            )
+
+            if error_descuento:
+                messages.error(request, error_descuento)
+                return redirect(
+                    "agenda:usar_descuento",
+                    descuento_id=descuento.id
+                )
+
+
+            # 6. Calcular el descuento en el servidor.
+            from decimal import Decimal, ROUND_HALF_UP
+
+            precio_original = Decimal(str(cita.servicios.precio))
+
+            if descuento.tipo_beneficio == (
+                Descuentos.TipoBeneficio.PORCENTAJE
+            ):
+                valor_descuento = int(
+                    (
+                        precio_original * descuento.valor
+                        / Decimal("100")
+                    ).quantize(
+                        Decimal("1"),
+                        rounding=ROUND_HALF_UP
+                    )
+                )
+            else:
+                valor_descuento = int(
+                    descuento.valor.quantize(
+                        Decimal("1"),
+                        rounding=ROUND_HALF_UP
+                    )
+                )
+
+            # El descuento nunca puede superar el precio del servicio.
+            valor_descuento = min(
+                valor_descuento,
+                int(precio_original)
+            )
+
+            if valor_descuento <= 0:
+                messages.error(
+                    request,
+                    "No se pudo calcular un descuento válido."
+                )
+                return redirect(
+                    "agenda:usar_descuento",
+                    descuento_id=descuento.id
+                )
+
+            # 7. Guardar los valores definitivos de la cita.
+            cita.precio_original = int(precio_original)
+            cita.descuento_aplicado = valor_descuento
+            cita.descuento = descuento
+            cita.total = int(precio_original) - valor_descuento
+
+            cita.save(
+                update_fields=[
+                    "precio_original",
+                    "descuento_aplicado",
+                    "descuento",
+                    "total"
+                ]
+            )
+
+        # 8. Confirmar que se aplicó.
+        request.session.pop("descuento_pendiente_id", None)
+
+        messages.success(
+            request,
+            "¡Descuento aplicado correctamente a tu cita!"
+        )
+
+        return redirect("agenda:mis_descuentos")
+
+    # 9. Si hay citas elegibles, mostrar el selector.
+    if citas_elegibles.exists():
+        return render(
+            request,
+            "cliente/usar_descuento.html",
+            {
+                "descuento": descuento,
+                "citas_elegibles": citas_elegibles,
+            }
+        )
+
+    # 10. Si no hay citas elegibles, guardar la promoción
+    # temporalmente para continuar con el flujo de reservas.
+    request.session["descuento_pendiente_id"] = descuento.id
+
+    messages.info(
+        request,
+        "Tu promoción está seleccionada. Agenda una cita "
+        "que cumpla las condiciones para utilizarla."
+    )
+
+    return redirect("agenda:crear_citas")
+
+
+@login_required(login_url="agenda:login")
+def abrir_notificacion(request, notificacion_id):
+    notificacion = get_object_or_404(
+        Notificacion,
+        id=notificacion_id,
+        destinatario=request.user
+    )
+
+    # Marcar como leída al abrirla
+    if not notificacion.leida:
+        notificacion.leida = True
+        notificacion.save(update_fields=["leida"])
+
+    # Redirigir únicamente a una ruta interna segura
+    destino = notificacion.url
+
+    if destino and url_has_allowed_host_and_scheme(
+        destino,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure()
+    ):
+        return redirect(destino)
+
+    return redirect("agenda:dashboard")

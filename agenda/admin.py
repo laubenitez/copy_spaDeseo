@@ -180,3 +180,68 @@ class SolicitudSoporteAdmin(admin.ModelAdmin):
     ordering = (
         "-fecha_creacion",
     )
+
+@admin.register(Descuentos)
+class DescuentosAdmin(admin.ModelAdmin):
+    list_display = (
+    "id",
+    "nombre",
+    "tipo",
+    "tipo_beneficio",
+    "valor",
+    "fecha_inicio",
+    "fecha_fin",
+    "activo",
+    "vigente",
+    )
+
+    list_filter = (
+        "tipo",
+        "tipo_beneficio",
+        "activo",
+        "fecha_inicio",
+        "fecha_fin",
+    )
+
+    search_fields = (
+        "nombre",
+        "descripcion",
+    )
+
+    ordering = (
+        "-fecha_inicio",
+    )
+
+    readonly_fields = (
+        "fecha_creacion",
+        "fecha_actualizacion",
+    )
+
+    fieldsets = (
+        ("Información de la promoción", {
+            "fields": (
+                "nombre",
+                "descripcion",
+                "tipo",
+                "activo",
+            )
+        }),
+        ("Beneficio", {
+            "fields": (
+                "tipo_beneficio",
+                "valor",
+            )
+        }),
+        ("Vigencia", {
+            "fields": (
+                "fecha_inicio",
+                "fecha_fin",
+            )
+        }),
+        ("Auditoría", {
+            "fields": (
+                "fecha_creacion",
+                "fecha_actualizacion",
+            )
+        }),
+    )

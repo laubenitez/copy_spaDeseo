@@ -15,6 +15,44 @@
         </p>
     </div>
 
+    
+    {% if descuento_pendiente %}
+    <div class="mb-6 rounded-2xl border border-pink-200 bg-pink-50 p-5 dark:border-pink-900 dark:bg-pink-950/30">
+        <div class="flex items-start gap-3">
+            <div class="rounded-full bg-pink-100 p-3 dark:bg-pink-900">
+                <i class="fas fa-ticket-alt text-pink-600 dark:text-pink-300"></i>
+            </div>
+
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-pink-700 dark:text-pink-300">
+                    ¡Tienes un descuento seleccionado!
+                </p>
+
+                <h3 class="mt-1 text-lg font-bold text-gray-900 dark:text-white">
+                    {{ descuento_pendiente.nombre }}
+                </h3>
+
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    {{ descuento_pendiente.descripcion|default:"Disfruta este beneficio en tu próxima cita." }}
+                </p>
+
+                <p class="mt-2 font-semibold text-pink-700 dark:text-pink-300">
+                    {% if descuento_pendiente.tipo_beneficio == "PORCENTAJE" %}
+                        {{ descuento_pendiente.valor|floatformat:0 }} % de descuento
+                    {% else %}
+                        ${{ descuento_pendiente.valor|floatformat:0 }} COP de descuento
+                    {% endif %}
+                </p>
+
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    El descuento se aplicará si la fecha de tu cita cumple las condiciones de la promoción.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
     <!-- Formulario -->
     <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
         <form method="POST" class="space-y-6">

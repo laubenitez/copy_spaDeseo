@@ -8,69 +8,71 @@
 <!-- Encabezado -->
 <div class="mb-8">
 
+    <div class="flex flex-col lg:flex-row lg:items-center gap-5">
 
+        <!-- Información de la manicurista -->
+        <div class="flex items-center gap-5 flex-1 min-w-0">
 
+            <!-- Foto -->
+            <div class="flex-shrink-0">
 
-    <!-- Información de la manicurista -->
-    <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+                {% if manicurista.foto_perfil %}
 
-        <!-- Foto -->
-        <div class="flex-shrink-0">
+                    <img
+                        src="{{ manicurista.foto_perfil.url }}"
+                        alt="Foto de {{ manicurista.nombre }} {{ manicurista.apellido }}"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-pink-100 dark:border-pink-950/40 shadow-sm"
+                        draggable="false">
 
-            {% if manicurista.foto_perfil %}
+                {% else %}
 
-                <img
-                    src="{{ manicurista.foto_perfil.url }}"
-                    alt="Foto de {{ manicurista.nombre }} {{ manicurista.apellido }}"
-                    class="w-24 h-24 rounded-full object-cover border-4 border-pink-100 dark:border-pink-950/40 shadow-sm"
-                    draggable="false">
+                    <div class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
 
-            {% else %}
+                        <span class="text-2xl font-bold text-pink-600 dark:text-pink-400">
+                            {{ manicurista.nombre|slice:":1"|upper }}{{ manicurista.apellido|slice:":1"|upper }}
+                        </span>
 
-                <div class="w-24 h-24 rounded-full bg-pink-100 dark:bg-pink-950/40 flex items-center justify-center">
+                    </div>
 
-                    <span class="text-2xl font-bold text-pink-600 dark:text-pink-400">
-                        {{ manicurista.nombre|slice:":1"|upper }}{{ manicurista.apellido|slice:":1"|upper }}
-                    </span>
+                {% endif %}
 
-                </div>
+            </div>
 
-            {% endif %}
+            <!-- Datos -->
+            <div class="min-w-0">
 
-        </div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white leading-tight">
+                    Portafolio de {{ manicurista.nombre }} {{ manicurista.apellido }}
+                </h1>
 
+                {% if manicurista.especialidad %}
 
-        <!-- Datos -->
-        <div>
+                    <p class="text-sm text-pink-600 dark:text-pink-400 font-medium mt-1">
+                        {{ manicurista.especialidad }}
+                    </p>
 
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Portafolio de {{ manicurista.nombre }} {{ manicurista.apellido }}
-            </h1>
+                {% endif %}
 
-            {% if manicurista.especialidad %}
-
-                <p class="text-sm text-pink-600 dark:text-pink-400 font-medium mt-1">
-                    {{ manicurista.especialidad }}
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Descubre algunos de sus trabajos y diseños.
                 </p>
 
-            {% endif %}
-
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Descubre algunos de sus trabajos y diseños.
-            </p>
+            </div>
 
         </div>
 
         <!-- Botón volver -->
-        <div class="flex-shrink-0 sm:ml-auto sm:self-center">
+        <div class="flex justify-end flex-shrink-0 print:hidden lg:ml-auto">
 
-            <a
-                href="{% url 'agenda:manicuristas_cliente' %}"
-                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 text-sm font-semibold transition">
+            <a href="{% url 'agenda:manicuristas_cliente' %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
 
-                <i class="fa-solid fa-arrow-left"></i>
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
 
-                Volver a manicuristas
+                Volver a Manicuristas
 
             </a>
 
@@ -79,6 +81,7 @@
     </div>
 
 </div>
+
 
 
 <!-- Portafolio -->
@@ -192,7 +195,7 @@
     </div>
 
 {% endif %}
-```
+
 
 </div>
 

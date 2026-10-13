@@ -1,0 +1,103 @@
+
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+    <a href="{% url 'agenda:mis_descuentos' %}"
+       class="text-pink-600 hover:text-pink-700 text-sm font-medium">
+        ← Volver a mis descuentos
+    </a>
+
+    <div class="mt-5 mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+            ¿A qué cita quieres aplicar tu descuento?
+        </h1>
+
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Selecciona una de tus próximas citas.
+        </p>
+    </div>
+
+    <div class="rounded-2xl border border-pink-200 dark:border-pink-900
+                bg-pink-50 dark:bg-pink-950/30 p-5 mb-6">
+
+        <p class="text-sm text-pink-700 dark:text-pink-300">
+            Promoción seleccionada
+        </p>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-1">
+            {{ descuento.nombre }}
+        </h2>
+
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">
+            {{ descuento.descripcion|default:"Beneficio especial de Spa Deseo." }}
+        </p>
+
+        <p class="text-sm font-semibold text-pink-700 dark:text-pink-300 mt-3">
+            {% if descuento.tipo_beneficio == "PORCENTAJE" %}
+                {{ descuento.valor|floatformat:0 }} % de descuento
+            {% else %}
+                ${{ descuento.valor|floatformat:0 }} COP de descuento
+            {% endif %}
+        </p>
+    </div>
+
+    {% if citas_elegibles %}
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="space-y-3">
+                {% for cita in citas_elegibles %}
+                    <label class="flex items-start gap-3 p-4 rounded-xl
+                                  border border-gray-200 dark:border-gray-700
+                                  bg-white dark:bg-gray-900 cursor-pointer
+                                  hover:border-pink-400 transition">
+
+                        <input
+                            type="radio"
+                            name="cita_id"
+                            value="{{ cita.id }}"
+                            required
+                            class="mt-1 accent-pink-600"
+                        >
+
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900 dark:text-white">
+                                {{ cita.servicios }}
+                            </p>
+
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Manicurista: {{ cita.manicurista }}
+                            </p>
+
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                {{ cita.fecha|date:"d/m/Y" }} ·
+                                {{ cita.hora|time:"g:i A" }}
+                            </p>
+
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">
+                                Precio actual: ${{ cita.total|floatformat:0 }} COP
+                            </p>
+                        </div>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <button
+                type="submit"
+                class="w-full mt-6 rounded-xl bg-pink-600 hover:bg-pink-700
+                       text-white font-semibold py-3 px-5 transition"
+            >
+                Continuar
+            </button>
+        </form>
+
+    {% else %}
+        <p class="text-gray-500 dark:text-gray-400">
+            No tienes citas disponibles para esta promoción.
+        </p>
+    {% endif %}
+
+</div>
+{% endblock %}
