@@ -32,11 +32,12 @@ from django.db.models import Prefetch
 from django.utils.dateparse import parse_date
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.core.mail import send_mail
 
 # Importaciones locales explícitas
 from .models import (
     Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo,
-    Gastos, Resena, SolicitudSoporte, PortafolioManicurista,  PreferenciasUsuario, Descuentos, Notificacion,
+    Gastos, Resena, SolicitudSoporte, PortafolioManicurista,  PreferenciasUsuario, Descuentos, Notificacion, PerfilUsuario,
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -54,6 +55,12 @@ from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
 from .utils import validar_password, requiere_rol
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+import hashlib
+import hmac
+import secrets
+import time
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -242,6 +249,7 @@ class GastosViewSet(viewsets.ModelViewSet):
 
 
 
+
 @login_required
 def ajustes(request):
     preferencias, creada = PreferenciasUsuario.objects.get_or_create(
@@ -249,6 +257,12 @@ def ajustes(request):
     )
 
     if request.method == "POST":
+        # Seguridad: guardar la verificación adicional.
+        # Si el interruptor está marcado, se guarda True.
+        # Si está desmarcado, se guarda False.
+        preferencias.verificacion_adicional = (request.POST.get("verificacion_adicional") == "on")
+        print( "DEBUG - Verificación recibida:", request.POST.get("verificacion_adicional"))
+
         # Notificaciones y privacidad
         preferencias.recordatorios_whatsapp = (
             "recordatorios_whatsapp" in request.POST
@@ -268,29 +282,15 @@ def ajustes(request):
         animaciones = request.POST.get("animaciones", "activadas")
         modo_lectura = request.POST.get("modo_lectura", "desactivado")
 
-        # Validar las opciones antes de guardarlas
+        # Opciones válidas
         opciones_validas = {
-            "formato_fecha": {
-                "DMY", "MDY"
-            },
-            "formato_hora": {
-                "12", "24"
-            },
-            "idioma": {
-                "es", "en"
-            },
-            "tamano_texto": {
-                "normal", "grande", "pequeno"
-            },
-            "contraste": {
-                "estandar", "alto"
-            },
-            "animaciones": {
-                "activadas", "reducidas"
-            },
-            "modo_lectura": {
-                "desactivado", "activado"
-            },
+            "formato_fecha": {"DMY", "MDY"},
+            "formato_hora": {"12", "24"},
+            "idioma": {"es", "en"},
+            "tamano_texto": {"normal", "grande", "pequeno"},
+            "contraste": {"estandar", "alto"},
+            "animaciones": {"activadas", "reducidas"},
+            "modo_lectura": {"desactivado", "activado"},
         }
 
         valores_recibidos = {
@@ -318,7 +318,10 @@ def ajustes(request):
             for campo, valor in valores_recibidos.items():
                 setattr(preferencias, campo, valor)
 
+            # Guardar todas las preferencias, incluida la verificación.
             preferencias.save()
+
+            print( "DEBUG - Verificación guardada:", preferencias.verificacion_adicional)
 
             messages.success(
                 request,
@@ -333,6 +336,7 @@ def ajustes(request):
     }
 
     return render(request, "ajustes.html", contexto)
+
 
 @login_required(login_url="agenda:login")
 def cambiar_contrasena(request):
@@ -758,152 +762,296 @@ def editar_perfil(request):
 
 
 
+
 def login(request):
-    # Si ya está autenticado
+    """
+    Inicio de sesión de Spa Deseo.
+    Si la verificación adicional está activa, solicita un código por correo.
+    """
+
     if request.user.is_authenticated:
         return redirect("agenda:dashboard")
 
-    if request.method == "POST":
+    if request.method != "POST":
+        return render(request, "login.html")
 
-        correo = request.POST.get("user", "").strip()
-        clave = request.POST.get("password", "")
+    correo = request.POST.get("user", "").strip()
+    clave = request.POST.get("password", "")
 
-        if not correo or not clave:
-            messages.error(
-                request,
-                "Debes ingresar el correo y la contraseña."
-            )
-            return redirect("agenda:login")
-
-        # =====================================================
-        # BUSCAR USUARIO POR CORREO
-        # =====================================================
-
-        try:
-            usuario = User.objects.get(
-                email__iexact=correo
-            )
-
-        except User.DoesNotExist:
-            messages.error(
-                request,
-                "Credenciales inválidas"
-            )
-            return redirect("agenda:login")
-
-        # =====================================================
-        # AUTENTICAR
-        # =====================================================
-
-        user = authenticate(
+    if not correo or not clave:
+        messages.error(
             request,
-            username=usuario.username,
-            password=clave
+            "Debes ingresar el correo y la contraseña."
         )
+        return redirect("agenda:login")
 
-        if user is None:
+    # Buscar la cuenta por correo.
+    try:
+        usuario = User.objects.get(email__iexact=correo)
+    except (User.DoesNotExist, User.MultipleObjectsReturned):
+        messages.error(request, "Credenciales inválidas.")
+        return redirect("agenda:login")
+
+    # Validar la contraseña con el sistema de autenticación de Django.
+    user = authenticate(
+        request,
+        username=usuario.get_username(),
+        password=clave
+    )
+
+    if user is None:
+        messages.error(request, "Credenciales inválidas.")
+        return redirect("agenda:login")
+
+    if not user.is_active:
+        messages.error(request, "Tu cuenta está desactivada.")
+        return redirect("agenda:login")
+
+    # Comprobar que la cuenta tenga perfil y rol.
+    try:
+        perfil = user.perfil
+    except (AttributeError, PerfilUsuario.DoesNotExist):
+        messages.error(
+            request,
+            "Tu cuenta no tiene un perfil asignado."
+        )
+        return redirect("agenda:login")
+
+    if not perfil.rol:
+        messages.error(
+            request,
+            "Tu cuenta no tiene un rol asignado."
+        )
+        return redirect("agenda:login")
+
+    # Consultar las preferencias individuales.
+    preferencias, _ = PreferenciasUsuario.objects.get_or_create(
+        user=user
+    )
+
+    # Si está activada la verificación adicional, enviar un código.
+    if preferencias.verificacion_adicional:
+
+        if not user.email:
             messages.error(
                 request,
-                "Credenciales inválidas"
+                "Tu cuenta necesita un correo electrónico "
+                "para verificar el acceso."
             )
             return redirect("agenda:login")
 
-        # =====================================================
-        # VERIFICAR CUENTA
-        # =====================================================
-
-        if not user.is_active:
-            messages.error(
-                request,
-                "Tu cuenta está desactivada."
-            )
-            return redirect("agenda:login")
-
-        # =====================================================
-        # PERFIL
-        # =====================================================
+        codigo = str(secrets.randbelow(900000) + 100000)
 
         try:
+            enviado = send_mail(
+                subject="Código de seguridad - Spa Deseo",
+                message=(
+                    f"Hola {user.first_name or user.get_username()},\n\n"
+                    f"Tu código de seguridad es: {codigo}\n\n"
+                    "Este código vence en cinco minutos. "
+                    "Si no intentaste iniciar sesión, "
+                    "ignora este mensaje."
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+
+            if enviado != 1:
+                raise RuntimeError("No se pudo enviar el correo.")
+
+
+
+        except Exception as error:
+            print(
+                "ERROR REAL AL ENVIAR EL CÓDIGO:",
+                repr(error),
+                flush=True
+            )
+
+            messages.error(
+                request,
+                "No pudimos enviar el código de seguridad. "
+                "Verifica la configuración del correo e inténtalo "
+                "nuevamente."
+            )
+            return redirect("agenda:login")
+
+
+        # Todavía NO se inicia la sesión autenticada.
+        # Solo se guarda la información temporal de verificación.
+        request.session.pop("logueado", None)
+        request.session.pop("usuario_verificacion_id", None)
+        request.session.pop("codigo_verificacion", None)
+        request.session.pop("codigo_verificacion_expira", None)
+        request.session.pop("intentos_verificacion", None)
+
+        request.session["usuario_verificacion_id"] = user.pk
+        request.session["codigo_verificacion"] = hashlib.sha256(
+            codigo.encode("utf-8")
+        ).hexdigest()
+        request.session["codigo_verificacion_expira"] = time.time() + 300
+        request.session["intentos_verificacion"] = 0
+        request.session.modified = True
+
+        messages.info(
+            request,
+            "Enviamos un código a tu correo. "
+            "Introdúcelo para continuar."
+        )
+        return redirect("agenda:verificar_codigo")
+
+    # Si la verificación está desactivada, iniciar sesión normalmente.
+    auth_login(request, user)
+
+    request.session["logueado"] = {
+        "id": user.pk,
+        "nombre": user.first_name or user.get_username(),
+        "apellido": user.last_name or "",
+        "rol": perfil.rol.nombre.capitalize(),
+        "email": user.email,
+    }
+
+    request.session.modified = True
+
+    return redirect("agenda:dashboard")
+
+
+def verificar_codigo(request):
+    """
+    Comprueba el código temporal antes de permitir el acceso al panel.
+    """
+
+    usuario_id = request.session.get("usuario_verificacion_id")
+    codigo_guardado = request.session.get("codigo_verificacion")
+    expiracion = request.session.get("codigo_verificacion_expira")
+
+    # No permitir entrar si no existe una verificación pendiente.
+    if not usuario_id or not codigo_guardado or not expiracion:
+        messages.warning(
+            request,
+            "Primero inicia sesión con tu correo y contraseña."
+        )
+        return redirect("agenda:login")
+
+    # Si venció el código, limpiar la verificación pendiente.
+    if time.time() >= expiracion:
+        request.session.pop("usuario_verificacion_id", None)
+        request.session.pop("codigo_verificacion", None)
+        request.session.pop("codigo_verificacion_expira", None)
+        request.session.pop("intentos_verificacion", None)
+
+        messages.error(
+            request,
+            "El código venció. Inicia sesión nuevamente "
+            "para recibir otro."
+        )
+        return redirect("agenda:login")
+
+    if request.method == "POST":
+        codigo_ingresado = request.POST.get("codigo", "").strip()
+        intentos = request.session.get("intentos_verificacion", 0)
+
+        # Permitir como máximo cinco intentos.
+        if intentos >= 5:
+            request.session.pop("usuario_verificacion_id", None)
+            request.session.pop("codigo_verificacion", None)
+            request.session.pop("codigo_verificacion_expira", None)
+            request.session.pop("intentos_verificacion", None)
+
+            messages.error(
+                request,
+                "Superaste el número de intentos. "
+                "Inicia sesión nuevamente."
+            )
+            return redirect("agenda:login")
+
+        codigo_hash = hashlib.sha256(
+            codigo_ingresado.encode("utf-8")
+        ).hexdigest()
+
+        if not hmac.compare_digest(codigo_hash, codigo_guardado):
+            intentos += 1
+
+            if intentos >= 5:
+                request.session.pop("usuario_verificacion_id", None)
+                request.session.pop("codigo_verificacion", None)
+                request.session.pop("codigo_verificacion_expira", None)
+                request.session.pop("intentos_verificacion", None)
+
+                messages.error(
+                    request,
+                    "Superaste el número de intentos. "
+                    "Inicia sesión nuevamente."
+                )
+                return redirect("agenda:login")
+
+            request.session["intentos_verificacion"] = intentos
+            request.session.modified = True
+
+            messages.error(
+                request,
+                "El código es incorrecto. "
+                f"Te quedan {5 - intentos} intentos."
+            )
+            return redirect("agenda:verificar_codigo")
+
+        # Comprobar que la cuenta siga activa y conserve su perfil.
+        try:
+            user = User.objects.get(
+                pk=usuario_id,
+                is_active=True
+            )
             perfil = user.perfil
 
+            if not perfil.rol:
+                raise PerfilUsuario.DoesNotExist
+
         except (
+            User.DoesNotExist,
             AttributeError,
-            PerfilUsuario.DoesNotExist
+            PerfilUsuario.DoesNotExist,
         ):
+            request.session.pop("usuario_verificacion_id", None)
+            request.session.pop("codigo_verificacion", None)
+            request.session.pop("codigo_verificacion_expira", None)
+            request.session.pop("intentos_verificacion", None)
+
             messages.error(
                 request,
-                "El usuario no tiene un perfil asignado."
+                "No pudimos verificar tu cuenta. "
+                "Inicia sesión nuevamente."
             )
             return redirect("agenda:login")
 
-        # =====================================================
-        # ROL
-        # =====================================================
+        # Consumir el código antes de iniciar la sesión autenticada.
+        request.session.pop("usuario_verificacion_id", None)
+        request.session.pop("codigo_verificacion", None)
+        request.session.pop("codigo_verificacion_expira", None)
+        request.session.pop("intentos_verificacion", None)
 
-        if not perfil.rol:
-            messages.error(
-                request,
-                "El usuario no tiene un rol asignado."
-            )
-            return redirect("agenda:login")
+        backend = user.backend if hasattr(user, "backend") else "django.contrib.auth.backends.ModelBackend"
+        auth_login(request, user, backend=backend)
 
-        rol = perfil.rol.nombre.strip().upper()
-
-        # =====================================================
-        # INICIAR SESIÓN DJANGO
-        # =====================================================
-
-        auth_login(request, user)
-
-        # =====================================================
-        # CLIENTE
-        # =====================================================
-
-        cliente = None
-
-        if rol == "CLIENTE":
-
-            try:
-                cliente = Clientes.objects.get(
-                    user=user
-                )
-            except Clientes.DoesNotExist:
-                cliente = None
-
-        # =====================================================
-        # FOTO
-        # =====================================================
-
-        foto = ""
-
-        if cliente and cliente.foto_perfil:
-            foto = cliente.foto_perfil.url
-
-        # =====================================================
-        # SESIÓN UNIFICADA
-        # =====================================================
-
+        # Mantener la estructura de sesión que utiliza Spa Deseo.
         request.session["logueado"] = {
-            "id": user.id,
-            "nombre": user.first_name or user.username,
+            "id": user.pk,
+            "nombre": user.first_name or user.get_username(),
             "apellido": user.last_name or "",
-            "nombre_completo": (
-                user.get_full_name()
-                or user.username
-            ),
-            "rol": rol.capitalize(),
-            "email": user.email or "",
-            "foto": foto,
+            "rol": perfil.rol.nombre.capitalize(),
+            "email": user.email,
         }
 
         request.session.modified = True
 
+        messages.success(
+            request,
+            "Verificación completada. ¡Bienvenido/a!"
+        )
         return redirect("agenda:dashboard")
 
-    return render(
-        request,
-        "login.html"
-    )
+    return render(request, "verificar_codigo.html")
+
 
 
 

@@ -38,6 +38,8 @@ urlpatterns = [
     path('calendario/', views.ver_calendario, name='ver_calendario'),
     path('api/citas/', views.obtener_citas_json, name='obtener_citas_json'),
     path('notificaciones/<int:notificacion_id>/abrir/', views.abrir_notificacion, name='abrir_notificacion'),
+    path("verificar-codigo/",views.verificar_codigo,name="verificar_codigo"),
+
 
 
 

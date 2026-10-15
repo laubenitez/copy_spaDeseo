@@ -178,6 +178,10 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # El correo de Gmail del spa
 EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD')  # Una contraseña de aplicación de Gmail
 DEFAULT_FROM_EMAIL =  os.getenv('DEFAULT_FROM_EMAIL','Spa Deseo <spadeseo.oficial@gmail.com>')
+SOCIALACCOUNT_ADAPTER = 'agenda.adapter.MySocialAccountAdapter'
+
+
+
 
 # Iniciar sesión con Google
 SITE_ID = 1
