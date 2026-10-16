@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from datetime import date, time, timedelta
-from agenda.models import Rol, PerfilUsuario, Clientes, Manicurista, Servicios, Citas
+from agenda.models import Rol, PerfilUsuario, Clientes, Manicurista, Servicios, Citas, PreferenciasUsuario
 
 
 class LandingPageTest(TestCase):
@@ -119,6 +119,11 @@ class LoginTest(TestCase):
         self.perfil = PerfilUsuario.objects.get(user=self.user)
         self.perfil.rol = self.rol_cliente
         self.perfil.save()
+
+        PreferenciasUsuario.objects.update_or_create(
+            user=self.user,
+            defaults={"verificacion_adicional": False}
+        )
 
    
     def test_login_exitoso(self):

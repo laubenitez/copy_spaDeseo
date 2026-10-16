@@ -58,7 +58,7 @@ from django.contrib.auth import update_session_auth_hash
 import hashlib
 import hmac
 import secrets
-import time
+import time as time_module
 
 
 
@@ -890,7 +890,7 @@ def login(request):
         request.session["codigo_verificacion"] = hashlib.sha256(
             codigo.encode("utf-8")
         ).hexdigest()
-        request.session["codigo_verificacion_expira"] = time.time() + 300
+        request.session["codigo_verificacion_expira"] = time_module.time() + 300
         request.session["intentos_verificacion"] = 0
         request.session.modified = True
 
@@ -935,7 +935,7 @@ def verificar_codigo(request):
         return redirect("agenda:login")
 
     # Si venció el código, limpiar la verificación pendiente.
-    if time.time() >= expiracion:
+    if time_module.time() >= expiracion:
         request.session.pop("usuario_verificacion_id", None)
         request.session.pop("codigo_verificacion", None)
         request.session.pop("codigo_verificacion_expira", None)
