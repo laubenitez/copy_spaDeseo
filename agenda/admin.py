@@ -245,3 +245,34 @@ class DescuentosAdmin(admin.ModelAdmin):
             )
         }),
     )
+
+@admin.register(PreferenciasUsuario)
+class PreferenciasUsuarioAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "verificacion_adicional",
+        "recordatorios_whatsapp",
+        "permitir_comunicaciones",
+    )
+
+    list_filter = (
+        "verificacion_adicional",
+        "recordatorios_whatsapp",
+        "permitir_comunicaciones",
+    )
+
+    search_fields = (
+        "user__username",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+    )
+
+    list_editable = (
+        "verificacion_adicional",
+        "recordatorios_whatsapp",
+        "permitir_comunicaciones",
+    )
+
+    ordering = ("user__username",)

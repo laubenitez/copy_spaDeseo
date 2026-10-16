@@ -493,6 +493,7 @@ class PreferenciasUsuario(models.Model):
         related_name="preferencias_spa"
     )
 
+    verificacion_adicional = models.BooleanField(default=True)
     recordatorios_whatsapp = models.BooleanField(default=True)
     permitir_comunicaciones = models.BooleanField(default=True)
 
@@ -589,6 +590,8 @@ class Notificacion(models.Model):
         blank=True,
         related_name="notificaciones"
     )
+
+    
 
     leida = models.BooleanField(default=False)
 
