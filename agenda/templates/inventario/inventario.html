@@ -37,17 +37,31 @@
     </div>
 
     <!-- Barra de Filtros por Categoría (Chips) -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar">
-        <a href="?categoria=todos" class="px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap {% if not categoria_actual or categoria_actual == 'todos' %} bg-pink-600 text-white shadow-md shadow-pink-500/20 {% else %} bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 {% endif %}">
-            Todos
-        </a>
+    <nav class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/80 dark:border-gray-700/80 p-2 shadow-xs flex items-center justify-between gap-4 overflow-hidden">
         
-        {% for cat in lista_categorias %}
-        <a href="?categoria={{ cat.nombre }}" class="px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap {% if categoria_actual == cat.nombre %} bg-pink-600 text-white shadow-md shadow-pink-500/20 {% else %} bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 {% endif %}">
-            {{ cat.nombre }}
-        </a>
-        {% endfor %}
-    </div>
+        <!-- Lista de Categorías -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <span class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-3 hidden md:inline-block">
+                Categorías:
+            </span>
+
+            <a href="?categoria=todos" class="px-4 py-2 rounded-xl text-xs font-semibold transition no-underline whitespace-nowrap {% if not categoria_actual or categoria_actual == 'todos' %} bg-pink-600 text-white shadow-sm shadow-pink-500/20 {% else %} text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 {% endif %}">
+                Todos
+            </a>
+            
+            {% for cat in lista_categorias %}
+            <a href="?categoria={{ cat.nombre }}" class="px-4 py-2 rounded-xl text-xs font-semibold transition no-underline whitespace-nowrap {% if categoria_actual == cat.nombre %} bg-pink-600 text-white shadow-sm shadow-pink-500/20 {% else %} text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 {% endif %}">
+                {{ cat.nombre }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Indicador de Total de Resultados -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700/50 text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">
+            <span>Resultados:</span>
+            <strong class="text-gray-900 dark:text-white font-bold">{{ datos|length }}</strong>
+        </div>
+    </nav>
 
     <!-- Cuadrícula de Tarjetas de Productos -->
     {% if datos %}

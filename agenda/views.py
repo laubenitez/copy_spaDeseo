@@ -3438,59 +3438,70 @@ def lista_movimientos(request):
     movimientos = MovimientoInventario.objects.select_related('producto').all().order_by('-fecha')
     return render(request, 'inventario/movimientos.html', {'movimientos': movimientos})
 
-@require_POST
+
 @transaction.atomic
 def registrar_movimiento(request):
-    producto_id = request.POST.get('producto')
-    tipo = request.POST.get('tipo')
-    cantidad_str = request.POST.get('cantidad')
-    motivo = request.POST.get('motivo', '').strip()
+    # --- SI LA PETICIÓN ES POST: PROCESAR EL FORMULARIO ---
+    if request.method == 'POST':
+        producto_id = request.POST.get('producto')
+        tipo = request.POST.get('tipo')
+        cantidad_str = request.POST.get('cantidad')
+        motivo = request.POST.get('motivo', '').strip()
 
-    # 1. Validar que el tipo de movimiento sea estrictamente los permitidos
-    if tipo not in ['Entrada', 'Salida']:
-        messages.error(request, "Tipo de movimiento no válido.")
-        return redirect('agenda:ver_inventario')
+        # 1. Validar tipo de movimiento
+        if tipo not in ['Entrada', 'Salida']:
+            messages.error(request, "Tipo de movimiento no válido.")
+            return redirect('agenda:lista_movimientos')
 
-    # 2. Validar que el producto exista (evita manipulación de IDs ajenos o inexistentes)
-    producto = get_object_or_404(Inventario, id=producto_id)
+        # 2. Validar existencia del producto
+        producto = get_object_or_404(Inventario, id=producto_id)
 
-    # 3. Validar cantidad numérica y positiva (Blindaje contra inyección de negativos desde el cliente)
-    try:
-        cantidad = int(cantidad_str)
-        if cantidad <= 0:
-            raise ValueError("La cantidad debe ser mayor a cero.")
-    except (TypeError, ValueError):
-        messages.error(request, "La cantidad ingresada no es válida.")
-        return redirect('agenda:registrar_movimiento')
+        # 3. Validar cantidad numérica y positiva
+        try:
+            cantidad = int(cantidad_str)
+            if cantidad <= 0:
+                raise ValueError("La cantidad debe ser mayor a cero.")
+        except (TypeError, ValueError):
+            messages.error(request, "La cantidad ingresada no es válida.")
+            return redirect('agenda:registrar_movimiento')
 
-    # 4. Validar motivo obligatorio y longitud mínima/máxima para seguridad
-    if not motivo or len(motivo) < 3:
-        messages.error(request, "Debes proporcionar un motivo válido (mínimo 3 caracteres).")
-        return redirect('agenda:registrar_movimiento')
+        # 4. Validar motivo obligatorio
+        if not motivo or len(motivo) < 3:
+            messages.error(request, "Debes proporcionar un motivo válido (mínimo 3 caracteres).")
+            return redirect('agenda:registrar_movimiento')
 
-    # 5. Validación estricta de stock en salidas (Evita stock negativo en backend)
-    if tipo == 'Salida' and producto.cantidad < cantidad:
-        messages.error(request, f"Acción denegada: Stock insuficiente. Stock actual de '{producto.nombre}': {producto.cantidad}.")
-        return redirect('agenda:registrar_movimiento')
+        # 5. Validación de stock en salidas
+        if tipo == 'Salida' and producto.cantidad < cantidad:
+            messages.error(request, f"Acción denegada: Stock insuficiente. Stock actual de '{producto.nombre}': {producto.cantidad}.")
+            return redirect('agenda:registrar_movimiento')
 
-    # 6. Actualización segura de inventario
-    if tipo == 'Entrada':
-        producto.cantidad += cantidad
-    elif tipo == 'Salida':
-        producto.cantidad -= cantidad
+        # 6. Actualizar inventario
+        if tipo == 'Entrada':
+            producto.cantidad += cantidad
+        elif tipo == 'Salida':
+            producto.cantidad -= cantidad
 
-    producto.save()
+        producto.save()
 
-    # 7. Registrar el movimiento oficial
-    MovimientoInventario.objects.create(
-        producto=producto,
-        tipo=tipo,
-        cantidad=cantidad,
-        motivo=motivo
-    )
+        # 7. Crear el registro del movimiento
+        MovimientoInventario.objects.create(
+            producto=producto,
+            tipo=tipo,
+            cantidad=cantidad,
+            motivo=motivo
+        )
 
-    messages.success(request, f"Movimiento de {tipo.lower()} registrado con éxito para '{producto.nombre}'.")
-    return redirect('agenda:ver_inventario')
+        messages.success(request, f"Movimiento de {tipo.lower()} registrado con éxito para '{producto.nombre}'.")
+        return redirect('agenda:lista_movimientos')
+
+    # --- SI LA PETICIÓN ES GET: MOSTRAR EL FORMULARIO ---
+    productos = Inventario.objects.all().order_by('nombre')
+    
+    # Ajusta la ruta exacta según cómo tengas estructurada la carpeta dentro de templates:
+    # Ejemplo A: Si está directamente en 'templates/inventario/registrar_movimiento.html'
+    return render(request, 'inventario/registrar_movimientos.html', {
+        'productos': productos
+    })
 
 
 @require_http_methods(["GET", "POST"])  # Seguridad: Restringe a métodos HTTP estándar permitidos
@@ -3965,6 +3976,7 @@ def actualizar_pago(request, id):
 @requiere_rol("ADMINISTRADOR")
 def modulo_contabilidad(request):
     hoy = now().date()
+    pagos_mes = Pagos.objects.none()
 
     # Obtenemos los parámetros de forma segura limpiando puntos o comas
     mes_str = request.GET.get('mes', str(hoy.month)).replace('.', '').replace(',', '')
@@ -4050,6 +4062,7 @@ def modulo_contabilidad(request):
         "ingresos_bancolombia": ingresos_bancolombia,
         "ingresos_transferencia": ingresos_transferencia,
         "gastos_totales": gastos_totales,
+        "pagos_lista": pagos_mes,
         "gastos_lista": gastos_mes,
         "comisiones_totales": comisiones_totales,
         "resumen_manicuristas": resumen_manicuristas,

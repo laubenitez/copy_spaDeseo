@@ -22,7 +22,7 @@
     }
 </style>
 
-<div class="max-w-4xl mx-auto py-4">
+<div class="max-w-4xl mx-auto relative -top-8 sm:-top-8">
 
     <!-- Encabezado y Botón de Regreso -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -33,9 +33,12 @@
             </p>
         </div>
 
-        <a href="{% url 'agenda:ver_manicuristas' %}" 
-           class="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition shadow-sm border border-gray-200 dark:border-gray-700/60">
-            <i class="fa-solid fa-arrow-left"></i> Volver a la Lista
+        <a href="{% url 'agenda:ver_manicuristas' %}"
+           class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Volver a Manicuristas
         </a>
     </div>
 
