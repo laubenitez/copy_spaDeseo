@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
-{% load static %} {% block title %}Spa Deseo | Inicio{% endblock %}
+{% load static %} 
+
+{% load humanize %}
+
+{% block title %}Spa Deseo | Inicio{% endblock %}
 
 {% block content %}
 <style>
@@ -327,37 +331,44 @@
         <p class="text-muted mb-5">Cuidado profesional diseñado especialmente para ti</p>
 
         <div class="row g-4 justify-content-center">
-            <div class="col-md-4">
-                <div class="card-servicio">
-                    <div class="icono-circulo">
-                        <i class="fa-solid fa-pump-soap"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-3">Manicure</h4>
-                    <p class="text-muted small px-2 mb-0">Cuidado profesional e hidratación profunda para que tus manos
-                        luzcan siempre impecables y suaves.</p>
+
+        {% for servicio in servicios %}
+        <div class="col-md-4">
+            <div class="card-servicio h-100">
+
+                <div class="icono-circulo">
+                    <i class="fa-solid fa-spa"></i>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card-servicio">
-                    <div class="icono-circulo">
-                        <i class="fa-solid fa-spa"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-3">Pedicure</h4>
-                    <p class="text-muted small px-2 mb-0">Pies perfectos, descanso profundo y exfoliación con masajes
-                        relajantes que renuevan tu energía.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card-servicio">
-                    <div class="icono-circulo">
-                        <i class="fa-solid fa-paint-brush"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-3">Diseño de Uñas</h4>
-                    <p class="text-muted small px-2 mb-0">Arte único, efectos en tendencia, pedrería y acabados
-                        acrílicos o semipermanentes personalizados.</p>
-                </div>
+
+                <h4 class="fw-bold text-dark mb-3">
+                    {{ servicio.nombre }}
+                </h4>
+
+                <p class="text-muted small px-2 mb-3">
+                    {{ servicio.descripcion|default:"Un servicio pensado para consentirte." }}
+                </p>
+
+                <p class="fw-bold mb-2" style="color: var(--rosa-banner);">
+                    ${{ servicio.precio|intcomma }}
+                </p>
+
+                <p class="text-muted small mb-0">
+                    <i class="fa-regular fa-clock me-1"></i>
+                    {{ servicio.duracion }} minutos
+                </p>
+
             </div>
         </div>
+
+        {% empty %}
+        <div class="col-12">
+            <p class="text-muted">
+                Próximamente encontrarás nuestros servicios disponibles.
+            </p>
+        </div>
+        {% endfor %}
+
+    </div>
     </div>
 </section>
 

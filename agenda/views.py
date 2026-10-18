@@ -511,7 +511,13 @@ def responder_solicitud_soporte(request, id):
     return redirect("agenda:soporte_administrador")
 
 def index(request):
-    return render(request, "index.html")
+    servicios = Servicios.objects.filter(estado="Activo").order_by("nombre")
+
+    contexto = {
+        "servicios": servicios,
+    }
+
+    return render(request, "index.html", contexto)
 
 @login_required(login_url="agenda:login")
 @requiere_rol("MANICURISTA")
@@ -3335,141 +3341,312 @@ def registrar_pago_admin(request, cita_id):
 #CRUD SERVICIOS
 
 from django.db import DatabaseError
-@requiere_rol("ADMINISTRADOR", "CLIENTE", "MANICURISTA")
+# CRUD SERVICIOS: CONSULTAR
+
+# Solo permite solicitudes GET, utilizadas para consultar información.
+@require_http_methods(["GET"])
+
+# Restringe el acceso a usuarios con el rol ADMINISTRADOR.
+@requiere_rol("ADMINISTRADOR")
 def ver_servicio(request):
-    try:
-        # Robustez: Consulta segura de los servicios registrados
-        s = Servicios.objects.all()
 
-        contexto = {
-            "datos": s
-        }
-    except DatabaseError as e:
-        # Control de excepciones: Si la base de datos falla, evitamos que la página rompa en crudo
-        s = []
-        contexto = {
-            "datos": s
-        }
-        messages.error(request, "Ocurrió un error al intentar cargar el catálogo de servicios.")
+    # Consulta todos los servicios almacenados en la base de datos.
+    servicios = Servicios.objects.all().order_by("nombre")
 
-    return render(request, "servicios.html", contexto)
+    # Crea un diccionario con los datos que recibirá la plantilla HTML.
+    # La clave "datos" permite acceder a los servicios desde el template.
+    contexto = {
+        "datos": servicios,
+    }
 
-@require_http_methods(["GET", "POST"])  # Seguridad: Permite únicamente métodos GET y POST estándar
+    # Renderiza la plantilla y le entrega el contexto.
+    # Django utilizará los registros para construir la lista de servicios.
+    return render(
+        request,
+        "servicio/lista_servicios.html",
+        contexto
+    )
+
+# CRUD SERVICIOS: CREAR
+
+# Permite abrir el formulario mediante GET y procesarlo mediante POST.
+@require_http_methods(["GET", "POST"])
+
+# Solo un administrador puede crear servicios.
 @requiere_rol("ADMINISTRADOR")
 def crear_servicio(request):
-    if request.method == "POST":
-        # Capturar y limpiar los campos del formulario
-        nombre = request.POST.get('nombre', '').strip()
-        precio = request.POST.get('precio', '').strip()
-        descripcion = request.POST.get('descripcion', '').strip()
-        duracion = request.POST.get('duracion', '').strip()
 
-        # Control de validación: Asegurar que los campos obligatorios no vengan vacíos
+    # Comprueba si el usuario envió el formulario.
+    if request.method == "POST":
+
+        # Obtiene los valores enviados desde los campos del formulario.
+        # strip() elimina espacios al principio y al final del texto.
+        nombre = request.POST.get("nombre", "").strip()
+        precio = request.POST.get("precio", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+        duracion = request.POST.get("duracion", "").strip()
+
+        # Si el formulario no envía la comisión, utiliza 50 %.
+        porcentaje_comision = request.POST.get(
+            "porcentaje_comision", "50"
+        ).strip()
+
+        # Si no se envía el estado, el servicio se crea como Activo.
+        estado = request.POST.get("estado", "Activo").strip()
+
+        # Verifica que los campos obligatorios tengan algún valor.
+        # La descripción no es obligatoria.
         if not nombre or not precio or not duracion:
-            messages.error(request, "Por favor completa todos los campos obligatorios del servicio.")
-            return redirect("agenda:servicios") # O renderizar de nuevo el formulario con los datos
+            messages.error(
+                request,
+                "Completa los campos obligatorios del servicio."
+            )
+
+            # Regresa a la lista sin guardar el servicio.
+            return redirect("agenda:ver_servicio")
 
         try:
-            # Robustez: Usar transacción atómica para garantizar la integridad al guardar
+            # Los datos de un formulario llegan normalmente como texto.
+            # int() los convierte a números enteros para almacenarlos.
+            precio = int(precio)
+            duracion = int(duracion)
+            porcentaje_comision = int(porcentaje_comision)
+
+            # El precio y la duración deben ser mayores que cero.
+            if precio <= 0 or duracion <= 0:
+                raise ValueError
+
+            # La comisión debe estar entre 0 % y 100 %.
+            if not 0 <= porcentaje_comision <= 100:
+                raise ValueError
+
+            # Comprueba que el estado enviado sea una opción válida
+            # definida en Servicios.ESTADOS.
+            if estado not in dict(Servicios.ESTADOS):
+                raise ValueError
+
+            # Abre una transacción para realizar la operación de forma segura.
+            # Si ocurre un error de base de datos, la operación no se confirma.
             with transaction.atomic():
-                s = Servicios(
+
+                # Crea el registro y lo guarda en la base de datos.
+                servicio = Servicios.objects.create(
                     nombre=nombre,
                     precio=precio,
                     descripcion=descripcion,
                     duracion=duracion,
+                    porcentaje_comision=porcentaje_comision,
+                    estado=estado,
                 )
-                s.save()
-                messages.success(request, f"Servicio '{nombre}' creado con éxito!")
 
-        except DatabaseError as e:
-            # Control ante fallos específicos de base de datos
-            messages.error(request, "Ocurrió un error en la base de datos al intentar guardar el servicio.")
-        except Exception as e:
-            # Control ante cualquier eventualidad imprevista
-            messages.error(request, "Ocurrió un error inesperado al procesar la solicitud.")
+            # Informa al usuario que el servicio se creó correctamente.
+            messages.success(
+                request,
+                f"Servicio '{servicio.nombre}' creado correctamente."
+            )
 
-        return redirect("agenda:servicios")
+        # Captura errores de conversión o de validación.
+        # Por ejemplo: precio = "abc", duración = 0 o comisión = 150.
+        except ValueError:
+            messages.error(
+                request,
+                "Verifica el precio, la duración y la comisión. "
+                "El precio y la duración deben ser mayores que cero "
+                "y la comisión debe estar entre 0 y 100."
+            )
 
-    # Si la petición es GET, renderizamos el formulario con normalidad
+        # Captura errores producidos por la base de datos.
+        except DatabaseError:
+            messages.error(
+                request,
+                "Ocurrió un error en la base de datos al guardar el servicio."
+            )
+
+        # Finaliza el procesamiento y vuelve a la lista de servicios.
+        return redirect("agenda:ver_servicio")
+
+    # Si la solicitud es GET, muestra el formulario vacío.
     return render(request, "servicio/formulario_servicio.html")
 
 
+# CRUD SERVICIOS: ELIMINAR
 
-@require_POST  # Seguridad crítica: Impide que se eliminen servicios mediante una petición GET o enlaces directos
+# Solo permite solicitudes POST.
+# Evita que un simple enlace GET elimine registros.
+@require_POST
+
+# Solo el administrador puede eliminar servicios.
 @requiere_rol("ADMINISTRADOR")
 def eliminar_servicio(request, id):
-    # Control de seguridad: Validar existencia del ID antes de procesar
-    if not id:
-        messages.error(request, "Identificador de servicio no válido.")
-        return redirect("agenda:servicios")
 
     try:
-        # Robustez: Usar transacción atómica junto con get_object_or_404 para mayor limpieza
+        # Agrupa las operaciones en una transacción.
         with transaction.atomic():
-            s = get_object_or_404(Servicios, pk=id)
-            nombre_servicio = s.nombre  # Guardamos el nombre antes de borrarlo para el mensaje
-            s.delete()
-            messages.success(request, f"Servicio '{nombre_servicio}' eliminado correctamente.")
 
+            # Busca el servicio por su ID.
+            # Si no existe, devuelve un error 404.
+            servicio = get_object_or_404(Servicios, pk=id)
+
+            # Comprueba si hay citas relacionadas con este servicio.
+            # exists() devuelve True si encuentra al menos una.
+            if Citas.objects.filter(servicios=servicio).exists():
+
+                # Evita eliminar un servicio que ya tiene citas asociadas.
+                # Así se protegen los registros históricos.
+                messages.warning(
+                    request,
+                    f"No es posible eliminar el servicio "
+                    f"'{servicio.nombre}' porque tiene citas asociadas. "
+                    "Puedes desactivarlo para ocultarlo del catálogo."
+                )
+
+                # Regresa a la lista sin eliminar el registro.
+                return redirect("agenda:ver_servicio")
+
+            # Conserva el nombre antes de eliminar el objeto.
+            # Así podemos usarlo en el mensaje posterior.
+            nombre_servicio = servicio.nombre
+
+            # Elimina el servicio de la base de datos.
+            servicio.delete()
+
+            # Confirma al administrador que la eliminación se realizó.
+            messages.success(
+                request,
+                f"Servicio '{nombre_servicio}' eliminado correctamente."
+            )
+
+    # Captura errores por restricciones de integridad.
+    # Por ejemplo, si otro registro impide eliminar este servicio.
     except IntegrityError:
-        # Control de integridad: Salta si el servicio está asociado a citas u otras tablas foráneas
-        messages.info(request, "No es posible eliminar el servicio porque se encuentra asociado a registros existentes.")
-    except Exception as e:
-        # Control genérico ante cualquier eventualidad imprevista
-        messages.error(request, "Ocurrió un error inesperado al intentar eliminar el servicio.")
+        messages.error(
+            request,
+            "No es posible eliminar el servicio porque está asociado "
+            "a otros registros."
+        )
 
-    return redirect("agenda:servicios")
+    # Captura otros errores relacionados con la base de datos.
+    except DatabaseError:
+        messages.error(
+            request,
+            "Ocurrió un error en la base de datos al intentar eliminar el servicio."
+        )
 
+    # Vuelve a la lista después de la operación.
+    return redirect("agenda:ver_servicio")
+# CRUD SERVICIOS: ACTUALIZAR
 
-@require_http_methods(["GET", "POST"])  # Seguridad: Restringe a métodos HTTP estándar permitidos
+# Permite GET para mostrar el formulario con los datos actuales
+# y POST para guardar los cambios.
+@require_http_methods(["GET", "POST"])
+
+# Solo el administrador puede modificar servicios.
 @requiere_rol("ADMINISTRADOR")
 def actualizar_servicio(request, id):
-    # Control de seguridad: Validar existencia del ID antes de continuar
-    if not id:
-        messages.error(request, "Identificador de servicio no válido.")
-        return redirect("agenda:servicios")
 
-    # Obtener el servicio de forma segura (lanza 404 si no existe)
-    s = get_object_or_404(Servicios, pk=id)
+    # Busca el servicio que se desea editar.
+    # Si el ID no existe, devuelve un error 404.
+    servicio = get_object_or_404(Servicios, pk=id)
 
+    # Si el administrador envió el formulario, procesa los cambios.
     if request.method == "POST":
-        # Capturar y limpiar los campos enviados en el formulario
-        nombre = request.POST.get('nombre', '').strip()
-        precio = request.POST.get('precio', '').strip()
-        descripcion = request.POST.get('descripcion', '').strip()
-        duracion = request.POST.get('duracion', '').strip()
 
-        # Validación de campos obligatorios
+        # Recupera los datos nuevos enviados por el formulario.
+        nombre = request.POST.get("nombre", "").strip()
+        precio = request.POST.get("precio", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+        duracion = request.POST.get("duracion", "").strip()
+
+        # En la edición no se usa un valor predeterminado:
+        # el formulario debe enviar la comisión seleccionada.
+        porcentaje_comision = request.POST.get(
+            "porcentaje_comision", ""
+        ).strip()
+
+        # Obtiene el estado seleccionado en el formulario.
+        estado = request.POST.get("estado", "").strip()
+
+        # Comprueba los campos obligatorios.
         if not nombre or not precio or not duracion:
-            messages.error(request, "Por favor completa todos los campos obligatorios del servicio.")
-            return redirect("agenda:servicios")
+            messages.error(
+                request,
+                "Completa los campos obligatorios del servicio."
+            )
+
+            # Regresa al formulario del mismo servicio.
+            return redirect(
+                "agenda:actualizar_servicio", id=servicio.id
+            )
 
         try:
-            # Robustez: Transacción atómica para asegurar la actualización en base de datos
+            # Convierte los valores numéricos.
+            precio = int(precio)
+            duracion = int(duracion)
+            porcentaje_comision = int(porcentaje_comision)
+
+            # Valida que el precio y la duración sean positivos.
+            if precio <= 0 or duracion <= 0:
+                raise ValueError
+
+            # Valida el rango de la comisión.
+            if not 0 <= porcentaje_comision <= 100:
+                raise ValueError
+
+            # Comprueba que el estado pertenezca a las opciones permitidas.
+            if estado not in dict(Servicios.ESTADOS):
+                raise ValueError
+
+            # Agrupa las modificaciones en una transacción.
             with transaction.atomic():
-                s.nombre = nombre
-                s.precio = precio
-                s.descripcion = descripcion
-                s.duracion = duracion
-                s.save()
 
-                messages.success(request, f"Servicio '{s.nombre}' actualizado correctamente.")
+                # Asigna cada valor nuevo al objeto existente.
+                servicio.nombre = nombre
+                servicio.precio = precio
+                servicio.descripcion = descripcion
+                servicio.duracion = duracion
+                servicio.porcentaje_comision = porcentaje_comision
+                servicio.estado = estado
 
+                # Guarda los cambios del objeto en la base de datos.
+                servicio.save()
+
+            # Informa que la actualización fue exitosa.
+            messages.success(
+                request,
+                f"Servicio '{servicio.nombre}' actualizado correctamente."
+            )
+
+        # Informa de datos no válidos o conversiones incorrectas.
+        except ValueError:
+            messages.error(
+                request,
+                "Verifica los valores ingresados. El precio y la "
+                "duración deben ser mayores que cero y la comisión "
+                "debe estar entre 0 y 100."
+            )
+
+            # Mantiene al administrador en el formulario para corregir.
+            return redirect(
+                "agenda:actualizar_servicio", id=servicio.id
+            )
+
+        # Informa de un error de base de datos.
         except DatabaseError:
-            # Control específico ante fallos de base de datos
-            messages.error(request, "Ocurrió un error en la base de datos al intentar actualizar el servicio.")
-        except Exception as e:
-            # Control genérico ante eventualidades imprevistas
-            messages.error(request, "Ocurrió un error inesperado al procesar la actualización.")
+            messages.error(
+                request,
+                "Ocurrió un error en la base de datos al actualizar."
+            )
 
-        return redirect("agenda:servicios")
+        # Si termina el procesamiento, vuelve a la lista.
+        return redirect("agenda:ver_servicio")
 
-    # Si la petición es GET, enviamos el objeto actual al formulario para prellenarlo
-    contexto = {
-        "datos": s
-    }
-    return render(request, "servicio/formulario_servicio.html", contexto)
-
+    # Si la solicitud es GET, muestra el formulario con los datos actuales.
+    # La plantilla podrá rellenar los campos usando la variable "datos".
+    return render(
+        request,
+        "servicio/formulario_servicio.html",
+        {"datos": servicio}
+    )
 
 
 #CRUD INVENTARIO
@@ -4737,3 +4914,294 @@ def abrir_notificacion(request, notificacion_id):
         return redirect(destino)
 
     return redirect("agenda:dashboard")
+
+
+
+# ==========================================================
+# CRUD DE DESCUENTOS
+# ==========================================================
+
+def _guardar_datos_descuento(request, descuento=None):
+    """
+    Valida los datos recibidos y guarda el descuento.
+    Se utiliza tanto para crear como para actualizar.
+    """
+
+    es_edicion = descuento is not None
+
+    if es_edicion:
+        instancia = descuento
+    else:
+        instancia = Descuentos()
+
+    # Conservar los datos para rellenar el formulario si hay errores.
+    datos = {
+        "nombre": request.POST.get("nombre", "").strip(),
+        "descripcion": request.POST.get("descripcion", "").strip(),
+        "tipo": request.POST.get("tipo", "").strip(),
+        "tipo_beneficio": request.POST.get("tipo_beneficio", "").strip(),
+        "valor": request.POST.get("valor", "").strip(),
+        "fecha_inicio": request.POST.get("fecha_inicio", "").strip(),
+        "fecha_fin": request.POST.get("fecha_fin", "").strip(),
+        "activo": request.POST.get("activo", "").strip(),
+    }
+
+    errores = {}
+
+    # Validar que el estado recibido sea explícito.
+    estados_validos = {
+        "true": True,
+        "false": False,
+    }
+
+    estado_recibido = datos["activo"].lower()
+
+    if estado_recibido not in estados_validos:
+        errores["activo"] = [
+            "Selecciona un estado válido para el descuento."
+        ]
+
+    # Convertir el valor a Decimal sin aceptar texto arbitrario.
+    valor = None
+
+    try:
+        valor = Decimal(datos["valor"])
+
+        if not valor.is_finite():
+            raise InvalidOperation
+
+    except (InvalidOperation, ValueError):
+        errores["valor"] = [
+            "Ingresa un valor numérico válido para el descuento."
+        ]
+
+    # Interpretar las fechas en formato YYYY-MM-DD.
+    fecha_inicio = parse_date(datos["fecha_inicio"])
+    fecha_fin = parse_date(datos["fecha_fin"])
+
+    if fecha_inicio is None:
+        errores["fecha_inicio"] = [
+            "Ingresa una fecha de inicio válida."
+        ]
+
+    if fecha_fin is None:
+        errores["fecha_fin"] = [
+            "Ingresa una fecha de finalización válida."
+        ]
+
+    # Asignar únicamente los campos permitidos.
+    instancia.nombre = datos["nombre"]
+    instancia.descripcion = datos["descripcion"]
+    instancia.tipo = datos["tipo"]
+    instancia.tipo_beneficio = datos["tipo_beneficio"]
+
+    if valor is not None:
+        instancia.valor = valor
+
+    if fecha_inicio is not None:
+        instancia.fecha_inicio = fecha_inicio
+
+    if fecha_fin is not None:
+        instancia.fecha_fin = fecha_fin
+
+    if estado_recibido in estados_validos:
+        instancia.activo = estados_validos[estado_recibido]
+
+    # full_clean ejecuta la validación de campos, choices,
+    # validadores del modelo y el método clean().
+    try:
+        instancia.full_clean()
+    except ValidationError as exc:
+        if hasattr(exc, "message_dict"):
+            for campo, mensajes in exc.message_dict.items():
+                errores.setdefault(campo, []).extend(mensajes)
+        else:
+            errores.setdefault("__all__", []).extend(exc.messages)
+
+    if errores:
+        return None, datos, errores
+
+    return instancia, datos, {}
+
+
+# ==========================================================
+# LISTAR DESCUENTOS
+# ==========================================================
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_http_methods(["GET"])
+def ver_descuentos(request):
+
+    descuentos = Descuentos.objects.all().order_by(
+        "-fecha_creacion",
+        "nombre",
+    )
+
+    return render(
+        request,
+        "descuentos/listar_descuentos.html",
+        {"datos": descuentos},
+    )
+
+
+# ==========================================================
+# CREAR DESCUENTO
+# ==========================================================
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_http_methods(["GET", "POST"])
+def crear_descuento(request):
+
+    if request.method == "POST":
+        descuento, datos, errores = _guardar_datos_descuento(request)
+
+        if not errores:
+            try:
+                with transaction.atomic():
+                    descuento.save()
+
+                messages.success(
+                    request,
+                    f"Descuento '{descuento.nombre}' creado correctamente.",
+                )
+                return redirect("agenda:ver_descuentos")
+
+            except DatabaseError:
+                messages.error(
+                    request,
+                    "Ocurrió un error al guardar el descuento.",
+                )
+        else:
+            messages.error(
+                request,
+                "Revisa los campos señalados antes de continuar.",
+            )
+
+        return render(
+            request,
+            "descuentos/formulario_descuentos.html",
+            {
+                "datos": datos,
+                "errores": errores,
+                "modo_edicion": False,
+            },
+        )
+
+    return render(
+        request,
+        "descuentos/formulario_descuentos.html",
+        {
+            "datos": {
+                "tipo": Descuentos.Tipo.PERSONALIZADO,
+                "tipo_beneficio": Descuentos.TipoBeneficio.PORCENTAJE,
+                "activo": "true",
+            },
+            "errores": {},
+            "modo_edicion": False,
+        },
+    )
+
+
+# ==========================================================
+# ACTUALIZAR DESCUENTO
+# ==========================================================
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_http_methods(["GET", "POST"])
+def actualizar_descuento(request, id):
+
+    descuento = get_object_or_404(Descuentos, pk=id)
+
+    if request.method == "POST":
+        instancia, datos, errores = _guardar_datos_descuento(
+            request,
+            descuento=descuento,
+        )
+
+        if not errores:
+            try:
+                with transaction.atomic():
+                    instancia.save()
+
+                messages.success(
+                    request,
+                    f"Descuento '{instancia.nombre}' actualizado correctamente.",
+                )
+                return redirect("agenda:ver_descuentos")
+
+            except DatabaseError:
+                messages.error(
+                    request,
+                    "Ocurrió un error al actualizar el descuento.",
+                )
+        else:
+            messages.error(
+                request,
+                "Revisa los campos señalados antes de continuar.",
+            )
+
+        return render(
+            request,
+            "descuentos/formulario_descuentos.html",
+            {
+                "datos": datos,
+                "errores": errores,
+                "modo_edicion": True,
+            },
+        )
+
+    return render(
+        request,
+        "descuentos/formulario_descuentos.html",
+        {
+            "datos": descuento,
+            "errores": {},
+            "modo_edicion": True,
+        },
+    )
+
+
+# ==========================================================
+# DESACTIVAR DESCUENTO
+# ==========================================================
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_POST
+def eliminar_descuento(request, id):
+
+    try:
+        with transaction.atomic():
+            descuento = get_object_or_404(
+                Descuentos.objects.select_for_update(),
+                pk=id,
+            )
+
+            if not descuento.activo:
+                messages.warning(
+                    request,
+                    "Este descuento ya se encuentra inactivo.",
+                )
+                return redirect("agenda:ver_descuentos")
+
+            nombre = descuento.nombre
+            descuento.activo = False
+            descuento.save(
+                update_fields=["activo", "fecha_actualizacion"]
+            )
+
+        messages.success(
+            request,
+            f"El descuento '{nombre}' fue desactivado correctamente.",
+        )
+
+    except DatabaseError:
+        messages.error(
+            request,
+            "Ocurrió un error al desactivar el descuento.",
+        )
+
+    return redirect("agenda:ver_descuentos")

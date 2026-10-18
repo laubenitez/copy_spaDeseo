@@ -1,0 +1,250 @@
+
+{% extends 'dashboard.html' %}
+
+{% block content %}
+
+<div>
+    <!-- ENCABEZADO -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
+                Catálogo de Spa Deseo
+            </p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Gestión de Servicios
+            </h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Administra los servicios, precios, duración y comisiones de Spa Deseo.
+            </p>
+        </div>
+
+        <a href="{% url 'agenda:crear_servicio' %}"
+           class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+            <i class="fa-solid fa-plus"></i>
+            Nuevo Servicio
+        </a>
+    </div>
+
+    <!-- TARJETAS DE SERVICIOS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {% for i in datos %}
+
+        <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+
+            <div>
+                <!-- NOMBRE Y ESTADO -->
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="min-w-0">
+                        <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight break-words">
+                            {{ i.nombre }}
+                        </h2>
+                        <span class="text-xs text-gray-400">
+                            Servicio #{{ i.id }}
+                        </span>
+                    </div>
+
+                    {% if i.estado == "Activo" %}
+                        <span class="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Activo
+                        </span>
+                    {% elif i.estado == "Inactivo" %}
+                        <span class="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                            Inactivo
+                        </span>
+                    {% else %}
+                        <span class="flex-shrink-0 text-xs font-semibold px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
+                            {{ i.estado|default_if_none:"Sin definir" }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- DESCRIPCIÓN -->
+                {% if i.descripcion %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                        {{ i.descripcion }}
+                    </p>
+                {% else %}
+                    <p class="text-sm text-gray-400 dark:text-gray-500 italic mb-4">
+                        Sin descripción adicional.
+                    </p>
+                {% endif %}
+
+                <!-- PRECIO DESTACADO -->
+                <div class="rounded-xl bg-pink-50 dark:bg-pink-950/30 px-4 py-4 mb-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        Precio del servicio
+                    </p>
+                    <p class="text-2xl font-bold text-pink-600 dark:text-pink-400">
+                        ${{ i.precio|floatformat:0 }} <span class="text-xs font-medium">COP</span>
+                    </p>
+                </div>
+
+                <!-- DURACIÓN Y COMISIÓN -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                            Duración
+                        </p>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            {{ i.duracion }}
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-gray-800/60 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mb-1">
+                            Comisión
+                        </p>
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            {{ i.porcentaje_comision|default_if_none:"0" }}%
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="flex items-center gap-3 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+
+                <a href="{% url 'agenda:actualizar_servicio' i.id %}"
+                   class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-regular fa-pen-to-square"></i>
+                    Editar
+                </a>
+
+                <button type="button"
+                        data-nombre="{{ i.nombre }}"
+                        data-url="{% url 'agenda:eliminar_servicio' i.id %}"
+                        onclick="abrirModalEliminarServicio(this)"
+                        class="flex-1 py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                        title="Eliminar servicio">
+                    <i class="fa-regular fa-trash-can"></i>
+                    Eliminar
+                </button>
+
+            </div>
+        </div>
+
+        {% empty %}
+
+        <!-- ESTADO VACÍO -->
+        <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+
+            <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-spa"></i>
+            </div>
+
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                No hay servicios registrados
+            </h3>
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Haz clic en "Nuevo Servicio" para agregar el primer servicio al catálogo.
+            </p>
+
+            <a href="{% url 'agenda:crear_servicio' %}"
+               class="inline-flex items-center gap-2 mt-5 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold transition">
+                <i class="fa-solid fa-plus"></i>
+                Nuevo Servicio
+            </a>
+        </div>
+
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN DE ELIMINACIÓN -->
+<div id="modalEliminarServicio"
+     class="fixed inset-0 z-[99999] hidden bg-gray-900/50 backdrop-blur-sm items-center justify-center p-4">
+
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-center space-y-4 m-auto">
+
+        <div class="w-14 h-14 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                ¿Eliminar servicio?
+            </h3>
+
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
+                Estás a punto de eliminar
+                <strong id="nombre-servicio-eliminar"
+                        class="text-gray-800 dark:text-gray-200 font-semibold"></strong>.
+                Esta acción no se puede deshacer y podría afectar el historial.
+            </p>
+        </div>
+
+        <form id="form-eliminar-servicio"
+              method="POST"
+              action=""
+              class="flex items-center gap-3 pt-2">
+
+            {% csrf_token %}
+
+            <button type="button"
+                    onclick="cerrarModalEliminarServicio()"
+                    class="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg transition">
+                Cancelar
+            </button>
+
+            <button type="submit"
+                    class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">
+                Sí, eliminar
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modalEliminarServicio");
+
+    // Evita que el modal quede recortado por otros contenedores.
+    if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+});
+
+function abrirModalEliminarServicio(elemento) {
+    const nombre = elemento.dataset.nombre;
+    const urlAccion = elemento.dataset.url;
+
+    document.getElementById("nombre-servicio-eliminar").textContent = nombre;
+    document.getElementById("form-eliminar-servicio").action = urlAccion;
+
+    const modal = document.getElementById("modalEliminarServicio");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.body.style.overflow = "hidden";
+}
+
+function cerrarModalEliminarServicio() {
+    const modal = document.getElementById("modalEliminarServicio");
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    document.body.style.overflow = "";
+}
+
+// Cerrar al hacer clic en el fondo.
+document.getElementById("modalEliminarServicio").addEventListener("click", function (evento) {
+    if (evento.target === this) {
+        cerrarModalEliminarServicio();
+    }
+});
+
+// Cerrar con Escape.
+document.addEventListener("keydown", function (evento) {
+    if (evento.key === "Escape") {
+        cerrarModalEliminarServicio();
+    }
+});
+</script>
+
+{% endblock %}

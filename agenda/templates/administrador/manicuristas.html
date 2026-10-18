@@ -6,6 +6,9 @@
     <!-- Encabezado -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
+                Nuestro equipo de manicuristas
+            </p>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Manicuristas</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Administración del personal, estados y datos de contacto
@@ -24,8 +27,7 @@
 
         {% for i in datos %}
 
-        <div
-            class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
+        <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
 
             <div>
                 <!-- Encabezado de la Tarjeta: Avatar + Nombre + Estado -->
@@ -37,8 +39,7 @@
                         <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}"
                             class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
                         {% else %}
-                        <div
-                            class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
+                        <div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
                             {% if i.user %}
                             {{ i.user.first_name|slice:":1"|upper }}{{ i.user.last_name|slice:":1"|upper }}
                             {% else %}
@@ -57,13 +58,11 @@
 
                     <!-- Badge del Estado (Activa / Inactiva) -->
                     {% if i.estado == "Activa" %}
-                    <span
-                        class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center gap-1.5">
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-md flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activa
                     </span>
                     {% else %}
-                    <span
-                        class="text-xs font-semibold px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md flex items-center gap-1.5">
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-md flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Inactiva
                     </span>
                     {% endif %}
@@ -98,34 +97,34 @@
                 </div>
             </div>
 
-            <!-- Botones de Acción para Administrador -->
-            <div class="flex items-center gap-2 pt-1">
+            <!-- Botones de Acción SIMÉTRICOS para Administrador -->
+            <div class="flex items-center gap-2 pt-1 w-full">
 
                 <!-- WhatsApp Directo -->
                 <a href="https://wa.me/{{ i.telefono }}" target="_blank" title="Contactar por WhatsApp"
-                    class="py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center transition">
+                    class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                 </a>
 
-                <!-- Editar Perfil (Corregido a editar_manicurista) -->
+                <!-- Editar Perfil -->
                 <a href="{% url 'agenda:actualizar_manicurista' i.id %}"
                     class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
                     <i class="fa-regular fa-pen-to-square"></i> Editar
                 </a>
 
-                <!-- Botón Desactivar / Inactivar (Uso de data-attributes para mayor seguridad) -->
+                <!-- Botón Desactivar / Inactivar -->
                 {% if i.estado == "Activa" %}
                 <button type="button"
                     data-nombre="{% if i.user %}{{ i.user.get_full_name }}{% else %}{{ i.nombre }}{% endif %}"
                     data-url="{% url 'agenda:eliminar_manicurista' i.id %}"
                     onclick="abrirModalInactivar(this)"
-                    class="py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                    class="flex-1 py-2 px-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
                     title="Inactivar Manicurista">
                     <i class="fa-solid fa-user-slash"></i>
                 </button>
                 {% else %}
                 <button type="button" disabled
-                    class="py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-lg text-xs font-semibold flex items-center justify-center cursor-not-allowed opacity-60"
+                    class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed opacity-60"
                     title="La manicurista ya está inactiva">
                     <i class="fa-solid fa-user-slash"></i>
                 </button>
@@ -138,10 +137,8 @@
         {% empty %}
 
         <!-- Estado Vacío -->
-        <div
-            class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-            <div
-                class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+        <div class="col-span-full bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div class="w-16 h-16 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                 <i class="fa-solid fa-hand-sparkles"></i>
             </div>
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay manicuristas registradas</h3>
@@ -155,14 +152,12 @@
 
 </div>
 
-<!-- Modal Confirmar Inactivación -->
+<!-- Modal Confirmar Inactivación (z-index corregido para cubrir todo) -->
 <div id="modalInactivar"
-    class="fixed inset-0 z-50 hidden bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div
-        class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-center space-y-4">
+    class="fixed inset-0 z-[99999] hidden bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl max-w-md w-full p-6 text-center space-y-4 m-auto">
 
-        <div
-            class="w-14 h-14 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto text-xl">
+        <div class="w-14 h-14 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto text-xl">
             <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
 
@@ -175,7 +170,7 @@
             </p>
         </div>
 
-        <!-- Formulario POST necesario por el decorador @require_POST -->
+        <!-- Formulario POST -->
         <form id="form-inactivar" method="POST" action="" class="flex items-center gap-3 pt-2">
             {% csrf_token %}
             <button type="button" onclick="cerrarModalInactivar()"
@@ -191,6 +186,14 @@
 </div>
 
 <script>
+    // Fix para que el fondo del modal cubra toda la pantalla sin cortarse
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById('modalInactivar');
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
+
     function abrirModalInactivar(elemento) {
         const nombre = elemento.getAttribute('data-nombre');
         const urlAccion = elemento.getAttribute('data-url');
@@ -198,10 +201,16 @@
         document.getElementById('nombre-manicurista').innerText = nombre;
         document.getElementById('form-inactivar').action = urlAccion;
         document.getElementById('modalInactivar').classList.remove('hidden');
+        
+        // Bloquear scroll de fondo
+        document.body.style.overflow = 'hidden';
     }
 
     function cerrarModalInactivar() {
         document.getElementById('modalInactivar').classList.add('hidden');
+        
+        // Restaurar scroll
+        document.body.style.overflow = '';
     }
 </script>
 

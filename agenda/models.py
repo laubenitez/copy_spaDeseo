@@ -261,20 +261,35 @@ class Descuentos(models.Model):
         verbose_name = "Descuento"
         verbose_name_plural = "Descuentos"
 
+    
     def clean(self):
         super().clean()
 
+        # Validar que la fecha final no sea anterior a la inicial.
         if self.fecha_inicio and self.fecha_fin:
             if self.fecha_fin < self.fecha_inicio:
                 raise ValidationError({
-                    "fecha_fin": "La fecha final no puede ser anterior a la inicial."
+                    "fecha_fin": (
+                        "La fecha final no puede ser anterior a la fecha inicial."
+                    )
                 })
 
-        if self.tipo_beneficio == self.TipoBeneficio.PORCENTAJE:
-            if self.valor is not None and self.valor > 100:
-                raise ValidationError({
-                    "valor": "El porcentaje no puede superar el 100 %."
-                })
+        # Validar que el valor sea positivo.
+        if self.valor is not None and self.valor <= 0:
+            raise ValidationError({
+                "valor": "El valor del descuento debe ser mayor que cero."
+            })
+
+        # Validar que el porcentaje no supere el 100 %.
+        if (
+            self.tipo_beneficio == self.TipoBeneficio.PORCENTAJE
+            and self.valor is not None
+            and self.valor > 100
+        ):
+            raise ValidationError({
+                "valor": "El porcentaje no puede superar el 100 %."
+            })
+
 
     @property
     def vigente(self):
@@ -606,6 +621,5 @@ class Notificacion(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.destinatario.username}"
-
 
 

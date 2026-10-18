@@ -276,3 +276,45 @@ class PreferenciasUsuarioAdmin(admin.ModelAdmin):
     )
 
     ordering = ("user__username",)
+
+
+@admin.register(Notificacion)
+class NotificacionAdmin(admin.ModelAdmin):
+    # Columnas visibles en el listado
+    list_display = (
+        'id',
+        'destinatario',
+        'titulo',
+        'tipo',
+        'leida',
+        'fecha_creacion',
+    )
+
+    # Filtros laterales para facilitar la búsqueda en el admin
+    list_filter = (
+        'tipo',
+        'leida',
+        'fecha_creacion',
+    )
+
+    # Búsqueda por título, mensaje o nombre/correo del destinatario
+    search_fields = (
+        'titulo',
+        'mensaje',
+        'destinatario__username',
+        'destinatario__email',
+        'destinatario__first_name',
+        'destinatario__last_name',
+    )
+
+    # Permite filtrar/buscar de forma eficiente si hay muchos usuarios o citas
+    raw_id_fields = ('destinatario', 'cita')
+
+    # Orden predeterminado (las más recientes primero)
+    ordering = ('-fecha_creacion',)
+
+    # Campos de solo lectura
+    readonly_fields = ('fecha_creacion',)
+
+    # Paginación en el admin
+    list_per_page = 25

@@ -1,0 +1,354 @@
+{% extends 'dashboard.html' %}
+{% load l10n %}
+{% block content %}
+
+<!-- BOTÓN VOLVER -->
+<div class="flex justify-end pt-0 mb-2">
+    <a href="{% url 'agenda:ver_descuentos' %}"
+       class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm">
+
+        <svg class="w-4 h-4 flex-shrink-0" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+
+        Volver a Descuentos
+    </a>
+</div>
+
+<!-- CONTENEDOR CENTRAL -->
+<div class="max-w-3xl mx-auto !-mt-8 sm:!-mt-10">
+
+    <!-- ENCABEZADO -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+            {% if modo_edicion %}Editar Descuento{% else %}Nuevo Descuento{% endif %}
+        </h1>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Configura las promociones y beneficios de Spa Deseo.
+        </p>
+    </div>
+
+    <!-- MENSAJES DE ERROR GENERALES -->
+    {% for campo, mensajes in errores.items %}
+        {% if campo == "__all" %}
+            <div class="mb-5 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 p-4">
+                {% for error in mensajes %}
+                    <p class="text-sm text-red-700 dark:text-red-300">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+
+    <!-- FORMULARIO -->
+    <form method="POST"
+          action="{% if modo_edicion %}{% url 'agenda:actualizar_descuento' datos.id %}{% else %}{% url 'agenda:crear_descuento' %}{% endif %}"
+          class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 space-y-6">
+
+        {% csrf_token %}
+
+        <!-- NOMBRE -->
+        <div>
+            <label for="nombre"
+                   class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Nombre del descuento *
+            </label>
+
+            <input type="text"
+                   id="nombre"
+                   name="nombre"
+                   maxlength="100"
+                   required
+                   value="{{ datos.nombre|default:'' }}"
+                   placeholder="Ej. Descuento de cumpleaños"
+                   class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none">
+
+            {% for error in errores.nombre %}
+                <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- TIPO Y BENEFICIO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <!-- TIPO DE DESCUENTO -->
+            <div>
+                <label for="tipo"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Tipo de descuento *
+                </label>
+
+                <div class="relative">
+                    <select id="tipo"
+                            name="tipo"
+                            required
+                            class="w-full appearance-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white pl-4 pr-11 py-3 focus:ring-2 focus:ring-pink-500 outline-none cursor-pointer">
+
+                        <option value="CUMPLEAÑOS"
+                            {% if datos.tipo == "CUMPLEAÑOS" %}selected{% endif %}>
+                            Cumpleaños
+                        </option>
+
+                        <option value="PRIMERA_CITA"
+                            {% if datos.tipo == "PRIMERA_CITA" %}selected{% endif %}>
+                            Primera cita
+                        </option>
+
+                        <option value="FECHA_ESPECIAL"
+                            {% if datos.tipo == "FECHA_ESPECIAL" %}selected{% endif %}>
+                            Fecha especial
+                        </option>
+
+                        <option value="TEMPORADA"
+                            {% if datos.tipo == "TEMPORADA" %}selected{% endif %}>
+                            Temporada
+                        </option>
+
+                        <option value="PERSONALIZADO"
+                            {% if not datos.tipo or datos.tipo == "PERSONALIZADO" %}selected{% endif %}>
+                            Promoción personalizada
+                        </option>
+                    </select>
+
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-11 text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </div>
+                </div>
+
+                {% for error in errores.tipo %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- TIPO DE BENEFICIO -->
+            <div>
+                <label for="tipo_beneficio"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Tipo de beneficio *
+                </label>
+
+                <div class="relative">
+                    <select id="tipo_beneficio"
+                            name="tipo_beneficio"
+                            required
+                            class="w-full appearance-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white pl-4 pr-11 py-3 focus:ring-2 focus:ring-pink-500 outline-none cursor-pointer">
+
+                        <option value="PORCENTAJE"
+                            {% if not datos.tipo_beneficio or datos.tipo_beneficio == "PORCENTAJE" %}selected{% endif %}>
+                            Porcentaje (%)
+                        </option>
+
+                        <option value="VALOR_FIJO"
+                            {% if datos.tipo_beneficio == "VALOR_FIJO" %}selected{% endif %}>
+                            Valor fijo (COP)
+                        </option>
+                    </select>
+
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-11 text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </div>
+                </div>
+
+                {% for error in errores.tipo_beneficio %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- VALOR Y ESTADO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <!-- VALOR -->
+            <div>
+                <label for="valor"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Valor del descuento *
+                </label>
+
+                <div class="relative">
+                    <input type="number"
+                           id="valor"
+                           name="valor"
+                           min="0.01"
+                           step="0.01"
+                           required
+                           value="{{ datos.valor|unlocalize|default_if_none:'' }}"
+                           placeholder="Ej. 10"
+                           class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 pr-12 focus:ring-2 focus:ring-pink-500 outline-none">
+
+                    <span id="simbolo_valor"
+                          class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                        %
+                    </span>
+                </div>
+
+                <p id="ayuda_valor" class="text-xs text-gray-400 mt-1">
+                    Ingresa un porcentaje entre 0.01 y 100.
+                </p>
+
+                {% for error in errores.valor %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- ESTADO -->
+            <div>
+                <label for="activo"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Estado del descuento *
+                </label>
+
+                <div class="relative">
+                    <select id="activo"
+                            name="activo"
+                            required
+                            class="w-full appearance-none rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white pl-4 pr-11 py-3 focus:ring-2 focus:ring-pink-500 outline-none cursor-pointer">
+
+                        <option value="true"
+                            {% if datos.activo == True or datos.activo == "true" or not datos.activo and datos.activo != False %}selected{% endif %}>
+                            Activo
+                        </option>
+
+                        <option value="false"
+                            {% if datos.activo == False or datos.activo == "false" %}selected{% endif %}>
+                            Inactivo
+                        </option>
+                    </select>
+
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center justify-center w-11 text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-400 mt-1">
+                    Puedes desactivar el descuento sin eliminarlo.
+                </p>
+
+                {% for error in errores.activo %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- FECHAS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <div>
+                <label for="fecha_inicio"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Fecha de inicio *
+                </label>
+
+                <input type="date"
+                       id="fecha_inicio"
+                       name="fecha_inicio"
+                       required
+                       value="{{ datos.fecha_inicio|date:'Y-m-d'|default:'' }}"
+                       class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none">
+
+                {% for error in errores.fecha_inicio %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div>
+                <label for="fecha_fin"
+                       class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Fecha de finalización *
+                </label>
+
+                <input type="date"
+                       id="fecha_fin"
+                       name="fecha_fin"
+                       required
+                       value="{{ datos.fecha_fin|date:'Y-m-d'|default:'' }}"
+                       class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none">
+
+                {% for error in errores.fecha_fin %}
+                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div>
+            <label for="descripcion"
+                   class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                Descripción
+            </label>
+
+            <textarea id="descripcion"
+                      name="descripcion"
+                      rows="4"
+                      placeholder="Describe la promoción, sus condiciones o los detalles que debe conocer el cliente..."
+                      class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 focus:ring-2 focus:ring-pink-500 outline-none resize-y">{{ datos.descripcion|default:'' }}</textarea>
+
+            {% for error in errores.descripcion %}
+                <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <!-- BOTONES -->
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+
+            <a href="{% url 'agenda:ver_descuentos' %}"
+               class="px-5 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-semibold text-center transition">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="px-5 py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                {% if modo_edicion %}Guardar cambios{% else %}Crear descuento{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- AJUSTE DINÁMICO DEL CAMPO VALOR -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tipoBeneficio = document.getElementById("tipo_beneficio");
+    const valor = document.getElementById("valor");
+    const simbolo = document.getElementById("simbolo_valor");
+    const ayuda = document.getElementById("ayuda_valor");
+
+    function actualizarValor() {
+        if (tipoBeneficio.value === "PORCENTAJE") {
+            valor.max = "100";
+            valor.step = "0.01";
+            simbolo.textContent = "%";
+            ayuda.textContent = "Ingresa un porcentaje entre 0.01 y 100.";
+        } else {
+            valor.removeAttribute("max");
+            valor.step = "0.01";
+            simbolo.textContent = "$";
+            ayuda.textContent = "Ingresa el valor que se descontará en pesos colombianos (COP).";
+        }
+    }
+
+    tipoBeneficio.addEventListener("change", actualizarValor);
+    actualizarValor();
+});
+</script>
+
+{% endblock %}

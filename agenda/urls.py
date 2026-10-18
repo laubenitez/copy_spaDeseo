@@ -127,6 +127,15 @@ urlpatterns = [
     path("cambiar_contrasena/", views.cambiar_contrasena, name="cambiar_contrasena"),
 
 
+    
+    # CRUD DE DESCUENTOS DEL ADMINISTRADOR
+    path("administrador/descuentos/", views.ver_descuentos, name="ver_descuentos"),
+    path("administrador/descuentos/crear/", views.crear_descuento, name="crear_descuento"),
+    path("administrador/descuentos/editar/<int:id>/", views.actualizar_descuento, name="actualizar_descuento"),
+    path("administrador/descuentos/eliminar/<int:id>/", views.eliminar_descuento, name="eliminar_descuento"),
+
+
+
     # Envío de correos para recuperación de contraseña
     # 1. Vista donde el usuario introduce su correo
     path('recuperar-contrasena/', auth_views.PasswordResetView.as_view(

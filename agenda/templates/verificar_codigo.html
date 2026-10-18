@@ -20,7 +20,7 @@
 
     <!-- MENSAJE INFORMATIVO -->
     <p class="subtitulo-verificacion">
-        Enviamos un código de seguridad a tu correo. Introdúcelo para continuar.
+        Por favor, introduce el código de confirmación para completar el acceso.
     </p>
 
     <!-- FORMULARIO DE VERIFICACIÓN -->
@@ -140,8 +140,10 @@
     .texto-expiracion {
         color: #98788a;
         font-size: 12px;
-        margin: 12px 0 18px;
+        margin: 12px 0 18px 0; /* Forzamos el margen izquierdo a 0 */
         line-height: 1.5;
+        text-align: left;      /* Alinea el texto a la izquierda */
+        width: 100%;           /* Asegura que abarque el ancho del contenedor */
     }
 
     .texto-expiracion i {

@@ -377,6 +377,38 @@
 
                         </li>
 
+                                                
+                        <li>
+                            <a href="{% url 'agenda:ver_servicio' %}"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400 transition font-medium
+                            {% if '/servicios/' in request.path or '/crear_servicio/' in request.path or '/actualizar_servicio/' in request.path %}
+                                border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                            {% else %}
+                                hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400
+                            {% endif %}">
+
+                                <i class="fa-solid fa-layer-group"></i>
+                                <span>Servicios</span>
+                            </a>
+                        </li>
+
+                        
+                        <li>
+                            <a href="{% url 'agenda:ver_descuentos' %}"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400 transition font-medium
+                            {% if '/administrador/descuentos/' in request.path %}
+                                border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                            {% else %}
+                                hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400
+                            {% endif %}">
+
+                                <i class="fa-solid fa-tags"></i>
+                                <span>Descuentos</span>
+                            </a>
+                        </li>
+
+
+
 
                         <li>
 
