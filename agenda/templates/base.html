@@ -163,11 +163,11 @@
 
                     <div class="collapse navbar-collapse" id="navItems">
                         <ul class="navbar-nav ms-auto align-items-center text-center">
-                            <li class="nav-item"><a href="#nosotros" class="nav-link">Nosotros</a></li>
-                            <li class="nav-item"><a href="#servicios" class="nav-link">Servicios</a></li>
+                            <li class="nav-item"><a href="{% url 'agenda:sobre_nosotros' %}" class="nav-link">Nosotros</a></li>
+                            <li class="nav-item"><a href="{% url 'agenda:lista_servicios' %}" class="nav-link">Servicios</a></li>
                         </ul>
 
-                        <a href="#" class="navbar-brand mx-lg-5 text-center d-block">
+                        <a href="{% url 'agenda:index' %}" class="navbar-brand mx-lg-5 text-center d-block">
                             <h1 class="m-0 font-weight-bold" style="color: var(--primary);">
                                 SPA<span style="color: var(--rosa-banner); opacity: 0.9;"> DESEO</span>
                             </h1>
@@ -195,6 +195,51 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
    
+<!-- FOOTER GENERAL -->
+<footer style="background-color: var(--negro-suave, #222); color: #fff; padding: 60px 0 30px; margin-top: 60px;">
+    <div class="container">
+        <div class="row g-4 justify-content-between">
+            
+            <!-- Columna 1: Info -->
+            <div class="col-md-4">
+                <h4 class="fw-bold mb-3" style="color: var(--rosa-banner);">Spa Deseo</h4>
+                <p class="text-muted small" style="color: #bbb !important; line-height: 1.6;">
+                    Transformamos tus uñas en arte. Cuidado profesional, higiene y exclusividad para resaltar tu belleza natural en Bello, Antioquia.
+                </p>
+            </div>
+
+            <!-- Columna 2: Enlaces Rápidos -->
+            <div class="col-md-3">
+                <h5 class="fw-bold mb-3 text-white">Enlaces Rápidos</h5>
+                <ul class="list-unstyled small" style="line-height: 2;">
+                    <li><a href="{% url 'agenda:index' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Inicio</a></li>
+                    <li><a href="{% url 'agenda:sobre_nosotros' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Sobre Nosotros</a></li>
+                    <li><a href="{% url 'agenda:lista_servicios' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Servicios</a></li>
+                    <li><a href="{% url 'agenda:login' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Iniciar Sesión / Agendar</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 3: Redes / Contacto -->
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-3 text-white">Síguenos</h5>
+                <p class="text-muted small" style="color: #bbb !important;">Entérate de nuestras promociones y nuevos diseños en redes sociales.</p>
+                <div class="d-flex gap-3 mt-3">
+                    <a href="https://www.facebook.com/" class="text-white fs-5" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://www.instagram.com/" class="text-white fs-5" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://wa.me/573000000000" class="text-white fs-5" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="border-secondary my-4">
+
+        <div class="text-center text-muted small" style="color: #888 !important;">
+            <p class="mb-0">&copy; 2026 Spa Deseo. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
 </body>
 
 </html>

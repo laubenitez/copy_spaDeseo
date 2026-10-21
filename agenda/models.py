@@ -105,6 +105,13 @@ class Servicios(models.Model):
     precio = models.IntegerField()
     porcentaje_comision = models.IntegerField(default=50, help_text="Porcentaje de comisión para la manicurista")
     descripcion = models.TextField(null=True, blank=True)
+    imagen = models.ImageField(
+        upload_to="servicios/",
+        blank=True,
+        null=True,
+        verbose_name="Fotografía del servicio"
+    )
+
     ESTADOS = (
         ("Activo", "ACTIVO"),
         ("Inactivo", "INACTIVO"),
@@ -621,5 +628,17 @@ class Notificacion(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.destinatario.username}"
+
+
+class MensajeContacto(models.Model):
+    nombre = models.CharField(max_length=120)
+    correo = models.EmailField()
+    asunto = models.CharField(max_length=200)
+    mensaje = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+    leido = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.asunto}"
 
 

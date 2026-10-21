@@ -27,6 +27,8 @@ urlpatterns = [
     path('v1/', include(router.urls)),
 
     path('', views.index, name="index"),
+    path('nosotros/', views.sobre_nosotros, name='sobre_nosotros'),
+    path('servicios/', views.lista_servicios, name='lista_servicios'),
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
     path("register/", views.register, name="register"),

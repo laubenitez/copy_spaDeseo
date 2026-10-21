@@ -33,6 +33,7 @@ from django.utils.dateparse import parse_date
 from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.mail import send_mail
+from PIL import Image, UnidentifiedImageError
 
 # Importaciones locales explícitas
 from .models import (
@@ -511,13 +512,45 @@ def responder_solicitud_soporte(request, id):
     return redirect("agenda:soporte_administrador")
 
 def index(request):
+    # 1. Procesar el formulario de contacto si envían un POST
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        correo = request.POST.get('correo')
+        asunto = request.POST.get('asunto')
+        mensaje = request.POST.get('mensaje')
+
+        if nombre and correo and asunto and mensaje:
+            MensajeContacto.objects.create(
+                nombre=nombre,
+                correo=correo,
+                asunto=asunto,
+                mensaje=mensaje
+            )
+            messages.success(request, '¡Tu mensaje ha sido enviado con éxito! Nos pondremos en contacto pronto.')
+            return redirect('index') # Cambia 'index' si tu url principal tiene otro nombre
+        else:
+            messages.error(request, 'Por favor, completa todos los campos obligatorios.')
+
+    # 2. Consultas para la página principal
     servicios = Servicios.objects.filter(estado="Activo").order_by("nombre")
+    resenas = Resena.objects.select_related('cita__cliente').order_by('-fecha_creacion')[:6]
 
     contexto = {
         "servicios": servicios,
+        "resenas": resenas,
     }
 
     return render(request, "index.html", contexto)
+
+def sobre_nosotros(request):
+    return render(request, "sobre_nosotros.html")
+
+def lista_servicios(request):
+    servicios = Servicios.objects.filter(estado="Activo").order_by("nombre")
+    contexto = {
+        "servicios": servicios,
+    }
+    return render(request, "catalogo_servicios.html", contexto)
 
 @login_required(login_url="agenda:login")
 @requiere_rol("MANICURISTA")
@@ -3338,6 +3371,32 @@ def registrar_pago_admin(request, cita_id):
 
 
 
+def validar_imagen_servicio(imagen):
+    if not imagen:
+        return
+
+    if imagen.size > 5 * 1024 * 1024:
+        raise ValueError("La imagen no puede superar los 5 MB.")
+
+    try:
+        imagen.seek(0)
+
+        with Image.open(imagen) as archivo:
+            if archivo.format not in ("JPEG", "PNG", "WEBP"):
+                raise ValueError(
+                    "Usa una imagen JPG, PNG o WebP."
+                )
+
+            archivo.verify()
+
+        imagen.seek(0)
+
+    except (UnidentifiedImageError, OSError):
+        raise ValueError(
+            "El archivo seleccionado no es una imagen válida."
+        )
+
+
 #CRUD SERVICIOS
 
 from django.db import DatabaseError
@@ -3386,6 +3445,9 @@ def crear_servicio(request):
         descripcion = request.POST.get("descripcion", "").strip()
         duracion = request.POST.get("duracion", "").strip()
 
+        # Obtiene la fotografía enviada desde el formulario.
+        imagen = request.FILES.get("imagen")
+
         # Si el formulario no envía la comisión, utiliza 50 %.
         porcentaje_comision = request.POST.get(
             "porcentaje_comision", "50"
@@ -3395,7 +3457,7 @@ def crear_servicio(request):
         estado = request.POST.get("estado", "Activo").strip()
 
         # Verifica que los campos obligatorios tengan algún valor.
-        # La descripción no es obligatoria.
+        # La descripción y la fotografía no son obligatorias.
         if not nombre or not precio or not duracion:
             messages.error(
                 request,
@@ -3404,6 +3466,13 @@ def crear_servicio(request):
 
             # Regresa a la lista sin guardar el servicio.
             return redirect("agenda:ver_servicio")
+
+        # Comprueba que la fotografía sea válida, si se adjuntó alguna.
+        try:
+            validar_imagen_servicio(imagen)
+        except ValueError as e:
+            messages.error(request, str(e))
+            return redirect("agenda:crear_servicio")
 
         try:
             # Los datos de un formulario llegan normalmente como texto.
@@ -3437,6 +3506,7 @@ def crear_servicio(request):
                     duracion=duracion,
                     porcentaje_comision=porcentaje_comision,
                     estado=estado,
+                    imagen=imagen,
                 )
 
             # Informa al usuario que el servicio se creó correctamente.
@@ -3503,12 +3573,26 @@ def eliminar_servicio(request, id):
                 # Regresa a la lista sin eliminar el registro.
                 return redirect("agenda:ver_servicio")
 
-            # Conserva el nombre antes de eliminar el objeto.
-            # Así podemos usarlo en el mensaje posterior.
+            # Conserva el nombre y la fotografía antes de eliminar el objeto.
+            # Así podemos usar el nombre en el mensaje posterior
+            # y eliminar el archivo después de confirmar la transacción.
             nombre_servicio = servicio.nombre
+            nombre_imagen = (
+                servicio.imagen.name if servicio.imagen else None
+            )
+            almacen_imagen = (
+                servicio.imagen.storage if servicio.imagen else None
+            )
 
             # Elimina el servicio de la base de datos.
             servicio.delete()
+
+            # Programa la eliminación de la fotografía después
+            # de confirmar la transacción de la base de datos.
+            if nombre_imagen and almacen_imagen:
+                transaction.on_commit(
+                    lambda: almacen_imagen.delete(nombre_imagen)
+                )
 
             # Confirma al administrador que la eliminación se realizó.
             messages.success(
@@ -3534,6 +3618,8 @@ def eliminar_servicio(request, id):
 
     # Vuelve a la lista después de la operación.
     return redirect("agenda:ver_servicio")
+
+
 # CRUD SERVICIOS: ACTUALIZAR
 
 # Permite GET para mostrar el formulario con los datos actuales
@@ -3556,6 +3642,23 @@ def actualizar_servicio(request, id):
         precio = request.POST.get("precio", "").strip()
         descripcion = request.POST.get("descripcion", "").strip()
         duracion = request.POST.get("duracion", "").strip()
+
+        # Obtiene la fotografía nueva y comprueba si se desea eliminar
+        # la fotografía que ya tiene el servicio.
+        imagen_nueva = request.FILES.get("imagen")
+        eliminar_imagen = (
+            request.POST.get("eliminar_imagen") == "on"
+        )
+
+        # Comprueba que la fotografía nueva sea válida, si se adjuntó.
+        try:
+            validar_imagen_servicio(imagen_nueva)
+        except ValueError as e:
+            messages.error(request, str(e))
+            return redirect(
+                "agenda:actualizar_servicio",
+                id=servicio.id
+            )
 
         # En la edición no se usa un valor predeterminado:
         # el formulario debe enviar la comisión seleccionada.
@@ -3599,6 +3702,15 @@ def actualizar_servicio(request, id):
             # Agrupa las modificaciones en una transacción.
             with transaction.atomic():
 
+                # Guarda la referencia de la fotografía anterior
+                # para eliminarla únicamente si cambia o se quita.
+                imagen_anterior = (
+                    servicio.imagen.name if servicio.imagen else None
+                )
+                almacen_imagen = (
+                    servicio.imagen.storage if servicio.imagen else None
+                )
+
                 # Asigna cada valor nuevo al objeto existente.
                 servicio.nombre = nombre
                 servicio.precio = precio
@@ -3607,8 +3719,33 @@ def actualizar_servicio(request, id):
                 servicio.porcentaje_comision = porcentaje_comision
                 servicio.estado = estado
 
-                # Guarda los cambios del objeto en la base de datos.
+                # Si se adjuntó una fotografía nueva, reemplaza la anterior.
+                # Si no se adjuntó y se marcó eliminar, quita la fotografía.
+                # Si no se hizo ninguna de las dos cosas, la conserva.
+                if imagen_nueva:
+                    servicio.imagen = imagen_nueva
+                elif eliminar_imagen:
+                    servicio.imagen = None
+
+                # Guarda los cambios del objeto existente.
                 servicio.save()
+
+                # Comprueba cuál es el nombre de la fotografía después
+                # de guardar para determinar si cambió o se eliminó.
+                imagen_actual = (
+                    servicio.imagen.name if servicio.imagen else None
+                )
+
+                # Programa la eliminación de la fotografía anterior
+                # solo después de confirmar la transacción.
+                if (
+                    imagen_anterior
+                    and almacen_imagen
+                    and imagen_anterior != imagen_actual
+                ):
+                    transaction.on_commit(
+                        lambda: almacen_imagen.delete(imagen_anterior)
+                    )
 
             # Informa que la actualización fue exitosa.
             messages.success(
@@ -3647,7 +3784,6 @@ def actualizar_servicio(request, id):
         "servicio/formulario_servicio.html",
         {"datos": servicio}
     )
-
 
 #CRUD INVENTARIO
 @requiere_rol("ADMINISTRADOR")

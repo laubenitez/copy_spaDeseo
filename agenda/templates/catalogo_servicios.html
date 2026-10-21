@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Spa Deseo | Todos los Servicios{% endblock %}
+
+{% block content %}
+<section class="seccion-padding" style="margin-top: 40px;">
+    <div class="container text-center">
+        <span class="text-uppercase small fw-bold" style="color: var(--rosa-banner); letter-spacing: 2px;">Catálogo Completo</span>
+        <h2 class="titulo-seccion mt-1 mb-3">Nuestros Servicios y Tratamientos</h2>
+        <p class="text-muted lead mx-auto mb-5" style="max-width: 700px;">
+            Explora cada uno de nuestros servicios diseñados para consentir tus manos, pies y realzar tu estilo. ¡Elige tu favorito y agenda tu cita!
+        </p>
+
+        <div class="row g-4 justify-content-center">
+            {% for servicio in servicios %}
+            <div class="col-md-4">
+                <div class="card-servicio h-100 d-flex flex-column justify-content-between p-4">
+                    <div>
+                        <div class="icono-circulo mx-auto mb-3">
+                            <i class="fa-solid fa-spa"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-3">
+                            {{ servicio.nombre }}
+                        </h4>
+                        <p class="text-muted small px-2 mb-3">
+                            {{ servicio.descripcion|default:"Un servicio pensado para consentirte y cuidar de ti." }}
+                        </p>
+                        <p class="fw-bold mb-2 fs-5" style="color: var(--rosa-banner);">
+                            ${{ servicio.precio|intcomma }}
+                        </p>
+                        <p class="text-muted small mb-4">
+                            <i class="fa-regular fa-clock me-1"></i>
+                            {{ servicio.duracion }} minutos
+                        </p>
+                    </div>
+
+                    <div>
+                        <a href="{% url 'agenda:login' %}" class="btn btn-rosa w-100 text-uppercase py-2" style="font-size: 0.9rem;">
+                            Agendar Cita
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted">No hay servicios disponibles en este momento.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-5">
+            <a href="{% url 'agenda:index' %}" class="btn btn-outline-dark rounded-pill px-4 py-2">
+                <i class="fa-solid fa-arrow-left me-2"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

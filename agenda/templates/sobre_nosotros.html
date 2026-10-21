@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Spa Deseo | Sobre Nosotros{% endblock %}
+
+{% block content %}
+<section class="seccion-padding" style="margin-top: 40px;">
+    <div class="container">
+        <!-- Encabezado -->
+        <div class="text-center mb-5">
+            <span class="text-uppercase small fw-bold" style="color: var(--rosa-banner); letter-spacing: 2px;">Nuestra Esencia</span>
+            <h2 class="titulo-seccion mt-1 mb-3">Conoce más sobre Spa Deseo</h2>
+            <p class="text-muted lead mx-auto" style="max-width: 700px;">
+                Más que un salón de uñas, somos un espacio dedicado al cuidado personal, la relajación y el realce de tu belleza natural.
+            </p>
+        </div>
+
+        <!-- Historia -->
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-md-6">
+                <div class="marco-polaroid">
+                    <img src="{% static 'img/manicura_profesional.jpg' %}" class="img-fluid rounded" alt="Nuestra historia Spa Deseo">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3 class="fw-bold mb-3" style="color: var(--primary);">Nuestra Historia</h3>
+                <p class="text-muted" style="line-height: 1.7;">
+                    Fundado en Bello, Antioquia, <strong>Spa Deseo</strong> nació del sueño de crear un ambiente exclusivo donde cada clienta pudiera desconectarse del estrés diario y recibir un servicio de manicura y pedicura con los más altos estándares de calidad e higiene.
+                </p>
+                <p class="text-muted" style="line-height: 1.7;">
+                    A lo largo de los años, nos hemos consolidado gracias a nuestra pasión por las tendencias en nail art, el uso de productos de primera línea y, sobre todo, el cariño y dedicación de nuestro equipo de profesionales.
+                </p>
+            </div>
+        </div>
+
+        <!-- Misión y Visión -->
+        <div class="row g-4 mt-4">
+            <div class="col-md-6">
+                <div class="card-servicio h-100 p-4 text-center">
+                    <div class="icono-circulo mx-auto mb-3">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-3">Nuestra Misión</h4>
+                    <p class="text-muted small">
+                        Brindar experiencias de belleza y bienestar excepcionales, realzando la confianza de cada mujer a través de un servicio detallado, personalizado y en un ambiente de absoluta relajación.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-servicio h-100 p-4 text-center">
+                    <div class="icono-circulo mx-auto mb-3">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-3">Nuestra Visión</h4>
+                    <p class="text-muted small">
+                        Ser reconocidos como el spa de referencia en el cuidado de uñas y estética de manos y pies en la región, destacándonos por la innovación en diseños, calidad humana y fidelización de nuestras clientas.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
