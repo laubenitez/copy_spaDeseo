@@ -18,11 +18,12 @@
     <style>
         :root {
             --primary: #d23369;
-            /* Fucsia de acento */
             --rosa-banner: #f195b2;
-            /* Rosa del fondo superior */
-            --rosa-suave: #fff0f5;
+            --rosa-suave: #fff5f8;
             --negro-suave: #444444;
+            /* Agregamos estas variables que usaba el footer para que no fallen */
+            --texto-gris: #68545d; 
+            --sn-blanco: #ffffff;
         }
 
         body {
@@ -38,7 +39,6 @@
             color: white;
             font-size: 16px;
             padding: 10px 0;
-            padding-top: 10px;
         }
 
         .top-bar a {
@@ -59,26 +59,21 @@
             font-size: 1.25rem;
         }
 
-        /* --- Contenedor del Navbar superior para simular el fondo rosa de la captura --- */
+        /* --- Navbar --- */
         .header-bg-wrapper {
             background-color: var(--rosa-banner);
-            padding-bottom: 0;
-            /* Crea el espacio rosa debajo del navbar */
             margin-bottom: 0;
             position: relative;
             z-index: 10;
             height: 150px;
         }
 
-        /* --- Estilos del Navbar Flotante --- */
         .nav-custom {
             background-color: #ffffff;
             border-radius: 50px;
-            /* Hace el menú ovalado */
             padding: 10px 45px !important;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
             margin-top: -5px;
-
             position: relative;
             transform: translateY(50%);
             z-index: 20;
@@ -103,55 +98,35 @@
             letter-spacing: 1px;
         }
 
-        /* Tu diseño original con una pequeña mejora para alineación */
-        /* Botón base */
         .button_login {
             display: inline-block !important;
             background-color: var(--primary) !important;
-            /* Tu color rosa */
             color: #ffffff !important;
             padding: 10px 25px !important;
             border-radius: 25px !important;
             font-weight: bold !important;
             text-decoration: none !important;
             transition: all 0.3s ease !important;
-            position: relative;
-            /* Necesario para el efecto */
             border: none !important;
         }
 
-        /* El elemento oculto del brillo */
-        .stars {
-            display: none;
-            /* Oculto por defecto */
-        }
-
-        /* El efecto al pasar el mouse */
         .button_login:hover {
             background-color: var(--rosa-banner) !important;
-            /* Aplicamos el brillo aquí directamente al botón */
             filter: drop-shadow(0 0 10px var(--rosa-banner)) !important;
             cursor: pointer;
         }
 
-
-
-        /* Quitar subrayado de los enlaces del navbar */
-        .navbar a,
-        .navbar a:hover,
-        .navbar a:focus,
-        .navbar a:active,
-        .navbar-brand,
-        .navbar-brand:hover,
-        .navbar-brand:focus {
+        .navbar a, .navbar a:hover, .navbar-brand {
             text-decoration: none !important;
         }
 
-        /* --- FOOTER --- */
-   
+        /* --- FOOTER GLOBAL UNIFICADO --- */
         .footer-moderno {
-            padding: 70px 0 30px 0;
+            position: relative;
+            background-color: #ffffff;
+            padding: 90px 0 30px 0; /* 90px arriba para dejar espacio a la onda */
             border-top: none;
+            overflow: hidden;
             margin-top: 0;
         }
 
@@ -161,13 +136,20 @@
             margin-bottom: 25px;
         }
 
+        .footer-title {
+            color: #d23369;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
         .footer-link-moderno {
             color: var(--texto-gris);
             text-decoration: none;
             display: block;
             margin-bottom: 12px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.30s ease;
         }
 
         .footer-link-moderno:hover {
@@ -186,6 +168,62 @@
             font-size: 0.9rem;
             color: var(--texto-gris);
         }
+
+        /* Onda superior del footer */
+        .footer-moderno .onda-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            z-index: 5;
+        }
+
+        .footer-moderno .onda-top svg {
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 50px;
+        }
+
+        .footer-moderno .onda-top .onda-fill {
+            fill: #ffffff; /* Asegúrate de que coincida con el fondo de la última sección */
+        }
+        /* ==========================================
+           FOOTER Y ONDA SUPERIOR CON TONO #fff5f8
+        ========================================== */
+
+        .footer-moderno {
+            position: relative;
+            background-color: #fff5f8; /* El fondo de todo el cuerpo del footer */
+            padding: 90px 0 30px 0;
+            border-top: none;
+            overflow: hidden;
+            margin-top: 0;
+        }
+
+        /* Posicionamiento y diseño de la onda superior */
+        .footer-moderno .onda-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            z-index: 5;
+        }
+
+        .footer-moderno .onda-top svg {
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 50px;
+        }
+
+        /* La onda se pinta de BLANCO PURA (#ffffff) para que destaque sobre el fondo #fff5f8 */
+        .footer-moderno .onda-top .onda-fill {
+            fill: #ffffff; 
+        }
+
     </style>
 </head>
 
@@ -227,7 +265,7 @@
                         </a>
 
                         <ul class="navbar-nav me-auto align-items-center text-center">
-                            <li class="nav-item"><a href="#contacto" class="nav-link">Contacto</a></li>
+                            <li class="nav-item"><a href="{% url 'agenda:index' %}#contacto"class="nav-link">Contacto</a></li>
                             <li class="nav-item">
                                 <a href="{% url 'agenda:login' %}" class="nav-link" style="text-decoration: none;">
                                     <span class="button_login">Iniciar Sesión</span>
@@ -250,6 +288,14 @@
    
 <!-- FOOTER (FONDO BLANCO) -->
 <footer class="footer-moderno bg-blanco">
+    <!-- Onda superior del footer -->
+    <div class="onda-top">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                class="onda-fill"></path>
+        </svg>
+    </div>
+    
     <div class="container">
         <div class="row g-5">
             <div class="col-lg-4 col-md-6">
@@ -264,8 +310,9 @@
                 <h4 class="footer-title">Explorar</h4>
                 <a href="{% url 'agenda:sobre_nosotros' %}" class="footer-link-moderno">Sobre Nosotros</a>
                 <a href="{% url 'agenda:lista_servicios' %}" class="footer-link-moderno">Nuestros Servicios</a>
-                <a href="#resenas" class="footer-link-moderno">Historias de Clientes</a>
-                <a href="#contacto" class="footer-link-moderno">Contáctanos</a>
+                <a href="{% url 'agenda:index' %}#resenas" class="footer-link-moderno">Historias de Clientes</a>
+                <!-- Corregido para que redirija al formulario en el inicio desde cualquier sección -->
+                <a href="{% url 'agenda:index' %}#contacto" class="footer-link-moderno">Contáctanos</a>
             </div>
 
             <div class="col-lg-4 col-md-12">
