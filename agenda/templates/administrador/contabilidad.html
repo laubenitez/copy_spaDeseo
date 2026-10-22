@@ -1,30 +1,30 @@
 {% extends 'dashboard.html' %}
 
 {% block content %}
-<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
 
-    <!-- Encabezado -->
-    <section class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pink-600 via-pink-500 to-rose-400 p-6 text-white shadow-lg shadow-pink-200/50 dark:shadow-none sm:p-8">
-        <div class="absolute -right-8 -top-10 h-44 w-44 rounded-full bg-white/10"></div>
-        <div class="absolute -bottom-16 right-36 h-40 w-40 rounded-full bg-white/10"></div>
-        <div class="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-                <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                    <i class="fas fa-book-open"></i> Centro financiero
-                </div>
-                <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Contabilidad y finanzas</h1>
-                <p class="mt-2 max-w-2xl text-sm text-pink-50 sm:text-base">
-                    Los libros de Spa Deseo, organizados para revisar ingresos, egresos, caja y comisiones.
-                </p>
+    <!-- Encabezado fuera del contenedor con span, igual a tus otras plantillas -->
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="mb-2 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-pink-600 dark:text-pink-300" style="text-decoration: none !important; background: none !important; border: none !important; padding: 0 !important;">
+                Centro financiero
             </div>
-            <form method="GET" class="flex flex-wrap items-end gap-3 rounded-2xl border border-white/20 bg-white/15 p-3 backdrop-blur-sm">
-                <label class="block text-xs font-semibold text-white">
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">Contabilidad y finanzas</h1>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+                Los libros de Spa Deseo, organizados para revisar ingresos, egresos, caja y comisiones.
+            </p>
+        </div>
+        
+        <!-- Selector de Mes y Año (Año corregido sin comas/puntos) -->
+        <div class="rounded-2xl border border-pink-100 bg-white p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <form method="GET" class="flex flex-wrap items-end gap-3">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Mes
-                    <select name="mes" class="mt-1 block min-w-36 rounded-xl border-0 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 shadow-sm focus:ring-2 focus:ring-pink-200">
+                    <select name="mes" class="mt-1 block min-w-36 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 shadow-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
                         <option value="1" {% if mes_actual == 1 %}selected{% endif %}>Enero</option>
                         <option value="2" {% if mes_actual == 2 %}selected{% endif %}>Febrero</option>
                         <option value="3" {% if mes_actual == 3 %}selected{% endif %}>Marzo</option>
-                        <option value="4" {% if mes_actual == 4 %}selected{% endif %}>Abril</option>
+                        <option value="4" {% if mes_actual == 4 %}selected{% endif %}>April</option>
                         <option value="5" {% if mes_actual == 5 %}selected{% endif %}>Mayo</option>
                         <option value="6" {% if mes_actual == 6 %}selected{% endif %}>Junio</option>
                         <option value="7" {% if mes_actual == 7 %}selected{% endif %}>Julio</option>
@@ -35,16 +35,16 @@
                         <option value="12" {% if mes_actual == 12 %}selected{% endif %}>Diciembre</option>
                     </select>
                 </label>
-                <label class="block text-xs font-semibold text-white">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
                     Año
-                    <input type="number" name="anio" min="2000" max="2100" value="{{ anio_actual }}" class="mt-1 block w-28 rounded-xl border-0 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 shadow-sm focus:ring-2 focus:ring-pink-200">
+                    <input type="number" name="anio" min="2000" max="2100" step="1" value="{{ anio_actual|stringformat:'s'|slugify }}" class="mt-1 block w-28 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 shadow-sm focus:border-pink-400 focus:ring-2 focus:ring-pink-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                 </label>
-                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-white">
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-200">
                     <i class="fas fa-filter"></i> Aplicar
                 </button>
             </form>
         </div>
-    </section>
+    </div>
 
     <!-- Indicadores -->
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -73,7 +73,9 @@
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Comisiones calculadas</p>
                     <p class="mt-2 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">$ {{ comisiones_totales|floatformat:0|default:0 }}</p>
-                    <p class="mt-2 text-xs text-pink-600 dark:text-pink-400"><i class="fas fa-users mr-1"></i> Según servicios completados</p>
+                    <p class="mt-2 text-xs text-pink-600 dark:text-pink-400">
+                        {% if resumen_manicuristas %}<i class="fas fa-users mr-1"></i> Según servicios completados{% else %}<i class="fas fa-circle-exclamation mr-1 text-amber-500"></i> Sin datos vinculados{% endif %}
+                    </p>
                 </div>
                 <span class="rounded-xl bg-pink-50 p-3 text-pink-600 dark:bg-pink-900/30 dark:text-pink-300"><i class="fas fa-hand-holding-dollar text-xl"></i></span>
             </div>
@@ -177,11 +179,21 @@
                 <div class="space-y-3">
                     {% for nombre, datos in resumen_manicuristas.items %}
                     <div class="flex items-center justify-between gap-3 rounded-xl border border-gray-100 p-3 dark:border-gray-700">
-                        <div class="flex min-w-0 items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-100 font-bold text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">{{ nombre|slice:":1"|upper }}</span><div class="min-w-0"><p class="truncate text-sm font-semibold text-gray-800 dark:text-gray-100">{{ nombre }}</p><p class="text-xs text-gray-500 dark:text-gray-400">{{ datos.servicios_realizados }} servicio(s)</p></div></div>
-                        <strong class="shrink-0 text-sm text-pink-600 dark:text-pink-400">$ {{ datos.total_comision|floatformat:0 }}</strong>
+                        <div class="flex min-w-0 items-center gap-3">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-100 font-bold text-pink-700 dark:bg-pink-900/40 dark:text-pink-300">{{ nombre|slice:":1"|upper }}</span>
+                            <div class="min-w-0">
+                                <p class="truncate text-sm font-semibold text-gray-800 dark:text-gray-100">{{ nombre }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ datos.servicios_realizados|default:0 }} servicio(s) completado(s)</p>
+                            </div>
+                        </div>
+                        <strong class="shrink-0 text-sm text-pink-600 dark:text-pink-400">$ {{ datos.total_comision|floatformat:0|default:0 }}</strong>
                     </div>
                     {% empty %}
-                    <div class="rounded-xl border border-dashed border-gray-200 py-8 text-center dark:border-gray-700"><i class="fas fa-users text-2xl text-gray-300"></i><p class="mt-2 text-sm text-gray-500 dark:text-gray-400">No hay comisiones calculadas en este período.</p></div>
+                    <div class="rounded-xl border border-dashed border-amber-200 bg-amber-50/50 py-6 px-4 text-center dark:border-amber-900/50 dark:bg-amber-900/10">
+                        <i class="fas fa-users-gear text-2xl text-amber-500"></i>
+                        <p class="mt-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Sin datos de comisiones vinculados</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Asegúrate de que la vista calcule el diccionario <code class="bg-gray-100 px-1 py-0.5 rounded text-pink-600 dark:bg-gray-700">resumen_manicuristas</code> conectando las citas con los porcentajes de cada manicurista.</p>
+                    </div>
                     {% endfor %}
                 </div>
             </article>
@@ -213,23 +225,97 @@
     <!-- EGRESOS -->
     <section class="book-panel hidden" data-panel="egresos">
         <article class="overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            
             <div class="flex flex-col gap-4 border-b border-gray-100 p-5 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between">
-                <div><p class="text-xs font-bold uppercase tracking-widest text-rose-600">Libro 02</p><h3 class="mt-1 text-xl font-bold text-gray-900 dark:text-white">Libro de egresos</h3><p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Gastos registrados en el período seleccionado.</p></div>
-                <div class="flex flex-wrap gap-2"><input type="search" data-search="tabla-egresos" placeholder="Buscar concepto o fecha..." class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:w-60"><button type="button" data-export="tabla-egresos" class="rounded-xl border border-pink-200 px-3 py-2 text-sm font-semibold text-pink-700 transition hover:bg-pink-50 dark:border-pink-800 dark:text-pink-300 dark:hover:bg-gray-700"><i class="fas fa-download mr-1"></i> CSV</button></div>
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-rose-600">Libro 02</p>
+                    <h3 class="mt-1 text-xl font-bold text-gray-900 dark:text-white">Libro de egresos</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Gastos registrados en el período seleccionado.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="document.getElementById('form-nuevo-gasto').classList.toggle('hidden')" class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700">
+                        <i class="fas fa-plus mr-1"></i> Nuevo Gasto
+                    </button>
+                    <input type="search" data-search="tabla-egresos" placeholder="Buscar concepto..." class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:w-48">
+                    <button type="button" data-export="tabla-egresos" class="rounded-xl border border-pink-200 px-3 py-2 text-sm font-semibold text-pink-700 transition hover:bg-pink-50 dark:border-pink-800 dark:text-pink-300 dark:hover:bg-gray-700"><i class="fas fa-download mr-1"></i> CSV</button>
+                </div>
             </div>
+
+            <div id="form-nuevo-gasto" class="hidden border-b border-gray-100 bg-rose-50/40 p-5 dark:border-gray-700 dark:bg-gray-900/40">
+                <form method="POST" action="{% url 'agenda:modulo_contabilidad' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="accion" value="registrar_gasto">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Concepto</label>
+                            <input type="text" name="concepto" required placeholder="Ej: Compra de insumos, servicios..." class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Referencia / Comprobante</label>
+                            <input type="text" name="referencia" placeholder="Ej: Factura #001, Recibo..." class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Valor ($)</label>
+                            <input type="number" name="valor" required min="0" placeholder="0" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Fecha</label>
+                            <input type="date" name="fecha" required class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Descripción (Opcional)</label>
+                            <input type="text" name="descripcion" placeholder="Detalles adicionales del gasto..." class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-rose-400 focus:ring-2 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="document.getElementById('form-nuevo-gasto').classList.add('hidden')" class="rounded-xl px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">Cancelar</button>
+                        <button type="submit" class="rounded-xl bg-rose-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700">Guardar Gasto</button>
+                    </div>
+                </form>
+            </div>
+
             <div class="overflow-x-auto">
                 <table id="tabla-egresos" class="w-full text-left text-sm">
-                    <thead class="bg-rose-50 text-xs uppercase tracking-wider text-rose-800 dark:bg-rose-900/20 dark:text-rose-300"><tr><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Concepto</th><th class="px-5 py-3">Descripción</th><th class="px-5 py-3 text-right">Valor</th></tr></thead>
+                    <thead class="bg-rose-50 text-xs uppercase tracking-wider text-rose-800 dark:bg-rose-900/20 dark:text-rose-300">
+                        <tr>
+                            <th class="px-5 py-3">Fecha</th>
+                            <th class="px-5 py-3">Concepto</th>
+                            <th class="px-5 py-3">Referencia</th>
+                            <th class="px-5 py-3">Descripción</th>
+                            <th class="px-5 py-3 text-right">Valor</th>
+                        </tr>
+                    </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     {% for gasto in gastos_lista %}
-                        <tr class="transition hover:bg-pink-50/50 dark:hover:bg-gray-700/50"><td class="whitespace-nowrap px-5 py-4 text-gray-600 dark:text-gray-300">{{ gasto.fecha|date:"d/m/Y" }}</td><td class="px-5 py-4 font-semibold text-gray-800 dark:text-gray-100">{{ gasto.concepto }}</td><td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ gasto.descripcion|default:"—" }}</td><td class="whitespace-nowrap px-5 py-4 text-right font-bold text-rose-600 dark:text-rose-400">$ {{ gasto.valor|floatformat:0 }}</td></tr>
+                        <tr class="transition hover:bg-pink-50/50 dark:hover:bg-gray-700/50">
+                            <td class="whitespace-nowrap px-5 py-4 text-gray-600 dark:text-gray-300">{{ gasto.fecha|date:"d/m/Y" }}</td>
+                            <td class="px-5 py-4 font-semibold text-gray-800 dark:text-gray-100">{{ gasto.concepto }}</td>
+                            <td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ gasto.referencia|default:"—" }}</td>
+                            <td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ gasto.descripcion|default:"—" }}</td>
+                            <td class="whitespace-nowrap px-5 py-4 text-right font-bold text-rose-600 dark:text-rose-400">$ {{ gasto.valor|floatformat:0 }}</td>
+                        </tr>
                     {% empty %}
-                        <tr><td colspan="4" class="px-5 py-12 text-center"><i class="fas fa-receipt text-3xl text-gray-300"></i><p class="mt-3 font-semibold text-gray-600 dark:text-gray-300">No hay gastos registrados</p><p class="mt-1 text-sm text-gray-400">Los gastos se consultan desde el registro existente.</p></td></tr>
+                        <tr>
+                            <td colspan="5" class="px-5 py-12 text-center">
+                                <i class="fas fa-receipt text-3xl text-gray-300"></i>
+                                <p class="mt-3 font-semibold text-gray-600 dark:text-gray-300">No hay gastos registrados</p>
+                                <p class="mt-1 text-sm text-gray-400">Haz clic en el botón "Nuevo Gasto" para registrar el primero.</p>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div class="flex flex-col gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-gray-800/70 sm:flex-row sm:items-center sm:justify-between"><span class="text-sm text-gray-500 dark:text-gray-400">Total de egresos del período</span><strong class="text-lg font-extrabold text-rose-600 dark:text-rose-400">$ {{ gastos_totales|floatformat:0|default:0 }}</strong></div>
+
+            <div class="flex flex-col gap-2 border-t border-gray-100 bg-gray-50 px-5 py-4 dark:border-gray-700 dark:bg-gray-800/70 sm:flex-row sm:items-center sm:justify-between">
+                <span class="text-sm text-gray-500 dark:text-gray-400">Total de egresos del período</span>
+                <strong class="text-lg font-extrabold text-rose-600 dark:text-rose-400">$ {{ gastos_totales|floatformat:0|default:0 }}</strong>
+            </div>
         </article>
     </section>
 
@@ -245,9 +331,15 @@
                     <thead class="bg-pink-50 text-xs uppercase tracking-wider text-pink-800 dark:bg-pink-900/20 dark:text-pink-300"><tr><th class="px-5 py-3">Manicurista</th><th class="px-5 py-3 text-center">Servicios completados</th><th class="px-5 py-3 text-right">Comisión calculada</th></tr></thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                     {% for nombre, datos in resumen_manicuristas.items %}
-                        <tr class="transition hover:bg-pink-50/50 dark:hover:bg-gray-700/50"><td class="px-5 py-4 font-semibold text-gray-800 dark:text-gray-100">{{ nombre }}</td><td class="px-5 py-4 text-center text-gray-600 dark:text-gray-300">{{ datos.servicios_realizados }}</td><td class="px-5 py-4 text-right font-bold text-pink-600 dark:text-pink-400">$ {{ datos.total_comision|floatformat:0 }}</td></tr>
+                        <tr class="transition hover:bg-pink-50/50 dark:hover:bg-gray-700/50"><td class="px-5 py-4 font-semibold text-gray-800 dark:text-gray-100">{{ nombre }}</td><td class="px-5 py-4 text-center text-gray-600 dark:text-gray-300">{{ datos.servicios_realizados|default:0 }}</td><td class="px-5 py-4 text-right font-bold text-pink-600 dark:text-pink-400">$ {{ datos.total_comision|floatformat:0|default:0 }}</td></tr>
                     {% empty %}
-                        <tr><td colspan="3" class="px-5 py-12 text-center text-gray-500 dark:text-gray-400">No hay servicios completados en este período.</td></tr>
+                        <tr>
+                            <td colspan="3" class="px-5 py-12 text-center">
+                                <i class="fas fa-triangle-exclamation text-3xl text-amber-400 mb-2"></i>
+                                <p class="font-semibold text-gray-700 dark:text-gray-300">No hay comisiones vinculadas en este período</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-md mx-auto">Para que aparezcan datos aquí, tu vista de Django debe procesar las citas finalizadas del mes y calcular el acumulado por cada colaboradora o manicurista.</p>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                     <tfoot class="bg-gray-50 dark:bg-gray-800/80"><tr><td colspan="2" class="px-5 py-4 font-bold text-gray-700 dark:text-gray-200">Total calculado</td><td class="px-5 py-4 text-right text-lg font-extrabold text-pink-600 dark:text-pink-400">$ {{ comisiones_totales|floatformat:0|default:0 }}</td></tr></tfoot>

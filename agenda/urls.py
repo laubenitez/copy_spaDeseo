@@ -28,7 +28,7 @@ urlpatterns = [
 
     path('', views.index, name="index"),
     path('nosotros/', views.sobre_nosotros, name='sobre_nosotros'),
-    path('servicios/', views.lista_servicios, name='lista_servicios'),
+    path('catalogo_servicios/', views.lista_servicios, name='lista_servicios'),
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
     path("register/", views.register, name="register"),
@@ -95,6 +95,7 @@ urlpatterns = [
     path('inventario/movimientos/', views.lista_movimientos, name='lista_movimientos'),
     path('inventario/movimientos/registrar/', views.registrar_movimiento, name='registrar_movimiento'),
     path('contabilidad/', views.modulo_contabilidad, name='modulo_contabilidad'),
+    path('finanzas/registrar-gasto/', views.registrar_gasto_financiero, name='registrar_gasto_financiero'),
 
 
 

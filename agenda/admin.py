@@ -318,3 +318,4 @@ class NotificacionAdmin(admin.ModelAdmin):
 
     # Paginación en el admin
     list_per_page = 25
+

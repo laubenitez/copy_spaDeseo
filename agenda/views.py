@@ -4345,7 +4345,38 @@ def actualizar_gastos(request, id):
         return render(request, "gastos/formulario_gastos.html", contexto)
 
 
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_POST
+def registrar_gasto_financiero(request):
+    """
+    Registra un egreso/gasto directamente desde los libros contables.
+    """
+    if request.POST.get('accion') == 'registrar_gasto':
+        concepto = request.POST.get('concepto', '').strip()
+        referencia = request.POST.get('referencia', '').strip()
+        valor = request.POST.get('valor', '').strip()
+        fecha = request.POST.get('fecha', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
 
+        if not concepto or not valor or not fecha:
+            messages.error(request, "Por favor completa los campos obligatorios del gasto.")
+            return redirect('agenda:contabilidad')
+
+        try:
+            with transaction.atomic():
+                Gastos.objects.create(
+                    concepto=concepto,
+                    referencia=referencia,
+                    valor=int(valor),
+                    fecha=fecha,
+                    descripcion=descripcion
+                )
+            messages.success(request, "Gasto registrado correctamente en el libro de egresos.")
+        except Exception as e:
+            messages.error(request, "Ocurrió un error al intentar guardar el gasto.")
+
+    return redirect('agenda:contabilidad')
 
 # ----CRUD PAGOS----
 
@@ -4543,6 +4574,34 @@ def actualizar_pago(request, id):
 @requiere_rol("ADMINISTRADOR")
 def modulo_contabilidad(request):
     hoy = now().date()
+
+    # --- PROCESAR FORMULARIO DE NUEVO GASTO (EGRESO) ---
+    if request.method == 'POST' and request.POST.get('accion') == 'registrar_gasto':
+        concepto = request.POST.get('concepto', '').strip()
+        referencia = request.POST.get('referencia', '').strip()
+        valor_str = request.POST.get('valor', '').strip()
+        fecha_str = request.POST.get('fecha', '').strip()
+        descripcion = request.POST.get('descripcion', '').strip()
+
+        if not concepto or not valor_str or not fecha_str:
+            messages.error(request, "Por favor completa los campos obligatorios del gasto.")
+        else:
+            try:
+                with transaction.atomic():
+                    Gastos.objects.create(
+                        concepto=concepto,
+                        referencia=referencia,
+                        valor=int(valor_str),
+                        fecha=fecha_str,
+                        descripcion=descripcion
+                    )
+                messages.success(request, "Gasto registrado correctamente en el libro de egresos.")
+            except Exception as e:
+                messages.error(request, "Ocurrió un error al intentar registrar el gasto.")
+
+        # Redirigir conservando los parámetros GET actuales si los hubiera, o recargando la vista
+        return redirect('agenda:modulo_contabilidad')
+
     pagos_mes = Pagos.objects.none()
 
     # Obtenemos los parámetros de forma segura limpiando puntos o comas
