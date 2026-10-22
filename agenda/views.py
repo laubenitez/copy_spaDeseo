@@ -5,6 +5,7 @@ import logging
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from datetime import datetime, date, time, timedelta
 from django.utils.timezone import now
+from django.contrib.sessions.models import Session
 
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -251,23 +252,30 @@ class GastosViewSet(viewsets.ModelViewSet):
 
 
 
-@login_required
+
+
+@login_required(login_url="agenda:login")
 def ajustes(request):
     preferencias, creada = PreferenciasUsuario.objects.get_or_create(
         user=request.user
     )
 
+    # Identificar si el usuario que inició sesión es un cliente.
+    es_cliente = hasattr(request.user, "cliente")
+
     if request.method == "POST":
-        # Seguridad: guardar la verificación adicional.
-        # Si el interruptor está marcado, se guarda True.
-        # Si está desmarcado, se guarda False.
-        preferencias.verificacion_adicional = (request.POST.get("verificacion_adicional") == "on")
-        print( "DEBUG - Verificación recibida:", request.POST.get("verificacion_adicional"))
+        # Seguridad
+        preferencias.verificacion_adicional = (
+            request.POST.get("verificacion_adicional") == "on"
+        )
 
         # Notificaciones y privacidad
-        preferencias.recordatorios_whatsapp = (
-            "recordatorios_whatsapp" in request.POST
-        )
+        # Solo los clientes pueden modificar los recordatorios de WhatsApp.
+        if es_cliente:
+            preferencias.recordatorios_whatsapp = (
+                "recordatorios_whatsapp" in request.POST
+            )
+
         preferencias.permitir_comunicaciones = (
             "permitir_comunicaciones" in request.POST
         )
@@ -283,7 +291,7 @@ def ajustes(request):
         animaciones = request.POST.get("animaciones", "activadas")
         modo_lectura = request.POST.get("modo_lectura", "desactivado")
 
-        # Opciones válidas
+        # Valores permitidos
         opciones_validas = {
             "formato_fecha": {"DMY", "MDY"},
             "formato_hora": {"12", "24"},
@@ -304,13 +312,10 @@ def ajustes(request):
             "modo_lectura": modo_lectura,
         }
 
-        errores = []
-
-        for campo, valor in valores_recibidos.items():
-            if valor not in opciones_validas[campo]:
-                errores.append(campo)
-
-        if errores:
+        if any(
+            valor not in opciones_validas[campo]
+            for campo, valor in valores_recibidos.items()
+        ):
             messages.error(
                 request,
                 "No se pudieron guardar los ajustes porque hay opciones inválidas."
@@ -319,10 +324,7 @@ def ajustes(request):
             for campo, valor in valores_recibidos.items():
                 setattr(preferencias, campo, valor)
 
-            # Guardar todas las preferencias, incluida la verificación.
             preferencias.save()
-
-            print( "DEBUG - Verificación guardada:", preferencias.verificacion_adicional)
 
             messages.success(
                 request,
@@ -331,12 +333,73 @@ def ajustes(request):
 
             return redirect("agenda:ajustes")
 
+    # Comprobar si el usuario tiene una contraseña utilizable.
+    tiene_contrasena = request.user.has_usable_password()
+
+    # Comprobar si la cuenta está activa.
+    cuenta_activa = request.user.is_active
+
+    # Comprobar si tiene una cuenta vinculada mediante Google.
+    usa_google = False
+    if hasattr(request.user, "socialaccount_set"):
+        usa_google = request.user.socialaccount_set.filter(
+            provider="google"
+        ).exists()
+
+    # Estado general calculado con información real.
+    estado_seguridad_correcto = (
+        cuenta_activa
+        and (
+            tiene_contrasena
+            or usa_google
+        )
+    )
+
     contexto = {
         "preferencias": preferencias,
         "ultimo_acceso": request.user.last_login,
+        "tiene_contrasena": tiene_contrasena,
+        "cuenta_activa": cuenta_activa,
+        "usa_google": usa_google,
+        "estado_seguridad_correcto": estado_seguridad_correcto,
+        "es_cliente": es_cliente,
     }
 
     return render(request, "ajustes.html", contexto)
+
+
+@login_required(login_url="agenda:login")
+@require_POST
+def cerrar_sesiones_dispositivos(request):
+    """
+    Cierra las sesiones de Django que pertenecen al usuario actual,
+    incluidas las abiertas en otros dispositivos.
+    """
+
+    usuario_id = str(request.user.pk)
+
+    # Buscar las sesiones que todavía no han expirado.
+    sesiones = Session.objects.filter(
+        expire_date__gte=timezone.now()
+    )
+
+    # Identificar y eliminar las sesiones del usuario.
+    for sesion in sesiones:
+        datos_sesion = sesion.get_decoded()
+
+        if datos_sesion.get("_auth_user_id") == usuario_id:
+            sesion.delete()
+
+    # Cerrar también la sesión actual.
+    auth_logout(request)
+
+    messages.success(
+        request,
+        "Se cerraron las sesiones de tu cuenta. "
+        "Inicia sesión nuevamente para continuar."
+    )
+
+    return redirect("agenda:login")
 
 
 @login_required(login_url="agenda:login")
@@ -373,6 +436,7 @@ def cambiar_contrasena(request):
         "cambiar_contrasena.html",
         {"formulario": formulario}
     )
+
 
 @login_required(login_url="agenda:login")
 @requiere_rol("CLIENTE", "MANICURISTA")
@@ -552,6 +616,7 @@ def lista_servicios(request):
     }
     return render(request, "catalogo_servicios.html", contexto)
 
+
 @login_required(login_url="agenda:login")
 @requiere_rol("MANICURISTA")
 def citas_asignadas(request):
@@ -571,12 +636,24 @@ def citas_asignadas(request):
                          .select_related('cliente', 'servicios')\
                          .order_by('-fecha', '-hora')
 
+    # 3. Comprobar si cada cliente permite recordatorios por WhatsApp
+    for cita in citas:
+        cita.recordatorios_whatsapp_activos = True
+
+        if cita.cliente and cita.cliente.user:
+            try:
+                preferencias = cita.cliente.user.preferencias_spa
+                cita.recordatorios_whatsapp_activos = preferencias.recordatorios_whatsapp
+            except PreferenciasUsuario.DoesNotExist:
+                pass
+
     contexto = {
         "manicurista": manicurista,
         "citas": citas,
     }
 
     return render(request, "manicurista/citas_asignadas.html", contexto)
+
 
 
 
@@ -1835,25 +1912,54 @@ def ver_citas(request):
     return render(request, "cita/citas.html", contexto)
 
 
+
+
 @requiere_rol("ADMINISTRADOR")
 def ver_todas_citas(request):
     try:
-        # Robustez: Consulta segura de todas las citas ordenadas de forma descendente por fecha y hora
+        # Consultar todas las citas, ordenadas de forma descendente por fecha y hora.
         citas = Citas.objects.all().order_by('-fecha', '-hora')
+
+        # Comprobar las preferencias de recordatorios de WhatsApp de cada cliente.
+        for cita in citas:
+            # Por defecto, permitir los recordatorios si el cliente no tiene preferencias guardadas.
+            cita.recordatorios_whatsapp_activos = True
+
+            if cita.cliente and cita.cliente.user:
+                try:
+                    preferencias = cita.cliente.user.preferencias_spa
+                    cita.recordatorios_whatsapp_activos = (
+                        preferencias.recordatorios_whatsapp
+                    )
+                except PreferenciasUsuario.DoesNotExist:
+                    # Si no existen preferencias guardadas, se conserva el valor predeterminado.
+                    pass
+
     except DatabaseError:
-        # Control específico ante fallos de base de datos
+        # Manejar errores de base de datos.
         citas = []
-        messages.error(request, "Ocurrió un error en la base de datos al intentar cargar las citas.")
+        messages.error(
+            request,
+            "Ocurrió un error en la base de datos al intentar cargar las citas."
+        )
+
     except Exception:
-        # Control genérico ante cualquier eventualidad imprevista
+        # Manejar otros errores inesperados.
         citas = []
-        messages.error(request, "Ocurrió un error inesperado al cargar las citas.")
+        messages.error(
+            request,
+            "Ocurrió un error inesperado al cargar las citas."
+        )
 
     contexto = {
         "citas": citas
     }
-    return render(request, "administrador/todas_citas.html", contexto)
 
+    return render(
+        request,
+        "administrador/todas_citas.html",
+        contexto
+    )
 
 
 def calcular_descuento_cita(cliente, servicio, fecha_cita):
