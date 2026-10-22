@@ -399,10 +399,11 @@ class Gastos(models.Model):
     concepto = models.CharField(max_length=100)
     valor = models.IntegerField()
     fecha = models.DateField()
-    descripcion = models.TextField()
+    referencia = models.CharField(max_length=100, blank=True, null=True) # <-- Campo nuevo de referencia
+    descripcion = models.TextField(blank=True, null=True)                 # <-- Ajustado a opcional
 
     def __str__(self):
-        return f"{self.concepto} - {self.valor}"
+        return f"{self.concepto} - ${self.valor}"
 
 
 class Administrador(models.Model):
