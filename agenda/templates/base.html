@@ -133,6 +133,59 @@
             filter: drop-shadow(0 0 10px var(--rosa-banner)) !important;
             cursor: pointer;
         }
+
+
+
+        /* Quitar subrayado de los enlaces del navbar */
+        .navbar a,
+        .navbar a:hover,
+        .navbar a:focus,
+        .navbar a:active,
+        .navbar-brand,
+        .navbar-brand:hover,
+        .navbar-brand:focus {
+            text-decoration: none !important;
+        }
+
+        /* --- FOOTER --- */
+   
+        .footer-moderno {
+            padding: 70px 0 30px 0;
+            border-top: none;
+            margin-top: 0;
+        }
+
+        .footer-logo-contenedor {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .footer-link-moderno {
+            color: var(--texto-gris);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link-moderno:hover {
+            color: var(--primary);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #f1d3dd;
+            margin-top: 50px;
+            padding-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: var(--texto-gris);
+        }
     </style>
 </head>
 
@@ -195,47 +248,51 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
    
-<!-- FOOTER GENERAL -->
-<footer style="background-color: var(--negro-suave, #222); color: #fff; padding: 60px 0 30px; margin-top: 60px;">
+<!-- FOOTER (FONDO BLANCO) -->
+<footer class="footer-moderno bg-blanco">
     <div class="container">
-        <div class="row g-4 justify-content-between">
+        <div class="row g-5">
+            <div class="col-lg-4 col-md-6">
+                <!-- LOGO EN EL FOOTER -->
+                <div class="footer-logo-contenedor">
+                    <img src="{% static 'img/logo-spa-deseo-fucsia.png' %}" alt="Spa Deseo" class="img-fluid" style="max-height: 80px;">
+                </div>
+                <p style="line-height: 1.8;">En Spa Deseo nos apasiona resaltar tu esencia y estilo único a través de detalles perfectos. Vive la experiencia.</p>
+            </div>
             
-            <!-- Columna 1: Info -->
-            <div class="col-md-4">
-                <h4 class="fw-bold mb-3" style="color: var(--rosa-banner);">Spa Deseo</h4>
-                <p class="text-muted small" style="color: #bbb !important; line-height: 1.6;">
-                    Transformamos tus uñas en arte. Cuidado profesional, higiene y exclusividad para resaltar tu belleza natural en Bello, Antioquia.
-                </p>
+            <div class="col-lg-4 col-md-6">
+                <h4 class="footer-title">Explorar</h4>
+                <a href="{% url 'agenda:sobre_nosotros' %}" class="footer-link-moderno">Sobre Nosotros</a>
+                <a href="{% url 'agenda:lista_servicios' %}" class="footer-link-moderno">Nuestros Servicios</a>
+                <a href="#resenas" class="footer-link-moderno">Historias de Clientes</a>
+                <a href="#contacto" class="footer-link-moderno">Contáctanos</a>
             </div>
 
-            <!-- Columna 2: Enlaces Rápidos -->
-            <div class="col-md-3">
-                <h5 class="fw-bold mb-3 text-white">Enlaces Rápidos</h5>
-                <ul class="list-unstyled small" style="line-height: 2;">
-                    <li><a href="{% url 'agenda:index' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Inicio</a></li>
-                    <li><a href="{% url 'agenda:sobre_nosotros' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Sobre Nosotros</a></li>
-                    <li><a href="{% url 'agenda:lista_servicios' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Servicios</a></li>
-                    <li><a href="{% url 'agenda:login' %}" class="text-decoration-none text-muted" style="color: #bbb !important;">Iniciar Sesión / Agendar</a></li>
+            <div class="col-lg-4 col-md-12">
+                <h4 class="footer-title">Horarios de Atención</h4>
+                <ul class="list-unstyled" style="line-height: 2;">
+                    <li class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>Lunes - Viernes:</span> 
+                        <strong style="color: var(--texto-gris);">9:00 AM - 7:00 PM</strong>
+                    </li>
+                    <li class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>Sábados:</span> 
+                        <strong style="color: var(--texto-gris);">9:00 AM - 5:00 PM</strong>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                        <span>Domingos:</span> 
+                        <strong style="color: var(--primary);">Cerrado</strong>
+                    </li>
                 </ul>
             </div>
-
-            <!-- Columna 3: Redes / Contacto -->
-            <div class="col-md-4">
-                <h5 class="fw-bold mb-3 text-white">Síguenos</h5>
-                <p class="text-muted small" style="color: #bbb !important;">Entérate de nuestras promociones y nuevos diseños en redes sociales.</p>
-                <div class="d-flex gap-3 mt-3">
-                    <a href="https://www.facebook.com/" class="text-white fs-5" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="https://www.instagram.com/" class="text-white fs-5" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://wa.me/573000000000" class="text-white fs-5" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                </div>
-            </div>
-
         </div>
 
-        <hr class="border-secondary my-4">
-
-        <div class="text-center text-muted small" style="color: #888 !important;">
-            <p class="mb-0">&copy; 2026 Spa Deseo. Todos los derechos reservados.</p>
+        <div class="footer-bottom">
+            <div>&copy; 2026 Spa Deseo. Todos los derechos reservados.</div>
+            <div class="d-flex gap-3">
+                <a href="#" class="text-decoration-none hover-rosa" style="color: var(--texto-gris);"><i class="fa-brands fa-instagram fs-5"></i></a>
+                <a href="#" class="text-decoration-none hover-rosa" style="color: var(--texto-gris);"><i class="fa-brands fa-facebook-f fs-5"></i></a>
+            </div>
         </div>
     </div>
 </footer>

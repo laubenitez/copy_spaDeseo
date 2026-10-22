@@ -1,64 +1,871 @@
+
 {% extends "base.html" %}
 {% load static %}
 
 {% block title %}Spa Deseo | Sobre Nosotros{% endblock %}
 
 {% block content %}
-<section class="seccion-padding" style="margin-top: 40px;">
-    <div class="container">
-        <!-- Encabezado -->
-        <div class="text-center mb-5">
-            <span class="text-uppercase small fw-bold" style="color: var(--rosa-banner); letter-spacing: 2px;">Nuestra Esencia</span>
-            <h2 class="titulo-seccion mt-1 mb-3">Conoce más sobre Spa Deseo</h2>
-            <p class="text-muted lead mx-auto" style="max-width: 700px;">
-                Más que un salón de uñas, somos un espacio dedicado al cuidado personal, la relajación y el realce de tu belleza natural.
-            </p>
-        </div>
 
-        <!-- Historia -->
-        <div class="row align-items-center g-5 mb-5">
-            <div class="col-md-6">
-                <div class="marco-polaroid">
-                    <img src="{% static 'img/manicura_profesional.jpg' %}" class="img-fluid rounded" alt="Nuestra historia Spa Deseo">
-                </div>
-            </div>
-            <div class="col-md-6">
-                <h3 class="fw-bold mb-3" style="color: var(--primary);">Nuestra Historia</h3>
-                <p class="text-muted" style="line-height: 1.7;">
-                    Fundado en Bello, Antioquia, <strong>Spa Deseo</strong> nació del sueño de crear un ambiente exclusivo donde cada clienta pudiera desconectarse del estrés diario y recibir un servicio de manicura y pedicura con los más altos estándares de calidad e higiene.
-                </p>
-                <p class="text-muted" style="line-height: 1.7;">
-                    A lo largo de los años, nos hemos consolidado gracias a nuestra pasión por las tendencias en nail art, el uso de productos de primera línea y, sobre todo, el cariño y dedicación de nuestro equipo de profesionales.
-                </p>
-            </div>
-        </div>
+<style>
+    /* ==========================================
+       SOBRE NOSOTROS - SPA DESEO
+       Paleta sólida, sin degradados
+    ========================================== */
 
-        <!-- Misión y Visión -->
-        <div class="row g-4 mt-4">
-            <div class="col-md-6">
-                <div class="card-servicio h-100 p-4 text-center">
-                    <div class="icono-circulo mx-auto mb-3">
-                        <i class="fa-solid fa-bullseye"></i>
+    .sobre-nosotros {
+        --sn-rosa: #d23369;
+        --sn-fucsia: #e7477d;
+        --sn-rosa-claro: #fff0f5;
+        --sn-rosa-suave: #fff8fa;
+        --sn-borde: #f0cbd8;
+        --sn-texto: #68545d;
+        --sn-blanco: #ffffff;
+        color: var(--sn-texto);
+        overflow: hidden;
+        background: var(--sn-blanco);
+    }
+
+    .sobre-nosotros * {
+        box-sizing: border-box;
+    }
+
+    .sobre-nosotros .sn-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 12px;
+    color: #f195b2;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    text-align: center;
+    }
+
+    .sobre-nosotros .sn-etiqueta::before,
+    .sobre-nosotros .sn-etiqueta::after {
+        content: "";
+        display: inline-block;
+        width: 35px;
+        height: 1px;
+        flex-shrink: 0;
+        background-color: #f195b2;
+    }
+
+    @media (max-width: 420px) {
+        .sobre-nosotros .sn-etiqueta {
+            gap: 8px;
+            letter-spacing: 1.5px;
+        }
+
+        .sobre-nosotros .sn-etiqueta::before,
+        .sobre-nosotros .sn-etiqueta::after {
+            width: 20px;
+        }
+    }
+
+    .sobre-nosotros .sn-titulo {
+        color: #512c3b;
+        font-weight: 800;
+        letter-spacing: -.8px;
+        line-height: 1.2;
+    }
+
+    .sobre-nosotros .sn-intro {
+        max-width: 660px;
+        margin: 0 auto;
+        line-height: 1.9;
+        color: var(--sn-texto);
+    }
+
+    .sobre-nosotros .sn-seccion {
+        padding: 78px 0;
+    }
+
+    .sobre-nosotros .sn-encabezado {
+        margin-bottom: 45px;
+        text-align: center;
+    }
+
+    /* HERO */
+
+    .sobre-nosotros .sn-hero {
+        padding: 70px 0 55px;
+        background: var(--sn-rosa-suave);
+        text-align: center;
+        border-bottom: 1px solid #f8e5ec;
+    }
+
+    .sobre-nosotros .sn-hero h1 {
+        max-width: 800px;
+        margin: 0 auto 18px;
+        font-size: clamp(2.1rem, 5vw, 3.5rem);
+    }
+
+    .sobre-nosotros .sn-hero p {
+        max-width: 660px;
+        margin: 0 auto;
+        font-size: 1.04rem;
+        line-height: 1.9;
+    }
+
+    .sobre-nosotros .sn-destacado {
+        color: var(--sn-rosa);
+    }
+
+    /* HISTORIA */
+
+    .sobre-nosotros .sn-historia {
+        align-items: center;
+    }
+
+    .sobre-nosotros .sn-foto-marco {
+        position: relative;
+        max-width: 450px;
+        margin: 0 auto;
+        padding: 10px;
+        background: var(--sn-rosa-claro);
+        border: 1px solid var(--sn-borde);
+        border-radius: 180px 180px 18px 18px;
+    }
+
+    .sobre-nosotros .sn-foto {
+        display: block;
+        width: 100%;
+        height: 450px;
+        object-fit: cover;
+        border-radius: 170px 170px 12px 12px;
+    }
+
+    .sobre-nosotros .sn-sello {
+        position: absolute;
+        right: -17px;
+        bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 92px;
+        height: 92px;
+        padding: 12px;
+        border: 5px solid var(--sn-blanco);
+        border-radius: 50%;
+        background: var(--sn-rosa);
+        color: var(--sn-blanco);
+        text-align: center;
+        font-size: .72rem;
+        font-weight: 800;
+        line-height: 1.5;
+        transform: rotate(8deg);
+    }
+
+    .sobre-nosotros .sn-historia-texto p {
+        margin-bottom: 16px;
+        font-size: .97rem;
+        line-height: 1.95;
+    }
+
+    .sobre-nosotros .sn-puntos-historia {
+        display: grid;
+        gap: 13px;
+        margin-top: 25px;
+    }
+
+    .sobre-nosotros .sn-punto {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .sobre-nosotros .sn-punto-icono {
+        display: flex;
+        flex: 0 0 36px;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--sn-rosa-claro);
+        color: var(--sn-rosa);
+    }
+
+    .sobre-nosotros .sn-punto strong {
+        display: block;
+        margin-bottom: 3px;
+        color: #512c3b;
+    }
+
+    .sobre-nosotros .sn-punto small {
+        display: block;
+        font-size: .88rem;
+        line-height: 1.6;
+    }
+
+    /* VALORES: FRASCOS DE ESMALTE */
+
+    .sobre-nosotros .sn-valores-seccion {
+        background: var(--sn-rosa-suave);
+        border-top: 1px solid #f8e5ec;
+        border-bottom: 1px solid #f8e5ec;
+    }
+
+    .sobre-nosotros .sn-valores-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px;
+        align-items: start;
+    }
+
+    .sobre-nosotros .sn-valor {
+        position: relative;
+        min-width: 0;
+        padding: 0 12px 23px;
+        text-align: center;
+        transition: transform .25s ease;
+    }
+
+    .sobre-nosotros .sn-valor:hover {
+        transform: translateY(-6px);
+    }
+
+    .sobre-nosotros .sn-esmalte {
+        position: relative;
+        width: 100%;
+        max-width: 190px;
+        margin: 0 auto 23px;
+        padding-top: 25px;
+    }
+
+    /* Tapa y cuello del esmalte */
+
+    /* Tapa alargada del esmalte */
+    .sobre-nosotros .sn-esmalte-tapa {
+        position: relative;
+        z-index: 2;
+        width: 60px;
+        height: 120px;
+        margin: 0 auto -3px;
+        border: 1px solid rgba(90, 25, 52, .13);
+        border-radius: 6px 6px 2px 2px;
+        background: var(--sn-color);
+    }
+
+    .sobre-nosotros .sn-esmalte-cuello {
+        position: relative;
+        z-index: 1;
+        width: 65px;
+        height: 20px;
+        margin: 0 auto -4px;
+        border: 1px solid rgba(90, 25, 52, .10);
+        background: var(--sn-color);
+    }
+
+    /* Cuerpo con forma de frasco */
+
+    .sobre-nosotros .sn-esmalte-cuerpo {
+        position: relative;
+        display: flex;
+        min-height: 175px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 15px 20px;
+        border: 1px solid rgba(90, 25, 52, .12);
+        border-radius: 24px 24px 35px 35px;
+        background: var(--sn-color);
+        color: var(--sn-contraste);
+        box-shadow: 0 8px 0 rgba(111, 40, 66, .07);
+    }
+
+    .sobre-nosotros .sn-esmalte-brillo {
+        position: absolute;
+        top: 17px;
+        left: 11px;
+        width: 5px;
+        height: 57%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, .50);
+    }
+
+    .sobre-nosotros .sn-esmalte-icono {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255, 255, 255, .60);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .30);
+        font-size: 1.25rem;
+    }
+
+    .sobre-nosotros .sn-esmalte-cuerpo h3 {
+        position: relative;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.45;
+    }
+
+    .sobre-nosotros .sn-valor p {
+        max-width: 220px;
+        margin: 0 auto;
+        font-size: .88rem;
+        line-height: 1.8;
+    }
+
+    /* Cada frasco tiene un color sólido */
+
+    .sobre-nosotros .sn-color-1 {
+        --sn-color: #f3a7c0;
+        --sn-contraste: #ffffff;
+    }
+
+    .sobre-nosotros .sn-color-2 {
+        --sn-color: #e7477d;
+        --sn-contraste: #ffffff;
+    }
+
+    .sobre-nosotros .sn-color-3 {
+        --sn-color: #f8c8d8;
+        --sn-contraste: #ffffff;
+    }
+
+    .sobre-nosotros .sn-color-4 {
+        --sn-color: #d23369;
+        --sn-contraste: #ffffff;
+    }
+
+    /* MISIÓN Y VISIÓN: BORDADO */
+
+    .sobre-nosotros .sn-propositos {
+        background: var(--sn-blanco);
+    }
+
+    .sobre-nosotros .sn-proposito {
+        position: relative;
+        height: 100%;
+        padding: 34px;
+        border: 2px dashed #e7a5bc;
+        border-radius: 22px;
+        background: var(--sn-blanco);
+    }
+
+    /* Línea interior que da el aspecto de costura */
+
+    .sobre-nosotros .sn-proposito::before {
+        position: absolute;
+        content: "";
+        inset: 7px;
+        border: 1px dashed #f0cbd8;
+        border-radius: 16px;
+        pointer-events: none;
+    }
+
+    .sobre-nosotros .sn-proposito-contenido {
+        position: relative;
+        z-index: 1;
+    }
+
+    .sobre-nosotros .sn-proposito-icono {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 55px;
+        height: 55px;
+        margin-bottom: 22px;
+        border-radius: 16px;
+        background: var(--sn-rosa-claro);
+        color: var(--sn-rosa);
+        font-size: 1.35rem;
+    }
+
+    .sobre-nosotros .sn-proposito h3 {
+        margin-bottom: 15px;
+        color: #512c3b;
+        font-size: 1.55rem;
+        font-weight: 800;
+    }
+
+    .sobre-nosotros .sn-proposito p {
+        margin: 0;
+        font-size: .95rem;
+        line-height: 1.95;
+    }
+
+    .sobre-nosotros .sn-numero {
+        display: inline-block;
+        margin-bottom: 9px;
+        color: var(--sn-rosa);
+        font-size: .73rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    /* INVITACIÓN Y ONDA FINAL */
+
+    .sobre-nosotros .sn-cierre {
+        position: relative;
+        padding: 65px 20px 110px;
+        background: var(--sn-rosa-claro);
+        text-align: center;
+    }
+
+    .sobre-nosotros .sn-cierre-contenido {
+        max-width: 690px;
+        margin: 0 auto;
+    }
+
+    .sobre-nosotros .sn-cierre h2 {
+        margin-bottom: 18px;
+        font-size: clamp(1.8rem, 4vw, 2.7rem);
+    }
+
+    .sobre-nosotros .sn-cierre p {
+        margin: 0 auto 25px;
+        line-height: 1.9;
+    }
+
+    .sobre-nosotros .sn-cierre .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 13px 23px;
+        border: 1px solid var(--sn-rosa);
+        border-radius: 30px;
+        background: var(--sn-rosa);
+        color: var(--sn-blanco);
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .2s ease, color .2s ease;
+    }
+
+    .sobre-nosotros .sn-cierre .btn:hover {
+        background: var(--sn-blanco);
+        color: var(--sn-rosa);
+    }
+
+    /* La onda debe coincidir con el color del footer */
+
+    .sobre-nosotros .sn-onda {
+        position: absolute;
+        right: 0;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 65px;
+        display: block;
+    }
+
+    .sobre-nosotros .sn-onda path {
+        fill: var(--sn-footer-color, #ffffff);
+    }
+
+    
+    @media (max-width: 991px) {
+        .sobre-nosotros .sn-valores-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 30px 18px;
+        }
+
+        .sobre-nosotros .sn-foto {
+            height: 390px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .sobre-nosotros .sn-seccion {
+            padding: 55px 0;
+        }
+
+        .sobre-nosotros .sn-hero {
+            padding: 55px 20px 40px;
+        }
+
+        .sobre-nosotros .sn-historia {
+            row-gap: 35px;
+        }
+
+        .sobre-nosotros .sn-foto-marco {
+            max-width: 340px;
+        }
+
+        .sobre-nosotros .sn-foto {
+            height: 340px;
+        }
+
+        .sobre-nosotros .sn-sello {
+            right: -7px;
+            width: 78px;
+            height: 78px;
+            font-size: .65rem;
+        }
+
+        .sobre-nosotros .sn-encabezado {
+            margin-bottom: 32px;
+        }
+
+        .sobre-nosotros .sn-proposito {
+            padding: 28px 24px;
+        }
+
+        .sobre-nosotros .sn-cierre {
+            padding-top: 50px;
+            padding-bottom: 100px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .sobre-nosotros .sn-valores-grid {
+            gap: 26px 10px;
+        }
+
+        .sobre-nosotros .sn-valor {
+            padding-right: 2px;
+            padding-left: 2px;
+        }
+
+        .sobre-nosotros .sn-esmalte {
+            max-width: 155px;
+        }
+
+        .sobre-nosotros .sn-esmalte-cuerpo {
+            min-height: 170px;
+            padding-right: 9px;
+            padding-left: 9px;
+        }
+
+        .sobre-nosotros .sn-valor p {
+            font-size: .82rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sobre-nosotros .sn-valor,
+        .sobre-nosotros .sn-cierre .btn {
+            transition: none;
+        }
+
+        .sobre-nosotros .sn-valor:hover {
+            transform: none;
+        }
+    }
+
+    /* Misma tipografía y estilo de títulos del index */
+    .sobre-nosotros .titulo-seccion {
+        font-family: 'Segoe UI', sans-serif !important;
+        font-weight: 700 !important;
+        color: #d23369 !important;
+        font-size: 2.5rem;
+    }
+
+    /* Mantener la tipografía del sitio en toda la sección */
+    .sobre-nosotros {
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sobre-nosotros p,
+    .sobre-nosotros span,
+    .sobre-nosotros a,
+    .sobre-nosotros h1,
+    .sobre-nosotros h2,
+    .sobre-nosotros h3 {
+        font-family: 'Segoe UI', sans-serif !important;
+    }
+
+</style>
+
+<div class="sobre-nosotros">
+
+
+    <!-- NUESTRA HISTORIA -->
+    <section id="nuestra-historia" class="sn-seccion">
+        <div class="container">
+            <div class="row g-5 sn-historia">
+
+                <div class="col-md-5">
+                    <div class="sn-foto-marco">
+                        <img
+                            src="{% static 'img/manicura_profesional.jpg' %}"
+                            class="sn-foto"
+                            alt="Servicio de manicura profesional de Spa Deseo"
+                            loading="lazy"
+                        >
+
+                        <div class="sn-sello">
+                            BELLEZA<br>
+                            EN CADA<br>
+                            DETALLE
+                        </div>
                     </div>
-                    <h4 class="fw-bold text-dark mb-3">Nuestra Misión</h4>
-                    <p class="text-muted small">
-                        Brindar experiencias de belleza y bienestar excepcionales, realzando la confianza de cada mujer a través de un servicio detallado, personalizado y en un ambiente de absoluta relajación.
-                    </p>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card-servicio h-100 p-4 text-center">
-                    <div class="icono-circulo mx-auto mb-3">
-                        <i class="fa-solid fa-eye"></i>
+
+                <div class="col-md-7 sn-historia-texto">
+                    <span class="sn-etiqueta">De una idea a una experiencia</span>
+
+                    <h2 class="titulo-seccion">
+                        La historia de Spa Deseo
+                    </h2>
+
+                    <p>
+                        Spa Deseo nace de una idea sencilla: convertir
+                        el cuidado de las uñas en una experiencia
+                        agradable, creativa y organizada. Queremos que
+                        cada persona encuentre un espacio para expresar
+                        su estilo y dedicar tiempo a su bienestar.
+                    </p>
+
+                    <p>
+                        Nuestro proyecto se inspira en el arte de la
+                        manicura, la variedad de diseños y la importancia
+                        de una atención que escuche las preferencias de
+                        cada cliente. Desde Bello, Antioquia, buscamos
+                        construir una propuesta cercana, donde la calidad
+                        y los pequeños detalles sean protagonistas.
+                    </p>
+
+                    <p>
+                        Además, Spa Deseo busca apoyarse en herramientas
+                        digitales para facilitar la gestión de las citas,
+                        mejorar la organización de los servicios y ofrecer
+                        una experiencia más clara tanto para los clientes
+                        como para quienes los atienden.
+                    </p>
+
+                    <div class="sn-puntos-historia">
+
+                        <div class="sn-punto">
+                            <span class="sn-punto-icono">
+                                <i class="fa-solid fa-heart"></i>
+                            </span>
+                            <div>
+                                <strong>Atención cercana</strong>
+                                <small>Escuchamos las preferencias y necesidades de cada cliente.</small>
+                            </div>
+                        </div>
+
+                        <div class="sn-punto">
+                            <span class="sn-punto-icono">
+                                <i class="fa-solid fa-palette"></i>
+                            </span>
+                            <div>
+                                <strong>Diseños con personalidad</strong>
+                                <small>La creatividad es parte de la esencia de cada servicio.</small>
+                            </div>
+                        </div>
+
+                        <div class="sn-punto">
+                            <span class="sn-punto-icono">
+                                <i class="fa-regular fa-calendar-check"></i>
+                            </span>
+                            <div>
+                                <strong>Mejor organización</strong>
+                                <small>Buscamos hacer más sencilla y ordenada la gestión de las citas.</small>
+                            </div>
+                        </div>
+
                     </div>
-                    <h4 class="fw-bold text-dark mb-3">Nuestra Visión</h4>
-                    <p class="text-muted small">
-                        Ser reconocidos como el spa de referencia en el cuidado de uñas y estética de manos y pies en la región, destacándonos por la innovación en diseños, calidad humana y fidelización de nuestras clientas.
-                    </p>
                 </div>
+
             </div>
         </div>
+    </section>
 
-    </div>
-</section>
+    <!-- NUESTROS VALORES -->
+    <section class="sn-seccion sn-valores-seccion">
+        <div class="container">
+
+            <div class="sn-encabezado">
+                <span class="sn-etiqueta">Lo que nos representa</span>
+
+                <h2 class="titulo-seccion">Nuestros Valores</h2>
+
+                <p class="sn-intro">
+                    Cada valor es parte de la experiencia que queremos
+                    construir: desde el primer contacto hasta el último
+                    detalle de cada diseño.
+                </p>
+            </div>
+
+            <div class="sn-valores-grid">
+
+                <!-- VALOR 1 -->
+                <article class="sn-valor">
+                    <div class="sn-esmalte sn-color-1">
+                        <div class="sn-esmalte-tapa"></div>
+                        <div class="sn-esmalte-cuello"></div>
+
+                        <div class="sn-esmalte-cuerpo">
+                            <span class="sn-esmalte-brillo"></span>
+
+                            <div class="sn-esmalte-icono">
+                                <i class="fa-solid fa-heart"></i>
+                            </div>
+
+                            <h3>Pasión</h3>
+                        </div>
+                    </div>
+
+                    <p>
+                        Ponemos dedicación y cariño en cada servicio,
+                        cuidando los detalles que hacen especial
+                        cada resultado.
+                    </p>
+                </article>
+
+                <!-- VALOR 2 -->
+                <article class="sn-valor">
+                    <div class="sn-esmalte sn-color-2">
+                        <div class="sn-esmalte-tapa"></div>
+                        <div class="sn-esmalte-cuello"></div>
+
+                        <div class="sn-esmalte-cuerpo">
+                            <span class="sn-esmalte-brillo"></span>
+
+                            <div class="sn-esmalte-icono">
+                                <i class="fa-solid fa-palette"></i>
+                            </div>
+
+                            <h3>Creatividad</h3>
+                        </div>
+                    </div>
+
+                    <p>
+                        Valoramos las ideas, los colores y las tendencias
+                        que permiten crear diseños únicos y personales.
+                    </p>
+                </article>
+
+                <!-- VALOR 3 -->
+                <article class="sn-valor">
+                    <div class="sn-esmalte sn-color-3">
+                        <div class="sn-esmalte-tapa"></div>
+                        <div class="sn-esmalte-cuello"></div>
+
+                        <div class="sn-esmalte-cuerpo">
+                            <span class="sn-esmalte-brillo"></span>
+
+                            <div class="sn-esmalte-icono">
+                                <i class="fa-solid fa-hand-sparkles"></i>
+                            </div>
+
+                            <h3>Responsabilidad</h3>
+                        </div>
+                    </div>
+
+                    <p>
+                        Promovemos el cuidado de las uñas y las buenas
+                        prácticas de higiene en cada procedimiento.
+                    </p>
+                </article>
+
+                <!-- VALOR 4 -->
+                <article class="sn-valor">
+                    <div class="sn-esmalte sn-color-4">
+                        <div class="sn-esmalte-tapa"></div>
+                        <div class="sn-esmalte-cuello"></div>
+
+                        <div class="sn-esmalte-cuerpo">
+                            <span class="sn-esmalte-brillo"></span>
+
+                            <div class="sn-esmalte-icono">
+                                <i class="fa-solid fa-face-smile"></i>
+                            </div>
+
+                            <h3>Confianza</h3>
+                        </div>
+                    </div>
+
+                    <p>
+                        Queremos que cada cliente se sienta escuchado,
+                        cómodo y seguro durante su experiencia.
+                    </p>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- MISIÓN Y VISIÓN -->
+    <section class="sn-seccion sn-propositos">
+        <div class="container">
+
+            <div class="sn-encabezado">
+                <span class="sn-etiqueta">Nuestro propósito</span>
+
+                <h2 class="titulo-seccion">
+                    Hacia Dónde Vamos
+                </h2>
+
+                <p class="sn-intro">
+                    Nuestra misión guía lo que hacemos hoy y nuestra
+                    visión nos inspira a seguir creciendo.
+                </p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <article class="sn-proposito">
+                        <div class="sn-proposito-contenido">
+                            <span class="sn-numero">01 · Nuestro presente</span>
+
+                            <div class="sn-proposito-icono">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+
+                            <h3>Nuestra misión</h3>
+
+                            <p>
+                                Brindar servicios de cuidado y
+                                embellecimiento de uñas con creatividad,
+                                atención personalizada y responsabilidad,
+                                en un ambiente acogedor donde cada cliente
+                                pueda expresar su estilo y disfrutar de
+                                un momento dedicado a su bienestar.
+                                A través de una mejor organización de los
+                                servicios y las citas, buscamos ofrecer
+                                una experiencia confiable, práctica
+                                y satisfactoria.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col-md-6">
+                    <article class="sn-proposito">
+                        <div class="sn-proposito-contenido">
+                            <span class="sn-numero">02 · Nuestro futuro</span>
+
+                            <div class="sn-proposito-icono">
+                                <i class="fa-solid fa-eye"></i>
+                            </div>
+
+                            <h3>Nuestra visión</h3>
+
+                            <p>
+                                Consolidar a Spa Deseo como una propuesta
+                                reconocida en Bello, Antioquia, por la
+                                calidad de sus servicios, la creatividad
+                                de sus diseños y la confianza de sus
+                                clientes. Aspiramos a crecer de manera
+                                sostenible, fortalecer la relación con
+                                quienes nos eligen e incorporar mejoras
+                                que permitan brindar una atención cada
+                                vez más organizada y cercana.
+                            </p>
+                        </div>
+                    </article>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</div>
+
 {% endblock %}
