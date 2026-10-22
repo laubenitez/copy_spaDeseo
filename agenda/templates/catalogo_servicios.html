@@ -5,56 +5,220 @@
 {% block title %}Spa Deseo | Todos los Servicios{% endblock %}
 
 {% block content %}
-<section class="seccion-padding" style="margin-top: 40px;">
-    <div class="container text-center">
-        <span class="text-uppercase small fw-bold" style="color: var(--rosa-banner); letter-spacing: 2px;">Catálogo Completo</span>
-        <h2 class="titulo-seccion mt-1 mb-3">Nuestros Servicios y Tratamientos</h2>
-        <p class="text-muted lead mx-auto mb-5" style="max-width: 700px;">
-            Explora cada uno de nuestros servicios diseñados para consentir tus manos, pies y realzar tu estilo. ¡Elige tu favorito y agenda tu cita!
-        </p>
 
-        <div class="row g-4 justify-content-center">
-            {% for servicio in servicios %}
-            <div class="col-md-4">
-                <div class="card-servicio h-100 d-flex flex-column justify-content-between p-4">
-                    <div>
-                        <div class="icono-circulo mx-auto mb-3">
-                            <i class="fa-solid fa-spa"></i>
+<style>
+    /* ==========================================
+       ESTILOS DEL CATÁLOGO DE SERVICIOS - PREMIUM
+       Tarjetas flotantes modernas con imagen sobresaliente
+    ========================================== */
+
+    .catalogo-servicios {
+        --sn-rosa: #d23369;
+        --sn-fucsia: #e7477d;
+        --sn-rosa-claro: #fff0f5;
+        --sn-rosa-suave: #fff8fa;
+        --sn-borde: #f0cbd8;
+        --sn-texto: #68545d;
+        --sn-blanco: #ffffff;
+        background: radial-gradient(circle at top right, #fff5f8 0%, #ffffff 50%);
+        font-family: 'Segoe UI', sans-serif;
+        padding: 100px 0;
+        position: relative;
+    }
+
+    .catalogo-servicios .sn-etiqueta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 12px;
+        color: #f195b2;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .catalogo-servicios .sn-etiqueta::before,
+    .catalogo-servicios .sn-etiqueta::after {
+        content: "";
+        display: inline-block;
+        width: 35px;
+        height: 1px;
+        flex-shrink: 0;
+        background-color: #f195b2;
+    }
+
+    .catalogo-servicios .titulo-seccion {
+        font-family: 'Segoe UI', sans-serif !important;
+        font-weight: 700 !important;
+        color: #d23369!important;
+        font-size: 2.6rem;
+    }
+
+    /* Tarjeta flotante moderna y elegante */
+    .tarjeta-flotante-moderna {
+        position: relative;
+        background: var(--sn-blanco);
+        border: 1px solid rgba(240, 203, 216, 0.6);
+        border-radius: 28px;
+        padding: 50px 50px 50px 255px; /* Espacio izquierdo generoso para la foto */
+        box-shadow: 0 20px 45px rgba(215, 78, 145, 0.08);
+        margin-top: 55px;
+        margin-bottom: 55px;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .tarjeta-flotante-moderna:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 55px rgba(215, 78, 145, 0.15);
+    }
+
+    /* Foto flotante cuadrada con esquinas redondeadas y efecto de profundidad */
+    .foto-flotante {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: -45px; /* Sobresale estéticamente por la izquierda */
+        width: 250px;
+        height: 250px;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 18px 40px rgba(81, 44, 59, 0.18);
+        background: var(--sn-blanco);
+        border: 5px solid var(--sn-blanco);
+        z-index: 2;
+    }
+
+    .foto-flotante img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .tarjeta-flotante-moderna:hover .foto-flotante img {
+        transform: scale(1.06);
+    }
+
+    /* Variante cuando la tarjeta invierte el orden (imagen a la derecha) */
+    .tarjeta-inversa {
+        padding: 50px 255px 50px 50px; /* Espacio derecho generoso */
+    }
+
+    .tarjeta-inversa .foto-flotante {
+        left: auto;
+        right: -45px; /* Sobresale por la derecha */
+    }
+
+    /* Botón moderno y atractivo */
+    .btn-rosa {
+        background: var(--sn-rosa);
+        color: #fff;
+        border-radius: 30px;
+        font-weight: 700;
+        border: 1px solid var(--sn-rosa);
+        padding: 12px 28px;
+        box-shadow: 0 8px 20px rgba(210, 51, 105, 0.25);
+        transition: all 0.3s ease;
+    }
+
+    .btn-rosa:hover {
+        background: #512c3b;
+        border-color: #512c3b;
+        color: #fff;
+        box-shadow: 0 12px 25px rgba(81, 44, 59, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Adaptación responsiva para celulares y tablets */
+    @media (max-width: 991px) {
+        .tarjeta-flotante-moderna, .tarjeta-inversa {
+            padding: 170px 30px 40px 30px !important;
+            margin-top: 90px;
+            text-align: center !important;
+        }
+
+        .foto-flotante {
+            top: -45px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            right: auto !important;
+            width: 210px;
+            height: 210px;
+        }
+
+        .tarjeta-flotante-moderna .d-flex {
+            justify-content: center !important;
+        }
+    }
+</style>
+
+<section class="catalogo-servicios">
+    <div class="container">
+        
+        <!-- Encabezado -->
+        <div class="text-center mb-5">
+            <span class="sn-etiqueta">Catálogo Completo</span>
+            <h2 class="titulo-seccion mt-1 mb-3">Nuestros Servicios y Tratamientos</h2>
+            <p class="text-muted lead mx-auto" style="max-width: 700px; line-height: 1.8;">
+                Explora cada uno de nuestros servicios diseñados para consentir tus manos, pies y realzar tu estilo. ¡Elige tu favorito y agenda tu cita!
+            </p>
+        </div>
+
+        <!-- Listado Intercalado con Tarjetas Super Elegantes -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {% for servicio in servicios %}
+                    <div class="tarjeta-flotante-moderna {% if forloop.counter|divisibleby:2 %}tarjeta-inversa{% endif %}">
+                        
+                        <!-- Imagen flotante sobresaliente -->
+                        <div class="foto-flotante">
+                            {% if servicio.imagen %}
+                                <img src="{{ servicio.imagen.url }}" alt="{{ servicio.nombre }}" loading="lazy">
+                            {% else %}
+                                <img src="{% static 'img/logo-spa-deseo-fucsia.png' %}" alt="Spa Deseo" loading="lazy" style="object-fit: contain; padding: 25px; background: var(--sn-rosa-claro);">
+                            {% endif %}
                         </div>
-                        <h4 class="fw-bold text-dark mb-3">
-                            {{ servicio.nombre }}
-                        </h4>
-                        <p class="text-muted small px-2 mb-3">
-                            {{ servicio.descripcion|default:"Un servicio pensado para consentirte y cuidar de ti." }}
-                        </p>
-                        <p class="fw-bold mb-2 fs-5" style="color: var(--rosa-banner);">
-                            ${{ servicio.precio|intcomma }}
-                        </p>
-                        <p class="text-muted small mb-4">
-                            <i class="fa-regular fa-clock me-1"></i>
-                            {{ servicio.duracion }} minutos
-                        </p>
-                    </div>
 
-                    <div>
-                        <a href="{% url 'agenda:login' %}" class="btn btn-rosa w-100 text-uppercase py-2" style="font-size: 0.9rem;">
-                            Agendar Cita
-                        </a>
+                        <!-- Contenido y detalles -->
+                        <div class="text-center text-md-start">
+                            <span class="text-uppercase fw-bold small" style="color: var(--sn-rosa); letter-spacing: 1.5px;">Experiencia Exclusiva</span>
+                            <h3 class="fw-bold mt-1 mb-3" style="color: #512c3b; font-size: 1.7rem;">
+                                {{ servicio.nombre }}
+                            </h3>
+                            <p class="text-muted mb-4" style="line-height: 1.9; font-size: 0.98rem;">
+                                {{ servicio.descripcion|default:"Un servicio pensado para consentirte y cuidar de ti con los mejores estándares de calidad, higiene y detalle." }}
+                            </p>
+                            
+                            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-4 mb-4">
+                                <div class="fw-bold fs-3" style="color: var(--sn-rosa);">
+                                    ${{ servicio.precio|intcomma }}
+                                </div>
+                                <div class="text-muted small fw-semibold">
+                                    <i class="fa-regular fa-clock me-1" style="color: var(--sn-rosa);"></i> {{ servicio.duracion }} minutos
+                                </div>
+                            </div>
+
+                            <div>
+                                <a href="{% url 'agenda:login' %}" class="btn btn-rosa text-uppercase" style="font-size: 0.85rem; letter-spacing: 1px;">
+                                    Agendar Cita
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <p class="text-muted">No hay servicios disponibles en este momento.</p>
                 </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div class="col-12">
-                <p class="text-muted">No hay servicios disponibles en este momento.</p>
-            </div>
-            {% endfor %}
         </div>
 
-        <div class="mt-5">
-            <a href="{% url 'agenda:index' %}" class="btn btn-outline-dark rounded-pill px-4 py-2">
-                <i class="fa-solid fa-arrow-left me-2"></i> Volver al Inicio
-            </a>
-        </div>
+
     </div>
 </section>
+
 {% endblock %}

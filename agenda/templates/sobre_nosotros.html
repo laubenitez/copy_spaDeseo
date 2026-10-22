@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static %}
 
@@ -16,13 +15,14 @@
         --sn-rosa: #d23369;
         --sn-fucsia: #e7477d;
         --sn-rosa-claro: #fff0f5;
-        --sn-rosa-suave: #fff8fa;
+        --sn-rosa-suave: #fff5f8;
         --sn-borde: #f0cbd8;
         --sn-texto: #68545d;
         --sn-blanco: #ffffff;
         color: var(--sn-texto);
         overflow: hidden;
         background: var(--sn-blanco);
+        font-family: 'Segoe UI', sans-serif;
     }
 
     .sobre-nosotros * {
@@ -30,17 +30,17 @@
     }
 
     .sobre-nosotros .sn-etiqueta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 12px;
-    color: #f195b2;
-    font-size: .76rem;
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 12px;
+        color: #f195b2;
+        font-size: .76rem;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        text-align: center;
     }
 
     .sobre-nosotros .sn-etiqueta::before,
@@ -53,34 +53,9 @@
         background-color: #f195b2;
     }
 
-    @media (max-width: 420px) {
-        .sobre-nosotros .sn-etiqueta {
-            gap: 8px;
-            letter-spacing: 1.5px;
-        }
-
-        .sobre-nosotros .sn-etiqueta::before,
-        .sobre-nosotros .sn-etiqueta::after {
-            width: 20px;
-        }
-    }
-
-    .sobre-nosotros .sn-titulo {
-        color: #512c3b;
-        font-weight: 800;
-        letter-spacing: -.8px;
-        line-height: 1.2;
-    }
-
-    .sobre-nosotros .sn-intro {
-        max-width: 660px;
-        margin: 0 auto;
-        line-height: 1.9;
-        color: var(--sn-texto);
-    }
-
     .sobre-nosotros .sn-seccion {
         padding: 78px 0;
+        position: relative;
     }
 
     .sobre-nosotros .sn-encabezado {
@@ -88,75 +63,37 @@
         text-align: center;
     }
 
-    /* HERO */
-
-    .sobre-nosotros .sn-hero {
-        padding: 70px 0 55px;
-        background: var(--sn-rosa-suave);
-        text-align: center;
-        border-bottom: 1px solid #f8e5ec;
+    /* 1. HISTORIA */
+    .sobre-nosotros #nuestra-historia {
+        background: var(--sn-blanco);
+        padding-bottom: 120px;
     }
-
-    .sobre-nosotros .sn-hero h1 {
-        max-width: 800px;
-        margin: 0 auto 18px;
-        font-size: clamp(2.1rem, 5vw, 3.5rem);
-    }
-
-    .sobre-nosotros .sn-hero p {
-        max-width: 660px;
-        margin: 0 auto;
-        font-size: 1.04rem;
-        line-height: 1.9;
-    }
-
-    .sobre-nosotros .sn-destacado {
-        color: var(--sn-rosa);
-    }
-
-    /* HISTORIA */
 
     .sobre-nosotros .sn-historia {
         align-items: center;
     }
 
-    .sobre-nosotros .sn-foto-marco {
+    .sobre-nosotros .sn-logo-contenedor {
         position: relative;
-        max-width: 450px;
+        max-width: 380px;
         margin: 0 auto;
-        padding: 10px;
-        background: var(--sn-rosa-claro);
-        border: 1px solid var(--sn-borde);
-        border-radius: 180px 180px 18px 18px;
-    }
-
-    .sobre-nosotros .sn-foto {
-        display: block;
-        width: 100%;
-        height: 450px;
-        object-fit: cover;
-        border-radius: 170px 170px 12px 12px;
-    }
-
-    .sobre-nosotros .sn-sello {
-        position: absolute;
-        right: -17px;
-        bottom: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 92px;
-        height: 92px;
-        padding: 12px;
-        border: 5px solid var(--sn-blanco);
-        border-radius: 50%;
-        background: var(--sn-rosa);
-        color: var(--sn-blanco);
-        text-align: center;
-        font-size: .72rem;
-        font-weight: 800;
-        line-height: 1.5;
-        transform: rotate(8deg);
+        padding: 20px;
+    }
+
+    .sobre-nosotros .sn-logo-sin-marco {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 15px 25px rgba(215, 78, 145, 0.15));
+        transition: transform 0.4s ease, filter 0.4s ease;
+    }
+
+    .sobre-nosotros .sn-logo-contenedor:hover .sn-logo-sin-marco {
+        transform: scale(1.03);
+        filter: drop-shadow(0 20px 30px rgba(215, 78, 145, 0.25));
     }
 
     .sobre-nosotros .sn-historia-texto p {
@@ -201,11 +138,10 @@
         line-height: 1.6;
     }
 
-    /* VALORES: FRASCOS DE ESMALTE */
-
+    /* 2. VALORES: FRASCOS DE ESMALTE */
     .sobre-nosotros .sn-valores-seccion {
         background: var(--sn-rosa-suave);
-        border-top: 1px solid #f8e5ec;
+        border-top: none; 
         border-bottom: 1px solid #f8e5ec;
     }
 
@@ -236,9 +172,6 @@
         padding-top: 25px;
     }
 
-    /* Tapa y cuello del esmalte */
-
-    /* Tapa alargada del esmalte */
     .sobre-nosotros .sn-esmalte-tapa {
         position: relative;
         z-index: 2;
@@ -259,8 +192,6 @@
         border: 1px solid rgba(90, 25, 52, .10);
         background: var(--sn-color);
     }
-
-    /* Cuerpo con forma de frasco */
 
     .sobre-nosotros .sn-esmalte-cuerpo {
         position: relative;
@@ -316,30 +247,12 @@
         line-height: 1.8;
     }
 
-    /* Cada frasco tiene un color sólido */
+    .sobre-nosotros .sn-color-1 { --sn-color: #f3a7c0; --sn-contraste: #ffffff; }
+    .sobre-nosotros .sn-color-2 { --sn-color: #e7477d; --sn-contraste: #ffffff; }
+    .sobre-nosotros .sn-color-3 { --sn-color: #f8c8d8; --sn-contraste: #ffffff; }
+    .sobre-nosotros .sn-color-4 { --sn-color: #d23369; --sn-contraste: #ffffff; }
 
-    .sobre-nosotros .sn-color-1 {
-        --sn-color: #f3a7c0;
-        --sn-contraste: #ffffff;
-    }
-
-    .sobre-nosotros .sn-color-2 {
-        --sn-color: #e7477d;
-        --sn-contraste: #ffffff;
-    }
-
-    .sobre-nosotros .sn-color-3 {
-        --sn-color: #f8c8d8;
-        --sn-contraste: #ffffff;
-    }
-
-    .sobre-nosotros .sn-color-4 {
-        --sn-color: #d23369;
-        --sn-contraste: #ffffff;
-    }
-
-    /* MISIÓN Y VISIÓN: BORDADO */
-
+    /* 3. MISIÓN Y VISIÓN */
     .sobre-nosotros .sn-propositos {
         background: var(--sn-blanco);
     }
@@ -352,8 +265,6 @@
         border-radius: 22px;
         background: var(--sn-blanco);
     }
-
-    /* Línea interior que da el aspecto de costura */
 
     .sobre-nosotros .sn-proposito::before {
         position: absolute;
@@ -405,167 +316,74 @@
         text-transform: uppercase;
     }
 
-    /* INVITACIÓN Y ONDA FINAL */
-
-    .sobre-nosotros .sn-cierre {
-        position: relative;
-        padding: 65px 20px 110px;
-        background: var(--sn-rosa-claro);
-        text-align: center;
-    }
-
-    .sobre-nosotros .sn-cierre-contenido {
-        max-width: 690px;
-        margin: 0 auto;
-    }
-
-    .sobre-nosotros .sn-cierre h2 {
-        margin-bottom: 18px;
-        font-size: clamp(1.8rem, 4vw, 2.7rem);
-    }
-
-    .sobre-nosotros .sn-cierre p {
-        margin: 0 auto 25px;
-        line-height: 1.9;
-    }
-
-    .sobre-nosotros .sn-cierre .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 13px 23px;
-        border: 1px solid var(--sn-rosa);
-        border-radius: 30px;
-        background: var(--sn-rosa);
-        color: var(--sn-blanco);
-        font-weight: 700;
-        text-decoration: none;
-        transition: background .2s ease, color .2s ease;
-    }
-
-    .sobre-nosotros .sn-cierre .btn:hover {
-        background: var(--sn-blanco);
-        color: var(--sn-rosa);
-    }
-
-    /* La onda debe coincidir con el color del footer */
-
-    .sobre-nosotros .sn-onda {
+    /* --- ONDAS (WAVES) DIVISORIAS --- */
+    .onda-bottom {
         position: absolute;
-        right: 0;
-        bottom: -1px;
         left: 0;
+        bottom: -2px;
         width: 100%;
-        height: 65px;
-        display: block;
+        overflow: hidden;
+        line-height: 0;
+        z-index: 5;
+        transform: rotate(180deg);
     }
-
-    .sobre-nosotros .sn-onda path {
-        fill: var(--sn-footer-color, #ffffff);
-    }
-
     
-    @media (max-width: 991px) {
-        .sobre-nosotros .sn-valores-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 30px 18px;
-        }
-
-        .sobre-nosotros .sn-foto {
-            height: 390px;
-        }
+    .onda-bottom svg {
+        display: block;
+        width: calc(100% + 1.3px);
+        height: 50px;
     }
 
-    @media (max-width: 767px) {
-        .sobre-nosotros .sn-seccion {
-            padding: 55px 0;
-        }
-
-        .sobre-nosotros .sn-hero {
-            padding: 55px 20px 40px;
-        }
-
-        .sobre-nosotros .sn-historia {
-            row-gap: 35px;
-        }
-
-        .sobre-nosotros .sn-foto-marco {
-            max-width: 340px;
-        }
-
-        .sobre-nosotros .sn-foto {
-            height: 340px;
-        }
-
-        .sobre-nosotros .sn-sello {
-            right: -7px;
-            width: 78px;
-            height: 78px;
-            font-size: .65rem;
-        }
-
-        .sobre-nosotros .sn-encabezado {
-            margin-bottom: 32px;
-        }
-
-        .sobre-nosotros .sn-proposito {
-            padding: 28px 24px;
-        }
-
-        .sobre-nosotros .sn-cierre {
-            padding-top: 50px;
-            padding-bottom: 100px;
-        }
+    /* --- ONDAS (WAVES) DIVISORIAS --- */
+    .onda-bottom {
+        position: absolute;
+        left: 0;
+        bottom: -2px;
+        width: 100%;
+        overflow: hidden;
+        line-height: 0;
+        z-index: 5;
+        transform: rotate(180deg);
+    }
+    
+    .onda-bottom svg {
+        display: block;
+        width: calc(100% + 1.3px);
+        height: 50px;
     }
 
-    @media (max-width: 420px) {
-        .sobre-nosotros .sn-valores-grid {
-            gap: 26px 10px;
-        }
-
-        .sobre-nosotros .sn-valor {
-            padding-right: 2px;
-            padding-left: 2px;
-        }
-
-        .sobre-nosotros .sn-esmalte {
-            max-width: 155px;
-        }
-
-        .sobre-nosotros .sn-esmalte-cuerpo {
-            min-height: 170px;
-            padding-right: 9px;
-            padding-left: 9px;
-        }
-
-        .sobre-nosotros .sn-valor p {
-            font-size: .82rem;
-        }
+    /* 1. Onda entre Historia y Valores */
+    #nuestra-historia .onda-bottom .onda-fill {
+        fill: var(--sn-rosa-suave);
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .sobre-nosotros .sn-valor,
-        .sobre-nosotros .sn-cierre .btn {
-            transition: none;
-        }
-
-        .sobre-nosotros .sn-valor:hover {
-            transform: none;
-        }
+    /* 2. Onda entre Valores y Misión/Visión */
+    .sn-valores-seccion {
+        position: relative; /* Necesario para que la onda absoluta funcione dentro de esta sección */
+        background: var(--sn-rosa-suave);
+        padding-top: 100px;
+        padding-bottom: 120px; /* Espacio extra para que la onda no tape el contenido */
+        border-top: none; 
+        border-bottom: none;
     }
 
-    /* Misma tipografía y estilo de títulos del index */
+    .sn-valores-seccion .onda-bottom .onda-fill {
+        fill: var(--sn-blanco); /* Conecta el fondo suave de valores con el fondo blanco de misión y visión */
+    }
+
+    /* Misión y Visión */
+    .sobre-nosotros .sn-propositos {
+        background: var(--sn-blanco);
+        position: relative;
+        padding-top: 78px;
+    }
+
+    /* Títulos globales */
     .sobre-nosotros .titulo-seccion {
         font-family: 'Segoe UI', sans-serif !important;
         font-weight: 700 !important;
         color: #d23369 !important;
         font-size: 2.5rem;
-    }
-
-    /* Mantener la tipografía del sitio en toda la sección */
-    .sobre-nosotros {
-        font-family: 'Segoe UI', sans-serif;
     }
 
     .sobre-nosotros p,
@@ -577,10 +395,15 @@
         font-family: 'Segoe UI', sans-serif !important;
     }
 
+    @media (max-width: 991px) {
+        .sobre-nosotros .sn-valores-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 30px 18px;
+        }
+    }
 </style>
 
 <div class="sobre-nosotros">
-
 
     <!-- NUESTRA HISTORIA -->
     <section id="nuestra-historia" class="sn-seccion">
@@ -588,19 +411,12 @@
             <div class="row g-5 sn-historia">
 
                 <div class="col-md-5">
-                    <div class="sn-foto-marco">
+                    <div class="sn-logo-contenedor">
                         <img
-                            src="{% static 'img/manicura_profesional.jpg' %}"
-                            class="sn-foto"
-                            alt="Servicio de manicura profesional de Spa Deseo"
-                            loading="lazy"
-                        >
-
-                        <div class="sn-sello">
-                            BELLEZA<br>
-                            EN CADA<br>
-                            DETALLE
-                        </div>
+                            src="{% static 'img/logo-spa-deseo-fucsia.png' %}"
+                            class="sn-logo-sin-marco"
+                            alt="Logo de Spa Deseo"
+                            loading="lazy">
                     </div>
                 </div>
 
@@ -672,6 +488,14 @@
                 </div>
 
             </div>
+        </div>
+
+        <!-- Onda inferior de la historia -->
+        <div class="onda-bottom">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                    class="onda-fill"></path>
+            </svg>
         </div>
     </section>
 
@@ -788,6 +612,13 @@
 
             </div>
         </div>
+        
+        <div class="onda-bottom">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
+                    class="onda-fill"></path>
+            </svg>
+        </div>
     </section>
 
     <!-- MISIÓN Y VISIÓN -->
@@ -827,10 +658,6 @@
                                 en un ambiente acogedor donde cada cliente
                                 pueda expresar su estilo y disfrutar de
                                 un momento dedicado a su bienestar.
-                                A través de una mejor organización de los
-                                servicios y las citas, buscamos ofrecer
-                                una experiencia confiable, práctica
-                                y satisfactoria.
                             </p>
                         </div>
                     </article>
@@ -852,11 +679,7 @@
                                 reconocida en Bello, Antioquia, por la
                                 calidad de sus servicios, la creatividad
                                 de sus diseños y la confianza de sus
-                                clientes. Aspiramos a crecer de manera
-                                sostenible, fortalecer la relación con
-                                quienes nos eligen e incorporar mejoras
-                                que permitan brindar una atención cada
-                                vez más organizada y cercana.
+                                clientes.
                             </p>
                         </div>
                     </article>
