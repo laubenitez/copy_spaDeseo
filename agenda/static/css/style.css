@@ -393,3 +393,131 @@ p{
     }
 
 }
+
+
+/* ==========================================
+   ACCESIBILIDAD - TAMAÑO DEL TEXTO
+========================================== */
+
+
+/* Texto pequeño */
+body.accesibilidad-texto-pequeno {
+    font-size: 14px;
+}
+
+/* Texto normal: tamaño predeterminado */
+body.accesibilidad-texto-normal {
+    font-size: 16px;
+}
+
+/* Texto grande */
+body.accesibilidad-texto-grande {
+    font-size: 18px;
+}
+
+/* No modificar font-family ni los tamaños individuales
+   establecidos por Tailwind en los componentes. */
+
+
+/* REDUCIR ANIMACIONES */
+
+body.accesibilidad-animaciones-reducidas *,
+body.accesibilidad-animaciones-reducidas *::before,
+body.accesibilidad-animaciones-reducidas *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+}
+
+
+
+/* MODO DE LECTURA */
+body.accesibilidad-modo-lectura {
+    line-height: normal;
+    letter-spacing: normal;
+}
+
+body.accesibilidad-modo-lectura main p,
+body.accesibilidad-modo-lectura main li {
+    line-height: normal;
+    max-width: none;
+}
+
+body.accesibilidad-modo-lectura main h1,
+body.accesibilidad-modo-lectura main h2,
+body.accesibilidad-modo-lectura main h3 {
+    line-height: normal;
+}
+
+
+/* ==========================================
+   AJUSTES DE TAMAÑO PARA EL DASHBOARD
+   ========================================== */
+
+/* Texto grande */
+body.accesibilidad-texto-grande {
+    font-size: 18px;
+}
+
+body.accesibilidad-texto-grande main p,
+body.accesibilidad-texto-grande main label,
+body.accesibilidad-texto-grande main li,
+body.accesibilidad-texto-grande main td,
+body.accesibilidad-texto-grande main th {
+    font-size: 1.1em;
+}
+
+/* Texto pequeño */
+body.accesibilidad-texto-pequeno {
+    font-size: 14px;
+}
+
+body.accesibilidad-texto-pequeno main p,
+body.accesibilidad-texto-pequeno main label,
+body.accesibilidad-texto-pequeno main li,
+body.accesibilidad-texto-pequeno main td,
+body.accesibilidad-texto-pequeno main th {
+    font-size: 0.9em;
+}
+
+/* ==========================================
+   ACCESIBILIDAD - SPA DESEO
+   Ajustes para mantener organizado el diseño
+========================================== */
+
+/* TAMAÑO DEL TEXTO */
+body.accesibilidad-texto-pequeno {
+    font-size: 14px;
+}
+
+body.accesibilidad-texto-normal {
+    font-size: 16px;
+}
+
+body.accesibilidad-texto-grande {
+    font-size: 18px;
+}
+
+/* Evitar que los textos largos desorganicen las tarjetas */
+body.accesibilidad-texto-grande main p,
+body.accesibilidad-texto-grande main label,
+body.accesibilidad-texto-grande main li,
+body.accesibilidad-texto-grande main td,
+body.accesibilidad-texto-grande main th {
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* Mantener los botones proporcionados */
+body.accesibilidad-texto-grande main button,
+body.accesibilidad-texto-grande main a {
+    line-height: 1.5;
+}
+
+/* Permitir que las tarjetas se adapten a su contenido */
+body.accesibilidad-texto-grande main > div,
+body.accesibilidad-texto-grande main section {
+    min-width: 0;
+}
+

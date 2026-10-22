@@ -1,107 +1,138 @@
-
 {% extends "dashboard.html" %}
 
 {% block content %}
 
-<!-- Cabecera -->
+<!-- =========================================================
+     CABECERA
+========================================================= -->
 <div class="mb-8 text-center max-w-2xl mx-auto">
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
         Ajustes de Cuenta
     </h1>
+
     <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
         Administra las preferencias generales, seguridad y privacidad de tu cuenta en SpaDeseo.
     </p>
 </div>
 
-<form method="POST" action="{% url 'agenda:ajustes' %}">
+
+<!-- =========================================================
+     FORMULARIO PRINCIPAL
+========================================================= -->
+<form method="POST" action="{% url 'agenda:ajustes' %}" id="formAjustes">
     {% csrf_token %}
 
     <div class="max-w-5xl mx-auto space-y-6 pb-6">
 
-        <!-- 1. SEGURIDAD -->
+
+        <!-- =================================================
+             1. SEGURIDAD
+        ================================================== -->
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
+            <!-- Encabezado de seguridad -->
             <div class="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
-                <div class="w-10 h-10 flex items-center justify-center rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
+
+                <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
+
                 <div>
                     <h3 class="text-lg font-bold text-gray-900 dark:text-white">
                         Seguridad
                     </h3>
+
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Protege tu cuenta y administra tus métodos de acceso.
                     </p>
                 </div>
+
             </div>
+
 
             <div class="space-y-3">
 
-                <!-- Cambiar contraseña -->
+
+                <!-- CAMBIAR CONTRASEÑA -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-900 transition">
+
                     <div class="flex items-start gap-3">
+
                         <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                             <i class="fa-solid fa-key"></i>
                         </div>
+
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-white">
                                 Cambiar contraseña
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Actualiza tu clave de acceso para mantener tu cuenta protegida.
                             </p>
                         </div>
+
                     </div>
 
                     <a href="{% url 'agenda:cambiar_contrasena' %}"
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/50 transition">
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/50 transition shrink-0">
+
                         Cambiar
                         <i class="fa-solid fa-arrow-right text-[10px]"></i>
+
                     </a>
+
                 </div>
 
-                <!-- Verificación adicional -->
+
+                <!-- VERIFICACIÓN ADICIONAL -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
 
                     <div class="flex items-start gap-3">
+
                         <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                             <i class="fa-solid fa-user-shield"></i>
                         </div>
 
-                        <div>
+                        <div class="flex-1">
+
                             <p class="text-sm font-semibold text-gray-800 dark:text-white">
                                 Verificación adicional
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Solicita un código enviado a tu correo cada vez que inicies sesión.
                             </p>
 
-                            <p class="text-xs mt-2 font-medium
-                                {% if preferencias.verificacion_adicional %}
-                                    text-emerald-600 dark:text-emerald-400
-                                {% else %}
-                                    text-gray-500 dark:text-gray-400
-                                {% endif %}"
-                                id="estado-verificacion">
+                            <p id="estado-verificacion"
+                               class="text-xs mt-2 font-medium {% if preferencias.verificacion_adicional %}text-emerald-600 dark:text-emerald-400{% else %}text-gray-500 dark:text-gray-400{% endif %}">
+
                                 {% if preferencias.verificacion_adicional %}
                                     Protección adicional activada.
                                 {% else %}
                                     Protección adicional desactivada.
                                 {% endif %}
+
                             </p>
+
                         </div>
+
                     </div>
 
+
+                    <!-- Interruptor -->
                     <label class="inline-flex items-center gap-3 cursor-pointer shrink-0"
                            for="verificacion_adicional">
 
-                        <span class="text-xs font-semibold text-gray-600 dark:text-gray-300"
-                              id="texto-verificacion">
+                        <span id="texto-verificacion"
+                              class="text-xs font-semibold text-gray-600 dark:text-gray-300">
+
                             {% if preferencias.verificacion_adicional %}
                                 Activada
                             {% else %}
                                 Desactivada
                             {% endif %}
+
                         </span>
 
                         <input
@@ -113,339 +144,786 @@
                             class="sr-only peer"
                         >
 
-                        <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors
-                            after:content-[''] after:absolute after:top-0.5 after:left-0.5
-                            after:bg-white after:rounded-full after:h-5 after:w-5
-                            after:transition-transform peer-checked:after:translate-x-5
-                            peer-focus-visible:outline-none peer-focus-visible:ring-2
-                            peer-focus-visible:ring-pink-400 peer-focus-visible:ring-offset-2">
+                        <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-pink-400 peer-focus-visible:ring-offset-2">
                         </span>
+
                     </label>
+
                 </div>
 
-                <!-- Estado de seguridad -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+
+                <!-- ESTADO DE SEGURIDAD -->
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
+                    <div class="flex items-start gap-3 w-full">
+
+                        <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl
+                            {% if estado_seguridad_correcto %}
+                                bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400
+                            {% else %}
+                                bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400
+                            {% endif %}">
+
                             <i class="fa-solid fa-shield-heart"></i>
+
                         </div>
-                        <div>
+
+
+                        <div class="flex-1 min-w-0">
+
                             <p class="text-sm font-semibold text-gray-800 dark:text-white">
                                 Estado de seguridad
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Consulta el estado básico de protección de tu cuenta.
                             </p>
+
+
+                            <!-- Estado de la contraseña -->
+                            <div class="flex flex-col gap-2 mt-3">
+
+                                <p class="text-xs text-gray-600 dark:text-gray-300">
+
+                                    {% if tiene_contrasena %}
+
+                                        <i class="fa-solid fa-check-circle text-emerald-500 mr-1"></i>
+                                        Contraseña configurada.
+
+                                    {% elif usa_google %}
+
+                                        <i class="fa-brands fa-google text-blue-500 mr-1"></i>
+                                        Acceso mediante Google.
+
+                                    {% else %}
+
+                                        <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>
+                                        No se detecta una contraseña utilizable.
+
+                                    {% endif %}
+
+                                </p>
+
+
+                                <!-- Estado de la verificación adicional -->
+                                <p class="text-xs text-gray-600 dark:text-gray-300">
+
+                                    {% if preferencias.verificacion_adicional %}
+
+                                        <i class="fa-solid fa-check-circle text-emerald-500 mr-1"></i>
+                                        Verificación por correo activada.
+
+                                    {% else %}
+
+                                        <i class="fa-solid fa-circle-minus text-amber-500 mr-1"></i>
+                                        Verificación por correo desactivada.
+
+                                    {% endif %}
+
+                                </p>
+
+
+                                <!-- Estado de la cuenta -->
+                                <p class="text-xs text-gray-600 dark:text-gray-300">
+
+                                    {% if cuenta_activa %}
+
+                                        <i class="fa-solid fa-check-circle text-emerald-500 mr-1"></i>
+                                        Cuenta activa.
+
+                                    {% else %}
+
+                                        <i class="fa-solid fa-circle-exclamation text-red-500 mr-1"></i>
+                                        Cuenta desactivada.
+
+                                    {% endif %}
+
+                                </p>
+
+                            </div>
+
                         </div>
+
                     </div>
 
-                    <span class="inline-flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        Contraseña configurada
-                    </span>
+
+                    <!-- Indicador general -->
+                    <div class="shrink-0 sm:pt-1">
+
+                        {% if estado_seguridad_correcto %}
+
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Cuenta segura
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                Revisar seguridad
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
                 </div>
 
-                <!-- Último acceso -->
+
+                <!-- ÚLTIMO ACCESO -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
                     <div class="flex items-start gap-3">
+
                         <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                             <i class="fa-solid fa-clock-rotate-left"></i>
                         </div>
+
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-white">
                                 Último acceso
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Consulta cuándo se registró tu último acceso.
                             </p>
                         </div>
+
                     </div>
 
                     <span class="self-start sm:self-center text-xs font-medium text-gray-500 dark:text-gray-400">
+
                         {% if ultimo_acceso %}
                             {{ ultimo_acceso|date:"d/m/Y" }} · {{ ultimo_acceso|date:"h:i A" }}
                         {% else %}
                             No hay un acceso anterior registrado.
                         {% endif %}
+
                     </span>
+
                 </div>
 
-                <!-- Cerrar sesiones -->
+
+                <!-- CERRAR SESIONES -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-red-100 dark:border-red-900/40 bg-red-50/40 dark:bg-red-950/10">
+
                     <div class="flex items-start gap-3">
+
                         <div class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                             <i class="fa-solid fa-laptop-file"></i>
                         </div>
+
                         <div>
                             <p class="text-sm font-semibold text-gray-800 dark:text-white">
                                 Cerrar sesión en todos los dispositivos
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Finaliza las sesiones abiertas de tu cuenta en otros dispositivos.
+                                Tendrás que iniciar sesión nuevamente para continuar.
                             </p>
                         </div>
+
                     </div>
 
-                    <button type="button"
-                            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/60 text-xs font-semibold transition">
+                    <button
+                        type="button"
+                        class="js-open-modal-sesiones inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-900/40 transition shrink-0"
+                    >
+
                         <i class="fa-solid fa-right-from-bracket"></i>
                         Cerrar sesiones
+
                     </button>
+
                 </div>
 
             </div>
+
         </section>
 
-        <!-- 2. NOTIFICACIONES: SOLO CLIENTES -->
+
+
+        <!-- =================================================
+             2. NOTIFICACIONES: SOLO CLIENTES
+        ================================================== -->
         {% if es_cliente %}
+
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+
                 <i class="fa-solid fa-bell text-pink-600"></i>
                 Notificaciones
+
             </h3>
 
+
             <div class="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+
                 <div class="flex items-start gap-3">
+
                     <div class="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                         <i class="fa-brands fa-whatsapp"></i>
                     </div>
+
                     <div>
                         <p class="text-sm font-medium text-gray-800 dark:text-white">
                             Recordatorios de citas por WhatsApp
                         </p>
+
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Activa o desactiva esta preferencia de recordatorios.
                         </p>
                     </div>
+
                 </div>
 
-                <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                    <input type="checkbox"
-                           name="recordatorios_whatsapp"
-                           value="on"
-                           {% if preferencias.recordatorios_whatsapp %}checked{% endif %}
-                           class="sr-only peer">
 
-                    <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors
-                        after:content-[''] after:absolute after:top-0.5 after:left-0.5
-                        after:bg-white after:rounded-full after:h-5 after:w-5
-                        after:transition-transform peer-checked:after:translate-x-5">
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+
+                    <input
+                        type="checkbox"
+                        name="recordatorios_whatsapp"
+                        value="on"
+                        {% if preferencias.recordatorios_whatsapp %}checked{% endif %}
+                        class="sr-only peer"
+                    >
+
+                    <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5">
                     </span>
+
                 </label>
+
             </div>
 
         </section>
+
         {% endif %}
 
-        <!-- 3. PREFERENCIAS -->
+
+
+        <!-- =================================================
+             3. PREFERENCIAS
+        ================================================== -->
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+
                 <i class="fa-solid fa-sliders text-pink-600"></i>
                 Preferencias
+
             </h3>
+
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
+
+                <!-- Formato de fecha -->
                 <div>
+
                     <label for="formato_fecha" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                         Formato de fecha
                     </label>
+
                     <select id="formato_fecha" name="formato_fecha"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:focus:ring-pink-900/30">
-                        <option value="DMY" {% if preferencias.formato_fecha == "DMY" %}selected{% endif %}>DD/MM/AAAA</option>
-                        <option value="MDY" {% if preferencias.formato_fecha == "MDY" %}selected{% endif %}>MM/DD/AAAA</option>
+
+                        <option value="DMY" {% if preferencias.formato_fecha == "DMY" %}selected{% endif %}>
+                            DD/MM/AAAA
+                        </option>
+
+                        <option value="MDY" {% if preferencias.formato_fecha == "MDY" %}selected{% endif %}>
+                            MM/DD/AAAA
+                        </option>
+
                     </select>
+
                 </div>
 
+
+                <!-- Formato de hora -->
                 <div>
+
                     <label for="formato_hora" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                         Formato de hora
                     </label>
+
                     <select id="formato_hora" name="formato_hora"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:focus:ring-pink-900/30">
-                        <option value="12" {% if preferencias.formato_hora == "12" %}selected{% endif %}>12 horas (AM/PM)</option>
-                        <option value="24" {% if preferencias.formato_hora == "24" %}selected{% endif %}>24 horas</option>
+
+                        <option value="12" {% if preferencias.formato_hora == "12" %}selected{% endif %}>
+                            12 horas (AM/PM)
+                        </option>
+
+                        <option value="24" {% if preferencias.formato_hora == "24" %}selected{% endif %}>
+                            24 horas
+                        </option>
+
                     </select>
+
                 </div>
 
+
+                <!-- Idioma -->
                 <div>
+
                     <label for="idioma" class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                         Idioma
                     </label>
+
                     <select id="idioma" name="idioma"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100 dark:focus:ring-pink-900/30">
-                        <option value="es" {% if preferencias.idioma == "es" %}selected{% endif %}>Español</option>
-                        <option value="en" {% if preferencias.idioma == "en" %}selected{% endif %}>English</option>
+
+                        <option value="es" {% if preferencias.idioma == "es" %}selected{% endif %}>
+                            Español
+                        </option>
+
+                        <option value="en" {% if preferencias.idioma == "en" %}selected{% endif %}>
+                            English
+                        </option>
+
                     </select>
+
                 </div>
 
             </div>
+
         </section>
 
-        <!-- 4. PRIVACIDAD Y DATOS -->
+
+
+        <!-- =================================================
+             4. PRIVACIDAD Y DATOS
+        ================================================== -->
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+
                 <i class="fa-solid fa-lock text-pink-600"></i>
                 Privacidad y Datos
+
             </h3>
+
 
             <div class="space-y-4">
 
+
+                <!-- Permitir comunicaciones -->
                 <div class="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+
                     <div class="flex items-start gap-3">
+
                         <div class="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                             <i class="fa-solid fa-envelope"></i>
                         </div>
+
                         <div>
                             <p class="text-sm font-medium text-gray-800 dark:text-white">
                                 Permitir comunicaciones
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Administra las comunicaciones que recibes de SpaDeseo.
                             </p>
                         </div>
+
                     </div>
 
-                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input type="checkbox"
-                               name="permitir_comunicaciones"
-                               value="on"
-                               {% if preferencias.permitir_comunicaciones %}checked{% endif %}
-                               class="sr-only peer">
 
-                        <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors
-                            after:content-[''] after:absolute after:top-0.5 after:left-0.5
-                            after:bg-white after:rounded-full after:h-5 after:w-5
-                            after:transition-transform peer-checked:after:translate-x-5">
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+
+                        <input
+                            type="checkbox"
+                            name="permitir_comunicaciones"
+                            value="on"
+                            {% if preferencias.permitir_comunicaciones %}checked{% endif %}
+                            class="sr-only peer"
+                        >
+
+                        <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5">
                         </span>
+
                     </label>
+
                 </div>
 
+
+                <!-- Control de datos personales -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3">
+
                     <div class="flex items-start gap-3">
+
                         <div class="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
                             <i class="fa-solid fa-file-shield"></i>
                         </div>
+
                         <div>
                             <p class="text-sm font-medium text-gray-800 dark:text-white">
                                 Control de datos personales
                             </p>
+
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Consulta cómo se administra la información de tu cuenta.
                             </p>
+
                             <span class="inline-block mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 La política de privacidad estará disponible aquí.
                             </span>
                         </div>
+
                     </div>
+
                 </div>
 
+
+                <!-- Eliminar cuenta -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-red-100 dark:border-red-900/40">
+
                     <div>
                         <p class="text-sm font-semibold text-red-600 dark:text-red-400">
                             Eliminar cuenta
                         </p>
+
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             Esta solicitud debe contar con confirmación y revisión antes de eliminar datos.
                         </p>
                     </div>
 
-                    <button type="button"
-                            class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 transition">
+                    <button
+                        type="button"
+                        class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 transition shrink-0"
+                    >
                         Solicitar eliminación
                     </button>
+
                 </div>
 
             </div>
+
         </section>
 
-        <!-- 5. ACCESIBILIDAD -->
+
+
+        <!-- =================================================
+             5. ACCESIBILIDAD
+        ================================================== -->
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+
                 <i class="fa-solid fa-universal-access text-pink-600"></i>
                 Accesibilidad
+
             </h3>
 
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">
                 Personaliza la presentación para que SpaDeseo sea más cómodo de utilizar.
             </p>
 
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
+
+                <!-- Tamaño del texto -->
                 <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
                     <label for="tamano_texto" class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white mb-3">
+
                         <i class="fa-solid fa-text-height text-pink-600"></i>
                         Tamaño del texto
+
                     </label>
+
                     <select id="tamano_texto" name="tamano_texto"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500">
-                        <option value="normal" {% if preferencias.tamano_texto == "normal" %}selected{% endif %}>Normal</option>
-                        <option value="grande" {% if preferencias.tamano_texto == "grande" %}selected{% endif %}>Grande</option>
-                        <option value="pequeno" {% if preferencias.tamano_texto == "pequeno" %}selected{% endif %}>Pequeño</option>
+
+                        <option value="normal" {% if preferencias.tamano_texto == "normal" %}selected{% endif %}>
+                            Normal
+                        </option>
+
+                        <option value="grande" {% if preferencias.tamano_texto == "grande" %}selected{% endif %}>
+                            Grande
+                        </option>
+
+                        <option value="pequeno" {% if preferencias.tamano_texto == "pequeno" %}selected{% endif %}>
+                            Pequeño
+                        </option>
+
                     </select>
+
                 </div>
 
+
+                <!-- Contraste -->
                 <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
                     <label for="contraste" class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white mb-3">
+
                         <i class="fa-solid fa-circle-half-stroke text-pink-600"></i>
                         Contraste
+
                     </label>
+
                     <select id="contraste" name="contraste"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500">
-                        <option value="estandar" {% if preferencias.contraste == "estandar" %}selected{% endif %}>Estándar</option>
-                        <option value="alto" {% if preferencias.contraste == "alto" %}selected{% endif %}>Alto contraste</option>
+
+                        <option value="estandar" {% if preferencias.contraste == "estandar" %}selected{% endif %}>
+                            Estándar
+                        </option>
+
+                        <option value="alto" {% if preferencias.contraste == "alto" %}selected{% endif %}>
+                            Alto contraste
+                        </option>
+
                     </select>
+
                 </div>
 
+
+                <!-- Animaciones -->
                 <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
                     <label for="animaciones" class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white mb-3">
+
                         <i class="fa-solid fa-wand-magic-sparkles text-pink-600"></i>
                         Animaciones
+
                     </label>
+
                     <select id="animaciones" name="animaciones"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500">
-                        <option value="activadas" {% if preferencias.animaciones == "activadas" %}selected{% endif %}>Habilitadas</option>
-                        <option value="reducidas" {% if preferencias.animaciones == "reducidas" %}selected{% endif %}>Reducir animaciones</option>
+
+                        <option value="activadas" {% if preferencias.animaciones == "activadas" %}selected{% endif %}>
+                            Habilitadas
+                        </option>
+
+                        <option value="reducidas" {% if preferencias.animaciones == "reducidas" %}selected{% endif %}>
+                            Reducir animaciones
+                        </option>
+
                     </select>
+
                 </div>
 
+
+                <!-- Modo de lectura -->
                 <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+
                     <label for="modo_lectura" class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-white mb-3">
+
                         <i class="fa-solid fa-book-open-reader text-pink-600"></i>
                         Modo de lectura
+
                     </label>
+
                     <select id="modo_lectura" name="modo_lectura"
                             class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3 focus:outline-none focus:border-pink-500">
-                        <option value="desactivado" {% if preferencias.modo_lectura == "desactivado" %}selected{% endif %}>Desactivado</option>
-                        <option value="activado" {% if preferencias.modo_lectura == "activado" %}selected{% endif %}>Activado</option>
+
+                        <option value="desactivado" {% if preferencias.modo_lectura == "desactivado" %}selected{% endif %}>
+                            Desactivado
+                        </option>
+
+                        <option value="activado" {% if preferencias.modo_lectura == "activado" %}selected{% endif %}>
+                            Activado
+                        </option>
+
                     </select>
+
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Esta preferencia requiere conectarse a los estilos de la página para cambiar la lectura.
                     </p>
+
                 </div>
 
             </div>
+
         </section>
 
-        <!-- Guardar cambios -->
+
+
+        <!-- =================================================
+             GUARDAR CAMBIOS
+        ================================================== -->
         <div class="flex justify-end pt-2">
-            <button type="submit"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold transition shadow-sm">
+
+            <button
+                type="submit"
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold transition shadow-sm"
+            >
+
                 <i class="fa-solid fa-floppy-disk"></i>
                 Guardar cambios
+
             </button>
+
         </div>
 
     </div>
+
 </form>
 
-<!-- Actualizar el texto del interruptor al pulsarlo -->
+
+
+<!-- =========================================================
+     MODAL: CONFIRMAR CIERRE DE SESIONES
+========================================================= -->
+<div
+    id="modalCerrarSesiones"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalCerrarSesiones"
+>
+
+    <div class="w-full max-w-md bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+        <!-- Icono -->
+        <div class="flex justify-center pt-7 pb-3">
+
+            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <i class="fa-solid fa-right-from-bracket text-2xl"></i>
+            </div>
+
+        </div>
+
+
+        <!-- Contenido -->
+        <div class="px-6 pb-6 text-center">
+
+            <h2 id="tituloModalCerrarSesiones"
+                class="text-xl font-bold text-gray-900 dark:text-white">
+
+                ¿Cerrar todas las sesiones?
+
+            </h2>
+
+            <p class="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+
+                ¿Deseas cerrar las sesiones de tu cuenta, incluida la actual?
+                Tendrás que iniciar sesión nuevamente para continuar.
+
+            </p>
+
+
+            <!-- Botones -->
+            <div class="mt-6 flex flex-col-reverse sm:flex-row justify-center gap-3">
+
+                <button
+                    type="button"
+                    class="js-close-modal-sesiones px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    id="btnConfirmarCerrarSesiones"
+                    class="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold shadow-sm transition"
+                >
+
+                    <i class="fa-solid fa-check mr-1"></i>
+                    Sí, cerrar sesiones
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     FORMULARIO INDEPENDIENTE: CERRAR SESIONES
+========================================================= -->
+<form
+    id="formCerrarSesiones"
+    method="POST"
+    action="{% url 'agenda:cerrar_sesiones_dispositivos' %}"
+    class="hidden"
+>
+    {% csrf_token %}
+</form>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT: MODAL DE CIERRE DE SESIONES
+========================================================= -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("modalCerrarSesiones");
+    const btnConfirmar = document.getElementById("btnConfirmarCerrarSesiones");
+    const btnCerrar = document.querySelectorAll(".js-close-modal-sesiones");
+    const btnAbrir = document.querySelectorAll(".js-open-modal-sesiones");
+    const formulario = document.getElementById("formCerrarSesiones");
+
+    if (!modal || !btnConfirmar || !formulario || btnAbrir.length === 0) {
+        return;
+    }
+
+    function abrirModal() {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.classList.add("overflow-hidden");
+    }
+
+    function cerrarModal() {
+        modal.classList.remove("flex");
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+    }
+
+    // Abrir el modal.
+    btnAbrir.forEach(function (button) {
+        button.addEventListener("click", abrirModal);
+    });
+
+    // Cerrar mediante el botón Cancelar.
+    btnCerrar.forEach(function (button) {
+        button.addEventListener("click", cerrarModal);
+    });
+
+    // Confirmar el cierre de sesiones.
+    btnConfirmar.addEventListener("click", function () {
+        formulario.requestSubmit();
+    });
+
+    // Cerrar al pulsar fuera de la ventana.
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            cerrarModal();
+        }
+    });
+
+    // Cerrar con la tecla Escape.
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+            cerrarModal();
+        }
+    });
+
+});
+</script>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT: VERIFICACIÓN ADICIONAL
+========================================================= -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
     const interruptor = document.getElementById("verificacion_adicional");
     const texto = document.getElementById("texto-verificacion");
     const estado = document.getElementById("estado-verificacion");
@@ -455,20 +933,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function actualizarEstado() {
+
         if (interruptor.checked) {
+
             texto.textContent = "Activada";
             estado.textContent = "Protección adicional activada.";
-            estado.classList.remove("text-gray-500", "dark:text-gray-400");
-            estado.classList.add("text-emerald-600", "dark:text-emerald-400");
+
+            estado.classList.remove(
+                "text-gray-500",
+                "dark:text-gray-400"
+            );
+
+            estado.classList.add(
+                "text-emerald-600",
+                "dark:text-emerald-400"
+            );
+
         } else {
+
             texto.textContent = "Desactivada";
             estado.textContent = "Protección adicional desactivada.";
-            estado.classList.remove("text-emerald-600", "dark:text-emerald-400");
-            estado.classList.add("text-gray-500", "dark:text-gray-400");
+
+            estado.classList.remove(
+                "text-emerald-600",
+                "dark:text-emerald-400"
+            );
+
+            estado.classList.add(
+                "text-gray-500",
+                "dark:text-gray-400"
+            );
+
         }
+
     }
 
     interruptor.addEventListener("change", actualizarEstado);
+
 });
 </script>
 

@@ -79,6 +79,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
 
                 "agenda.context_processors.notificaciones_usuario",
+                'agenda.context_processors.preferencias_accesibilidad',
             ],
         },
     },

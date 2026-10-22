@@ -372,7 +372,7 @@ def ajustes(request):
 @require_POST
 def cerrar_sesiones_dispositivos(request):
     """
-    Cierra las sesiones de Django que pertenecen al usuario actual,
+    Cierra las sesiones de Django pertenecientes al usuario actual,
     incluidas las abiertas en otros dispositivos.
     """
 
@@ -385,10 +385,15 @@ def cerrar_sesiones_dispositivos(request):
 
     # Identificar y eliminar las sesiones del usuario.
     for sesion in sesiones:
-        datos_sesion = sesion.get_decoded()
+        try:
+            datos_sesion = sesion.get_decoded()
 
-        if datos_sesion.get("_auth_user_id") == usuario_id:
-            sesion.delete()
+            if datos_sesion.get("_auth_user_id") == usuario_id:
+                sesion.delete()
+
+        except (ValueError, TypeError):
+            # Ignorar sesiones que no puedan decodificarse.
+            continue
 
     # Cerrar también la sesión actual.
     auth_logout(request)
@@ -1592,19 +1597,34 @@ def logout(request):
     return redirect("agenda:login")
 
 @login_required(login_url="agenda:login")
-@requiere_rol("ADMINISTRADOR", "MANICURISTA")  # <--- CLIENTE removido por protección de datos (Privacy / Anti-Scraping)
+@requiere_rol("ADMINISTRADOR", "MANICURISTA")
 def ver_cliente(request):
 
-    # Consulta optimizada con select_related para traer la información en 1 sola query
-    c = Clientes.objects.filter(
+    # Consultar los clientes y sus usuarios relacionados.
+    clientes = Clientes.objects.filter(
         user__perfil__rol__nombre="CLIENTE"
-    ).select_related('user').order_by('nombre')
+    ).select_related("user").order_by("nombre")
+
+    # Comprobar las preferencias de WhatsApp de cada cliente.
+    for cliente in clientes:
+        # Mantener el comportamiento predeterminado si no existen preferencias.
+        cliente.recordatorios_whatsapp_activos = True
+
+        if cliente.user:
+            try:
+                preferencias = cliente.user.preferencias_spa
+                cliente.recordatorios_whatsapp_activos = (
+                    preferencias.recordatorios_whatsapp
+                )
+            except PreferenciasUsuario.DoesNotExist:
+                pass
 
     contexto = {
-        "datos": c
+        "datos": clientes
     }
 
     return render(request, "cliente/clientes.html", contexto)
+
 
 @login_required(login_url="agenda:login")
 @requiere_rol("ADMINISTRADOR")

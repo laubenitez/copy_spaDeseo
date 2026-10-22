@@ -43,7 +43,15 @@
 
 </head>
 
-<body class="bg-gray-100 dark:bg-darkBg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-darkBg text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300
+    {% if preferencias_accesibilidad %}
+        {% if preferencias_accesibilidad.tamano_texto == 'pequeno' %}accesibilidad-texto-pequeno{% endif %}
+        {% if preferencias_accesibilidad.tamano_texto == 'normal' %}accesibilidad-texto-normal{% endif %}
+        {% if preferencias_accesibilidad.tamano_texto == 'grande' %}accesibilidad-texto-grande{% endif %}
+        {% if preferencias_accesibilidad.contraste == 'alto' %}accesibilidad-contraste-alto{% endif %}
+        {% if preferencias_accesibilidad.animaciones == 'reducidas' %}accesibilidad-animaciones-reducidas{% endif %}
+        {% if preferencias_accesibilidad.modo_lectura == 'activado' %}accesibilidad-modo-lectura{% endif %}
+    {% endif %}">
 
 
     <div class="flex h-screen overflow-hidden">
@@ -222,23 +230,19 @@
 
 
                         {% if request.session.logueado.rol == "Manicurista" %}
-
                         <li>
-
                             <a href="{% url 'agenda:citas_asignadas' %}"
-                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400 transition font-medium
-                                {% if request.path == '/citas_asignadas/' %}
-                                    border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
-                                {% else %}
-                                    hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400
-                                {% endif %}">
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition font-medium
+                            {% if request.resolver_match.url_name == 'citas_asignadas' %}
+                                border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                            {% else %}
+                                text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:text-pink-600 dark:hover:text-pink-400
+                            {% endif %}">
 
                                 <i class="fa-solid fa-calendar-check"></i>
 
                                 <span>Citas asignadas</span>
-
                             </a>
-
                         </li>
 
 

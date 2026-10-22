@@ -74,10 +74,25 @@
             <!-- Botones de Acción -->
             <div class="flex items-center gap-2 pt-1">
                 <!-- Botón WhatsApp -->
-                <a href="https://wa.me/{{ i.telefono }}" target="_blank"
-                  class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-                    <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
-                </a>
+
+                <!-- Botón WhatsApp según las preferencias del cliente -->
+                {% if i.recordatorios_whatsapp_activos %}
+                    <a href="https://wa.me/57{{ i.telefono }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        WhatsApp
+                    </a>
+                {% else %}
+                    <span title="Este cliente desactivó los recordatorios por WhatsApp."
+                        aria-disabled="true"
+                        class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        Recordatorios desactivados
+                    </span>
+                {% endif %}
+
 
                 <!-- Botón Historial -->
                 <button type="button"

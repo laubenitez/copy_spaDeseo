@@ -1,4 +1,3 @@
-
 from .models import Notificacion
 
 
@@ -22,4 +21,25 @@ def notificaciones_usuario(request):
         "notificaciones_no_leidas": notificaciones.filter(
             leida=False
         ).count(),
+    }
+
+
+def preferencias_accesibilidad(request):
+    """
+    Comparte las preferencias de accesibilidad del usuario
+    con las plantillas de Spa Deseo.
+    """
+    if not request.user.is_authenticated:
+        return {
+            "preferencias_accesibilidad": None,
+        }
+
+    preferencias = getattr(
+        request.user,
+        "preferencias_spa",
+        None
+    )
+
+    return {
+        "preferencias_accesibilidad": preferencias,
     }
