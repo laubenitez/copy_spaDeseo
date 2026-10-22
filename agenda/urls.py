@@ -163,6 +163,12 @@ urlpatterns = [
         template_name='password_reset_complete.html'
     ), name='password_reset_complete'),
 
+    path(
+    "cerrar-sesiones-dispositivos/",
+    views.cerrar_sesiones_dispositivos,
+    name="cerrar_sesiones_dispositivos"
+),
+
     
 
 ]

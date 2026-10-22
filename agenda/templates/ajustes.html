@@ -196,7 +196,8 @@
             </div>
         </section>
 
-        <!-- 2. NOTIFICACIONES -->
+        <!-- 2. NOTIFICACIONES: SOLO CLIENTES -->
+        {% if es_cliente %}
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
 
             <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4 pb-4 border-b border-gray-100 dark:border-gray-800">
@@ -235,6 +236,7 @@
             </div>
 
         </section>
+        {% endif %}
 
         <!-- 3. PREFERENCIAS -->
         <section class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">

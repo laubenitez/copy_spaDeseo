@@ -210,13 +210,24 @@
                     Cancelar
                 </button>
 
-                <!-- WhatsApp -->
-                <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition shadow-xs">
+                
+                <!-- WhatsApp según la preferencia del cliente -->
+                {% if cita.recordatorios_whatsapp_activos %}
+                <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition shadow-xs">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                     Recordatorio
                 </a>
+                {% else %}
+                <span title="El cliente desactivó los recordatorios por WhatsApp."
+                      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-sm font-semibold cursor-not-allowed">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    Recordatorios desactivados
+                </span>
+                {% endif %}
 
-                {% elif cita.estado == 'en_proceso' %}
 
                 <!-- Completar -->
                 <a href="{% url 'agenda:cambiar_estado_cita' cita.id 'completada' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition shadow-xs">
