@@ -6,6 +6,9 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from datetime import datetime, date, time, timedelta
 from django.utils.timezone import now
 from django.contrib.sessions.models import Session
+import requests
+from django.core.validators import validate_email
+from django.utils import translation
 
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -253,14 +256,12 @@ class GastosViewSet(viewsets.ModelViewSet):
 
 
 
-
 @login_required(login_url="agenda:login")
 def ajustes(request):
     preferencias, creada = PreferenciasUsuario.objects.get_or_create(
         user=request.user
     )
 
-    # Identificar si el usuario que inició sesión es un cliente.
     es_cliente = hasattr(request.user, "cliente")
 
     if request.method == "POST":
@@ -269,13 +270,13 @@ def ajustes(request):
             request.POST.get("verificacion_adicional") == "on"
         )
 
-        # Notificaciones y privacidad
-        # Solo los clientes pueden modificar los recordatorios de WhatsApp.
+        # Notificaciones: solo clientes pueden cambiar WhatsApp
         if es_cliente:
             preferencias.recordatorios_whatsapp = (
                 "recordatorios_whatsapp" in request.POST
             )
 
+        # Privacidad
         preferencias.permitir_comunicaciones = (
             "permitir_comunicaciones" in request.POST
         )
@@ -291,7 +292,6 @@ def ajustes(request):
         animaciones = request.POST.get("animaciones", "activadas")
         modo_lectura = request.POST.get("modo_lectura", "desactivado")
 
-        # Valores permitidos
         opciones_validas = {
             "formato_fecha": {"DMY", "MDY"},
             "formato_hora": {"12", "24"},
@@ -326,33 +326,39 @@ def ajustes(request):
 
             preferencias.save()
 
+            # Activar el idioma elegido en Django.
+            translation.activate(idioma)
+
+            # Guardar la selección en la sesión de Django.
+            request.session["django_language"] = idioma
+
             messages.success(
                 request,
                 "Tus ajustes se guardaron correctamente."
             )
 
-            return redirect("agenda:ajustes")
+            # Redirigir conservando el idioma seleccionado.
+            respuesta = redirect("agenda:ajustes")
+            respuesta.set_cookie(
+                key="django_language",
+                value=idioma,
+                max_age=365 * 24 * 60 * 60,
+                samesite="Lax",
+            )
+            return respuesta
 
-    # Comprobar si el usuario tiene una contraseña utilizable.
+    # Seguridad
     tiene_contrasena = request.user.has_usable_password()
-
-    # Comprobar si la cuenta está activa.
     cuenta_activa = request.user.is_active
 
-    # Comprobar si tiene una cuenta vinculada mediante Google.
     usa_google = False
     if hasattr(request.user, "socialaccount_set"):
         usa_google = request.user.socialaccount_set.filter(
             provider="google"
         ).exists()
 
-    # Estado general calculado con información real.
     estado_seguridad_correcto = (
-        cuenta_activa
-        and (
-            tiene_contrasena
-            or usa_google
-        )
+        cuenta_activa and (tiene_contrasena or usa_google)
     )
 
     contexto = {
@@ -366,6 +372,7 @@ def ajustes(request):
     }
 
     return render(request, "ajustes.html", contexto)
+
 
 
 @login_required(login_url="agenda:login")
@@ -1177,6 +1184,7 @@ def verificar_codigo(request):
 
 
 
+
 @transaction.atomic
 def register(request):
 
@@ -1186,38 +1194,124 @@ def register(request):
 
     if request.method == "POST":
 
-        # Verificar términos y condiciones
-        if not request.POST.get("terminos"):
-            messages.error(request, "Debes aceptar los términos y condiciones.")
-            # Pasamos los datos actuales para repoblar el formulario
-            return render(request, "register.html", {
-                "nombre": request.POST.get("nombre", ""),
-                "apellido": request.POST.get("apellido", ""),
-                "email": request.POST.get("email", ""),
-                "telefono": request.POST.get("telefono", ""),
-            })
-
-        password = request.POST.get("password")
-        email = request.POST.get("email", "").strip()
+        # Recoger los datos del formulario
+        password = request.POST.get("password", "")
+        email = request.POST.get("email", "").strip().lower()
         nombre = request.POST.get("nombre", "").strip()
         apellido = request.POST.get("apellido", "").strip()
         telefono = request.POST.get("telefono", "").strip()
+
+        datos = {
+            "nombre": nombre,
+            "apellido": apellido,
+            "email": email,
+            "telefono": telefono,
+        }
+
+        # Verificar términos y condiciones
+        if not request.POST.get("terminos"):
+            messages.error(
+                request,
+                "Debes aceptar los términos y condiciones."
+            )
+            return render(request, "register.html", datos)
+
+        # Validar el formato del correo en el servidor
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(
+                request,
+                "Ingresa una dirección de correo electrónico válida."
+            )
+            return render(request, "register.html", datos)
 
         # Validar contraseña
         error = validar_password(password)
 
         if error:
             messages.error(request, error)
-            return redirect("agenda:register")
+            return render(request, "register.html", datos)
 
-        # Verificar correo (Evita duplicados por mayúsculas/minúsculas)
-        if User.objects.filter(username__iexact=email).exists() or User.objects.filter(email__iexact=email).exists():
+        # Verificar que el correo no esté registrado
+        if (
+            User.objects.filter(username__iexact=email).exists()
+            or User.objects.filter(email__iexact=email).exists()
+        ):
             messages.error(
                 request,
                 "Ya existe una cuenta con ese correo."
             )
-            return redirect("agenda:register")
+            return render(request, "register.html", datos)
 
+        # Verificar que la API esté configurada
+        api_key = getattr(
+            settings,
+            "EMAIL_VALIDATION_API_KEY",
+            ""
+        )
+
+        if not api_key:
+            messages.error(
+                request,
+                "El servicio de validación de correos no está "
+                "configurado. Inténtalo más tarde."
+            )
+            return render(request, "register.html", datos)
+
+        # Consultar la API para comprobar el correo
+        try:
+            respuesta = requests.post(
+                "https://api.email-validation.org/v1/validate",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "email": email,
+                    "timeout": 10,
+                },
+                timeout=20,
+            )
+
+            respuesta.raise_for_status()
+            resultado = respuesta.json()
+            estado_correo = resultado.get("status")
+
+            # Solo continuar si la API devuelve "valid"
+            if estado_correo == "invalid":
+                messages.error(
+                    request,
+                    "El correo parece ser inválido. "
+                    "Verifica la dirección e inténtalo nuevamente."
+                )
+                return render(request, "register.html", datos)
+
+            if estado_correo != "valid":
+                messages.warning(
+                    request,
+                    "No fue posible confirmar que el buzón exista. "
+                    "Prueba con otra dirección de correo."
+                )
+                return render(request, "register.html", datos)
+
+        except requests.exceptions.RequestException:
+            messages.error(
+                request,
+                "No pudimos consultar el servicio de validación "
+                "de correos. Inténtalo nuevamente más tarde."
+            )
+            return render(request, "register.html", datos)
+
+        except (ValueError, TypeError):
+            messages.error(
+                request,
+                "El servicio de validación devolvió una respuesta "
+                "inesperada. Inténtalo nuevamente."
+            )
+            return render(request, "register.html", datos)
+
+        # Crear la cuenta después de validar el correo
         try:
 
             # 1. Buscar el rol CLIENTE
@@ -1228,15 +1322,14 @@ def register(request):
                 username=email,
                 email=email,
                 first_name=nombre,
-                last_name=apellido
+                last_name=apellido,
             )
 
             # 3. Guardar contraseña de forma segura
             user.set_password(password)
             user.save()
 
-            # 4. La señal crea automáticamente el PerfilUsuario.
-            #    Aquí solamente le asignamos el rol.
+            # 4. Obtener el perfil creado por la señal
             perfil = PerfilUsuario.objects.get(user=user)
             perfil.rol = rol
             perfil.save()
@@ -1252,31 +1345,35 @@ def register(request):
 
             messages.success(
                 request,
-                "Cuenta creada correctamente. Ahora puedes iniciar sesión."
+                "Cuenta creada correctamente. "
+                "Ahora puedes iniciar sesión."
             )
 
             return redirect("agenda:login")
 
         except Rol.DoesNotExist:
-
             messages.error(
                 request,
                 "El rol CLIENTE no existe en la base de datos."
             )
-
-            return redirect("agenda:register")
+            return render(request, "register.html", datos)
 
         except Exception:
-
-            # Mensaje seguro para el usuario (sin exponer detalles técnicos de la BD)
-            messages.error(
-                request,
-                "Ocurrió un error al crear la cuenta. Inténtalo de nuevo."
+            # Registrar el error real en la terminal del servidor
+            import logging
+            logging.getLogger(__name__).exception(
+                "Error al crear la cuenta de Spa Deseo."
             )
 
-            return redirect("agenda:register")
+            messages.error(
+                request,
+                "Ocurrió un error al crear la cuenta. "
+                "Inténtalo de nuevo."
+            )
+            return render(request, "register.html", datos)
 
     return render(request, "register.html")
+
 
 
 
@@ -2623,7 +2720,6 @@ import re
 from datetime import datetime, date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.db import transaction, IntegrityError
 from django.contrib.auth.models import User

@@ -1,5 +1,5 @@
-{% extends "login_base.html" %}
 
+{% extends "login_base.html" %}
 {% load static %}
 
 {% block title %}Verificación de seguridad | Spa Deseo{% endblock %}
@@ -8,203 +8,171 @@
 
 <div class="verificacion-container">
 
-    <!-- ICONO DE SEGURIDAD -->
-    <div class="icono-verificacion">
-        <i class="fa-solid fa-envelope-circle-check"></i>
-    </div>
+    <img src="{% static 'img/logo-spa-deseo-fucsia.png' %}"
+         alt="Spa Deseo" class="login-logo">
 
-    <!-- TÍTULO -->
-    <h1 class="titulo-verificacion">
-        Verificación de seguridad
-    </h1>
+    <h1>Verificación de seguridad</h1>
 
-    <!-- MENSAJE INFORMATIVO -->
-    <p class="subtitulo-verificacion">
-        Por favor, introduce el código de confirmación para completar el acceso.
+    <p class="subtitulo">
+        Introduce el código de confirmación para continuar.
     </p>
 
-    <!-- FORMULARIO DE VERIFICACIÓN -->
     <form method="POST" action="{% url 'agenda:verificar_codigo' %}">
         {% csrf_token %}
 
         <div class="form-group">
-            <label for="codigo">
-                Código de seguridad
-            </label>
+            <label for="codigo">Código de seguridad</label>
 
             <div class="input-wrapper">
-                <span>
-                    <i class="fa-solid fa-shield-halved"></i>
-                </span>
-
+                <span><i class="fa-solid fa-shield-halved"></i></span>
                 <input
                     type="text"
                     id="codigo"
                     name="codigo"
                     inputmode="numeric"
                     pattern="[0-9]{6}"
-                    minlength="6"
                     maxlength="6"
-                    autocomplete="one-time-code"
                     placeholder="Ingresa los 6 dígitos"
+                    autocomplete="one-time-code"
                     required
                     autofocus
-                    aria-describedby="texto-expiracion"
                 >
             </div>
         </div>
 
-        <!-- TIEMPO DE VALIDEZ -->
-        <p class="texto-expiracion" id="texto-expiracion">
-            <i class="fa-regular fa-clock"></i>
-            El código vence en cinco minutos.
-        </p>
-
-        <!-- BOTÓN DE VERIFICACIÓN -->
         <button type="submit" class="btn-login">
-            <i class="fa-solid fa-lock-open"></i>
             Verificar y continuar
         </button>
     </form>
 
-    <!-- CANCELAR -->
     <div class="registro">
         ¿No deseas continuar?
-
-        <a href="{% url 'agenda:login' %}">
-            Cancelar e iniciar sesión
-        </a>
-    </div>
-
-    <!-- NOTA DE SEGURIDAD -->
-    <div class="nota-seguridad">
-        <i class="fa-solid fa-lock"></i>
-        Tu seguridad y privacidad son importantes para nosotros.
+        <a href="{% url 'agenda:login' %}">Inicia sesión</a>
     </div>
 
 </div>
 
 <style>
-    /* CONTENEDOR PRINCIPAL */
-    .verificacion-container {
-        width: 100%;
-        text-align: center;
+.verificacion-container {
+    width: 100%;
+    text-align: center;
+}
+
+.verificacion-container .login-logo {
+    display: block;
+    width: 175px;
+    max-width: 70%;
+    height: auto;
+    margin: 0 auto 22px;
+}
+
+.verificacion-container h1 {
+    color: #e52e70;
+    font-size: 27px;
+    line-height: 1.2;
+    margin: 0 0 8px;
+}
+
+.verificacion-container .subtitulo {
+    color: #956d80;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 25px;
+}
+
+.verificacion-container .form-group {
+    text-align: left;
+    margin-bottom: 25px;
+}
+
+.verificacion-container label {
+    display: block;
+    color: #c62966;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.verificacion-container .input-wrapper {
+    position: relative;
+}
+
+.verificacion-container .input-wrapper span {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ef3f7c;
+}
+
+.verificacion-container input {
+    width: 100%;
+    height: 53px;
+    box-sizing: border-box;
+    padding: 12px 15px 12px 45px;
+    border: 1px solid #f5b5ce;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #75475d;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-align: center;
+    outline: none;
+}
+
+.verificacion-container input:focus {
+    border-color: #ef3f7c;
+    box-shadow: 0 0 0 3px rgba(239, 63, 124, 0.12);
+}
+
+.verificacion-container .btn-login {
+    width: 100%;
+    min-height: 53px;
+    border: none;
+    border-radius: 13px;
+    background: #ef3f7c;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(239, 63, 124, 0.2);
+    transition: background 0.3s;
+}
+
+.verificacion-container .btn-login:hover {
+    background: #d82b68;
+}
+
+.verificacion-container .registro {
+    margin-top: 23px;
+    color: #956d80;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.verificacion-container .registro a {
+    color: #e52e70;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.verificacion-container .registro a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+    .verificacion-container .login-logo {
+        width: 150px;
     }
 
-    /* ICONO */
-    .icono-verificacion {
-        width: 76px;
-        height: 76px;
-        margin: 0 auto 20px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #ffe0ec, #ffc0d7);
-        color: #e91e63;
-        font-size: 32px;
-        box-shadow: 0 8px 20px rgba(233, 30, 99, 0.12);
+    .verificacion-container h1 {
+        font-size: 24px;
     }
 
-    /* TÍTULO */
-    .titulo-verificacion {
-        font-size: 27px;
-        line-height: 1.25;
-        margin-bottom: 12px;
-        color: #d92f70;
+    .verificacion-container .subtitulo {
+        font-size: 13px;
     }
-
-    /* DESCRIPCIÓN */
-    .subtitulo-verificacion {
-        color: #8d6879;
-        font-size: 14px;
-        line-height: 1.7;
-        margin-bottom: 25px;
-    }
-
-    /* CAMPO */
-    .verificacion-container .form-group {
-        margin-bottom: 12px;
-    }
-
-    .verificacion-container .input-wrapper input {
-        padding-left: 45px;
-        padding-right: 12px;
-        text-align: center;
-        letter-spacing: 3px;
-        font-size: 15px;
-        font-weight: 500;
-    }
-
-    /* TIEMPO DE EXPIRACIÓN */
-    .texto-expiracion {
-        color: #98788a;
-        font-size: 12px;
-        margin: 12px 0 18px 0; /* Forzamos el margen izquierdo a 0 */
-        line-height: 1.5;
-        text-align: left;      /* Alinea el texto a la izquierda */
-        width: 100%;           /* Asegura que abarque el ancho del contenedor */
-    }
-
-    .texto-expiracion i {
-        margin-right: 5px;
-        color: #e91e63;
-    }
-
-    /* BOTÓN */
-    .verificacion-container .btn-login {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 9px;
-    }
-
-    /* ENLACE PARA CANCELAR */
-    .verificacion-container .registro {
-        line-height: 1.8;
-    }
-
-    .verificacion-container .registro a {
-        display: inline-block;
-        margin-left: 3px;
-    }
-
-    /* NOTA INFERIOR */
-    .nota-seguridad {
-        margin-top: 22px;
-        padding-top: 15px;
-        border-top: 1px solid #f4d2df;
-        color: #a18492;
-        font-size: 11px;
-        line-height: 1.6;
-    }
-
-    .nota-seguridad i {
-        color: #e91e63;
-        margin-right: 5px;
-    }
-
-    /* DISEÑO RESPONSIVE */
-    @media (max-width: 500px) {
-        .titulo-verificacion {
-            font-size: 24px;
-        }
-
-        .subtitulo-verificacion {
-            font-size: 13px;
-        }
-
-        .icono-verificacion {
-            width: 66px;
-            height: 66px;
-            font-size: 27px;
-        }
-
-        .verificacion-container .input-wrapper input {
-            font-size: 15px;
-            letter-spacing: 3px;
-        }
-    }
+}
 </style>
 
 {% endblock %}

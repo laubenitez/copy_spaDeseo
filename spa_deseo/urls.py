@@ -9,9 +9,11 @@ from rest_framework.authtoken.views import obtain_auth_token
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
+from django.conf.urls.i18n import set_language
 
 urlpatterns = [
     # Admin Django
+    path("i18n/setlang/", set_language, name="set_language"),
     path('admin/', admin.site.urls),
 
     # Autenticación API Token & DRF

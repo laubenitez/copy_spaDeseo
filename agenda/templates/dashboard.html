@@ -1,6 +1,10 @@
+
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ LANGUAGE_CODE }}">
+
 
 <head>
 
@@ -515,6 +519,7 @@
 
 
                 <div class="flex items-center gap-4 sm:gap-6">
+
 
 
                     <button id="theme-toggle"
@@ -1045,6 +1050,88 @@
 
 
 
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selector = document.getElementById("selector-idioma");
+
+        const traducciones = {
+            "Menú": "Menu",
+            "Agendar cita": "Book an appointment",
+            "Mis citas": "My appointments",
+            "Calendario": "Calendar",
+            "Manicuristas": "Nail technicians",
+            "Mis reseñas": "My reviews",
+            "Mis descuentos": "My discounts",
+            "Citas asignadas": "Assigned appointments",
+            "Clientes": "Clients",
+            "Mi portafolio": "My portfolio",
+            "Citas del Sistema": "System appointments",
+            "Servicios": "Services",
+            "Descuentos": "Discounts",
+            "Inventario": "Inventory",
+            "Contabilidad": "Accounting",
+            "Editar Perfil": "Edit profile",
+            "Buscar...": "Search...",
+            "Seleccionar idioma": "Select language",
+            "Notificaciones": "Notifications",
+            "Abrir notificaciones": "Open notifications",
+            "Estás al día": "You're all caught up",
+            "No tienes notificaciones": "You have no notifications",
+            "Aquí aparecerán las novedades de Spa Deseo.": "Spa Deseo updates will appear here.",
+            "Ajustes": "Settings",
+            "Soporte": "Support",
+            "Cerrar Sesión": "Log out",
+            "Español": "Spanish",
+            "Tienes": "You have",
+            "sin leer": "unread",
+            "Dashboard": "Dashboard"
+        };
+
+        function traducirPagina(idioma) {
+            document.documentElement.lang = idioma;
+
+            if (selector) {
+                selector.value = idioma;
+            }
+
+            document.querySelectorAll("body *").forEach(function (elemento) {
+                if (elemento.children.length === 0 && elemento.textContent.trim()) {
+                    const texto = elemento.textContent.trim();
+
+                    if (idioma === "en" && traducciones[texto]) {
+                        if (!elemento.dataset.textoOriginal) {
+                            elemento.dataset.textoOriginal = texto;
+                        }
+                        elemento.textContent = traducciones[texto];
+                    } else if (idioma === "es" && elemento.dataset.textoOriginal) {
+                        elemento.textContent = elemento.dataset.textoOriginal;
+                    }
+                }
+
+                if (elemento.placeholder) {
+                    if (idioma === "en" && elemento.placeholder === "Buscar...") {
+                        elemento.dataset.placeholderOriginal = elemento.placeholder;
+                        elemento.placeholder = "Search...";
+                    } else if (idioma === "es" && elemento.dataset.placeholderOriginal) {
+                        elemento.placeholder = elemento.dataset.placeholderOriginal;
+                    }
+                }
+            });
+        }
+
+        const idiomaGuardado = localStorage.getItem("spaDeseoIdioma") || "es";
+
+        traducirPagina(idiomaGuardado);
+
+        if (selector) {
+            selector.addEventListener("change", function () {
+                const idioma = this.value;
+                localStorage.setItem("spaDeseoIdioma", idioma);
+                traducirPagina(idioma);
+            });
+        }
+    });
     </script>
 
 
