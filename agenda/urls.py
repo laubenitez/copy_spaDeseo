@@ -9,7 +9,11 @@ from django.urls import reverse_lazy
 
 router = routers.DefaultRouter()
 
-router.register("clientes", views.ClientesViewSet)
+router.register(
+    "clientes",
+    views.ClientesViewSet,
+    basename="clientes"
+)
 router.register("manicuristas", views.ManicuristaViewSet)
 router.register("servicios", views.ServiciosViewSet)
 router.register("citas", views.CitasViewSet)
@@ -17,6 +21,7 @@ router.register("inventario", views.InventarioViewSet)
 router.register("pagos", views.PagosViewSet)
 router.register("recibos", views.ReciboViewSet)
 router.register("gastos", views.GastosViewSet)
+router.register(r'resenas', views.ResenaViewSet, basename='resenas')
 
 
 app_name = "agenda"
@@ -88,7 +93,8 @@ urlpatterns = [
     path("manicuristas/editar/<int:id>/", views.actualizar_manicurista, name="actualizar_manicurista"),
     path("manicuristas/eliminar/<int:id>/", views.eliminar_manicurista, name="eliminar_manicurista"),
     path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', views.cambiar_estado_cita_admin, name='cambiar_estado_admin'),
-    path('cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
+    path('administrador/cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
+
     path('ver_inventario/', views.ver_inventario, name="ver_inventario"),
     path('crear_inventario/', views.crear_inventario, name="crear_inventario"),
     path('actualizar_inventario/<int:id>/', views.actualizar_inventario, name="actualizar_inventario"),
@@ -106,7 +112,7 @@ urlpatterns = [
     path('eliminar_servicio/<int:id>/', views.eliminar_servicio, name="eliminar_servicio"),
     path('actualizar_servicio/<int:id>/', views.actualizar_servicio, name="actualizar_servicio"),
 
-    
+
     #Inventario
     path('ver_inventario/', views.ver_inventario, name="ver_inventario"),
     path('crear_inventario/', views.crear_inventario, name="crear_inventario"),
@@ -131,7 +137,7 @@ urlpatterns = [
     path("cambiar_contrasena/", views.cambiar_contrasena, name="cambiar_contrasena"),
 
 
-    
+
     # CRUD DE DESCUENTOS DEL ADMINISTRADOR
     path("administrador/descuentos/", views.ver_descuentos, name="ver_descuentos"),
     path("administrador/descuentos/crear/", views.crear_descuento, name="crear_descuento"),
@@ -171,6 +177,6 @@ urlpatterns = [
     name="cerrar_sesiones_dispositivos"
 ),
 
-    
+
 
 ]

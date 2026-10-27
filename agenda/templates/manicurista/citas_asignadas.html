@@ -4,6 +4,9 @@
 
 <!-- Encabezado -->
 <div class="mb-6">
+    <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
+        Gestión de citas
+    </p>
     <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
         Citas Asignadas
     </h1>
@@ -225,7 +228,7 @@
                 {% endif %}
 
                 <!-- Recordatorio: siempre al final de los botones -->
-                {% if cita.estado == 'programada' or cita.estado == 'en_proceso' %}
+                {% if cita.estado == 'programada' %}
 
                     {% if cita.recordatorios_whatsapp_activos %}
                     <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!"

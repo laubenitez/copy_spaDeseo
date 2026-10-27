@@ -189,14 +189,18 @@
 
             <!-- SECCIÓN 2: Botones de Acción -->
             <div class="flex flex-wrap items-center gap-2">
+
                 {% if cita.estado == 'programada' %}
 
                 <!-- En proceso -->
-                <form action="{% url 'agenda:cambiar_estado_admin' cita.id 'en_proceso' %}" method="POST" class="inline">
+                <form action="{% url 'agenda:cambiar_estado_admin' cita.id 'en_proceso' %}"
+                    method="POST" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition shadow-xs">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 transition shadow-xs">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         En proceso
                     </button>
@@ -204,26 +208,28 @@
 
                 <!-- Cancelar -->
                 <button type="button"
-                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-xs js-open-modal cursor-pointer"
+                        class="js-open-modal inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition shadow-xs"
                         data-url="{% url 'agenda:cambiar_estado_admin' cita.id 'cancelada' %}">
+
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 6l12 12M18 6L6 18" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                            d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a2 2 0 01-2 2H9a2 2 0 01-2-2V7m3 4v6m4-6v6" />
                     </svg>
                     Cancelar
                 </button>
 
-                <!-- WhatsApp: respetar la preferencia del cliente -->
+                <!-- Recordatorio: solo para citas programadas -->
                 {% if cita.recordatorios_whatsapp_activos %}
                 <a href="https://wa.me/57{{ cita.cliente.telefono }}?text=*¡Hola%20{{ cita.cliente.nombre }}!*%0A%0ATe%20escribimos%20de%20SPA%20DESEO%20para%20recordarte%20los%20detalles%20de%20tu%20cita:%0A%0A*Servicio:*%20{{ cita.servicios.nombre }}%0A*Fecha:*%20{{ cita.fecha }}%0A*Hora:*%20{{ cita.hora }}%0A*Total:*%20${{ cita.total }}%0A%0A¡Te%20esperamos!"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition shadow-xs">
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition shadow-xs">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                     Recordatorio
                 </a>
                 {% else %}
                 <span title="El cliente desactivó los recordatorios por WhatsApp."
-                      class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-xs font-semibold cursor-not-allowed">
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-sm font-semibold cursor-not-allowed">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                     Recordatorios desactivados
                 </span>
@@ -231,19 +237,25 @@
 
                 {% elif cita.estado == 'en_proceso' %}
 
-                <!-- Completar -->
-                <form action="{% url 'agenda:cambiar_estado_admin' cita.id 'completada' %}" method="POST" class="inline">
+                <!-- Marcar completada -->
+                <form action="{% url 'agenda:cambiar_estado_admin' cita.id 'completada' %}"
+                    method="POST" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition shadow-xs">
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-pink-500 text-white hover:bg-pink-600 transition shadow-xs">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                         Marcar completada
                     </button>
                 </form>
 
                 {% endif %}
+
             </div>
+
+
 
             {% endif %}
 

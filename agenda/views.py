@@ -30,11 +30,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
-from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
 from django.utils.dateparse import parse_date
-from django.db import transaction
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.core.mail import send_mail
 from PIL import Image, UnidentifiedImageError
@@ -47,7 +46,7 @@ from .models import (
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
     CitasSerializer, InventarioSerializer, MovimientoInventarioSerializer, PagosSerializer,
-    ReciboSerializer, GastosSerializer
+    ReciboSerializer, GastosSerializer, ResenaSerializer,
 )
 from .notificaciones_utils import (
     notificar_cita_agendada,
@@ -56,7 +55,7 @@ from .notificaciones_utils import (
     notificar_resena_pendiente,
     crear_recibo_y_notificar,
 )
-from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador
+from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador, PuedeGestionarSuPerfilCliente
 from .utils import validar_password, requiere_rol
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -89,12 +88,35 @@ class LogoutView(APIView):
 
 # Vistas para las APIs
 class ClientesViewSet(viewsets.ModelViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, TieneRolDB]
+    authentication_classes = [
+        SessionAuthentication,
+        TokenAuthentication,
+    ]
 
+    permission_classes = [
+        IsAuthenticated,
+        PuedeGestionarSuPerfilCliente,
+    ]
 
-    queryset = Clientes.objects.all()
     serializer_class = ClientesSerializer
+
+    # Limitar las operaciones disponibles desde esta API.
+    # No permitir crear ni eliminar clientes desde este endpoint.
+    http_method_names = [
+        'get',
+        'put',
+        'patch',
+        'head',
+        'options',
+    ]
+
+    def get_queryset(self):
+        # Cada usuario autenticado solo puede consultar
+        # el perfil de cliente asociado a su propia cuenta.
+        return Clientes.objects.filter(
+            user=self.request.user
+        )
+
 
 
 class ManicuristaViewSet(viewsets.ModelViewSet):
@@ -107,6 +129,11 @@ class ManicuristaViewSet(viewsets.ModelViewSet):
 
 
 class ServiciosViewSet(viewsets.ModelViewSet):
+    authentication_classes = [
+        SessionAuthentication,
+        TokenAuthentication,
+    ]
+
     queryset = Servicios.objects.all()
     serializer_class = ServiciosSerializer
 
@@ -187,17 +214,77 @@ class ServiciosViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+
 class CitasViewSet(viewsets.ModelViewSet):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated, TieneRolDB]
     queryset = Citas.objects.all()
     serializer_class = CitasSerializer
+
+    authentication_classes = [
+        SessionAuthentication,
+        TokenAuthentication,
+    ]
+
+    permission_classes = [
+        IsAuthenticated,
+        TieneRolDB,
+    ]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'create']:
+            permissions = [IsAuthenticated]
+        else:
+            permissions = [
+                IsAuthenticated,
+                TieneRolDB,
+            ]
+
+        return [permission() for permission in permissions]
+
+    def perform_create(self, serializer):
+        try:
+            # Buscar el cliente vinculado a la sesión actual.
+            cliente = Clientes.objects.filter(
+                user=self.request.user
+            ).first()
+
+            if cliente is None:
+                raise ValidationError({
+                    "detail": (
+                        "No existe un perfil de cliente asociado "
+                        "a tu usuario. Inicia sesión con la cuenta "
+                        "correcta o verifica tu perfil."
+                    )
+                })
+
+            # Asignar el cliente automáticamente.
+            with transaction.atomic():
+                serializer.save(cliente=cliente)
+
+        except IntegrityError as exc:
+            raise ValidationError({
+                "detail": (
+                    "No se pudo completar la reserva. "
+                    "Verifica que el horario esté disponible "
+                    "y que los datos de la cita sean correctos."
+                )
+            }) from exc
 
     @extend_schema(
         summary="Lista de todas las citas"
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Citas.objects.filter(
+            cliente__user=self.request.user
+        ).select_related(
+            'cliente',
+            'manicurista',
+            'servicios',
+        )
+
+
 
 class InventarioViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
@@ -254,7 +341,46 @@ class GastosViewSet(viewsets.ModelViewSet):
 
 
 
+class ResenaViewSet(viewsets.ModelViewSet):
+    serializer_class = ResenaSerializer
 
+    authentication_classes = [
+        SessionAuthentication,
+        TokenAuthentication,
+    ]
+
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'head', 'options']
+
+    def get_queryset(self):
+        return Resena.objects.filter(
+            cita__cliente__user=self.request.user
+        ).select_related(
+            'cita',
+            'cita__cliente',
+            'cita__servicios',
+        ).order_by('-fecha_creacion')
+
+    def perform_create(self, serializer):
+        cita = serializer.validated_data['cita']
+
+        # Verificar que la cita pertenezca a la clienta autenticada.
+        if cita.cliente.user_id != self.request.user.id:
+            raise ValidationError({
+                'cita': 'No puedes reseñar una cita de otra clienta.'
+            })
+
+        # Evitar reseñar citas que todavía no se han completado.
+        if cita.estado != 'completada':
+            raise ValidationError({
+                'cita': 'Solo puedes reseñar citas completadas.'
+            })
+
+        serializer.save()
+
+    @extend_schema(summary='Lista de mis reseñas')
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 @login_required(login_url="agenda:login")
 def ajustes(request):
@@ -4179,7 +4305,7 @@ def registrar_movimiento(request):
 
     # --- SI LA PETICIÓN ES GET: MOSTRAR EL FORMULARIO ---
     productos = Inventario.objects.all().order_by('nombre')
-    
+
     # Ajusta la ruta exacta según cómo tengas estructurada la carpeta dentro de templates:
     # Ejemplo A: Si está directamente en 'templates/inventario/registrar_movimiento.html'
     return render(request, 'inventario/registrar_movimientos.html', {
