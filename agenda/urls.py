@@ -8,7 +8,11 @@ from django.urls import reverse_lazy
 
 router = routers.DefaultRouter()
 
-router.register("clientes", views.ClientesViewSet)
+router.register(
+    "clientes",
+    views.ClientesViewSet,
+    basename="clientes"
+)
 router.register("manicuristas", views.ManicuristaViewSet)
 router.register("servicios", views.ServiciosViewSet)
 router.register("citas", views.CitasViewSet)
@@ -16,6 +20,7 @@ router.register("inventario", views.InventarioViewSet)
 router.register("pagos", views.PagosViewSet)
 router.register("recibos", views.ReciboViewSet)
 router.register("gastos", views.GastosViewSet)
+router.register(r'resenas', views.ResenaViewSet, basename='resenas')
 
 
 app_name = "agenda"
@@ -105,7 +110,7 @@ urlpatterns = [
     path('eliminar_servicio/<int:id>/', views.eliminar_servicio, name="eliminar_servicio"),
     path('actualizar_servicio/<int:id>/', views.actualizar_servicio, name="actualizar_servicio"),
 
-    
+
     #Inventario
     path('ver_inventario/', views.ver_inventario, name="ver_inventario"),
     path('crear_inventario/', views.crear_inventario, name="crear_inventario"),
@@ -130,7 +135,7 @@ urlpatterns = [
     path("cambiar_contrasena/", views.cambiar_contrasena, name="cambiar_contrasena"),
 
 
-    
+
     # CRUD DE DESCUENTOS DEL ADMINISTRADOR
     path("administrador/descuentos/", views.ver_descuentos, name="ver_descuentos"),
     path("administrador/descuentos/crear/", views.crear_descuento, name="crear_descuento"),
@@ -170,6 +175,6 @@ urlpatterns = [
     name="cerrar_sesiones_dispositivos"
 ),
 
-    
+
 
 ]
