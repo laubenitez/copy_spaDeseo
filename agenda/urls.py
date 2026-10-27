@@ -92,7 +92,8 @@ urlpatterns = [
     path("manicuristas/editar/<int:id>/", views.actualizar_manicurista, name="actualizar_manicurista"),
     path("manicuristas/eliminar/<int:id>/", views.eliminar_manicurista, name="eliminar_manicurista"),
     path('cita/estado/<int:cita_id>/<str:nuevo_estado>/', views.cambiar_estado_cita_admin, name='cambiar_estado_admin'),
-    path('cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
+    path('administrador/cita/pago/<int:cita_id>/', views.registrar_pago_admin, name='registrar_pago_admin'),
+
     path('ver_inventario/', views.ver_inventario, name="ver_inventario"),
     path('crear_inventario/', views.crear_inventario, name="crear_inventario"),
     path('actualizar_inventario/<int:id>/', views.actualizar_inventario, name="actualizar_inventario"),

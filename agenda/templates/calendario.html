@@ -1507,7 +1507,15 @@
 
     <div>
         <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
-            Calendario de Spa Deseo
+            {% if request.user.perfil.rol.nombre == "ADMINISTRADOR" %}
+                Calendario de Spa Deseo
+            {% elif request.user.perfil.rol.nombre == "MANICURISTA" %}
+                Mi agenda de citas
+            {% elif request.user.perfil.rol.nombre == "CLIENTE" %}
+                Mis momentos de belleza
+            {% else %}
+                Calendario de citas
+            {% endif %}
         </p>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             Agenda de Citas
