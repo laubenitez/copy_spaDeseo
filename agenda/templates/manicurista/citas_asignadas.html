@@ -67,13 +67,40 @@
                 <div class="flex items-start gap-3">
                     <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center text-pink-600 dark:text-pink-400">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M8 7V3m8 4V3m-9 4h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>
+
                     <div>
-                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Fecha y Hora</p>
+                        <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+                            Fecha y Hora
+                        </p>
+
                         <p class="mt-0.5 text-sm font-semibold text-gray-800 dark:text-white">
-                            {{ cita.fecha }} <span class="text-gray-400 font-normal">|</span> {{ cita.hora }}
+
+                            {% if preferencias_accesibilidad and preferencias_accesibilidad.formato_fecha == "MDY" %}
+
+                                {{ cita.fecha|date:"m/d/Y" }}
+
+                            {% else %}
+
+                                {{ cita.fecha|date:"d/m/Y" }}
+
+                            {% endif %}
+
+                            <span class="text-gray-400 font-normal">|</span>
+
+                            {% if preferencias_accesibilidad and preferencias_accesibilidad.formato_hora == "24" %}
+
+                                {{ cita.hora|time:"H:i" }}
+
+                            {% else %}
+
+                                {{ cita.hora|time:"g:i A" }}
+
+                            {% endif %}
+
                         </p>
                     </div>
                 </div>

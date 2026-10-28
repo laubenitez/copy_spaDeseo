@@ -299,9 +299,21 @@
                     <span class="self-start sm:self-center text-xs font-medium text-gray-500 dark:text-gray-400">
 
                         {% if ultimo_acceso %}
-                            {{ ultimo_acceso|date:"d/m/Y" }} · {{ ultimo_acceso|date:"h:i A" }}
+                            {% if preferencias.formato_fecha == "MDY" %}
+                                {{ ultimo_acceso|date:"m/d/Y" }}
+                            {% else %}
+                                {{ ultimo_acceso|date:"d/m/Y" }}
+                            {% endif %}
+
+                            ·
+
+                            {% if preferencias.formato_hora == "24" %}
+                                {{ ultimo_acceso|date:"H:i" }}
+                            {% else %}
+                                {{ ultimo_acceso|date:"g:i A" }}
+                            {% endif %}
                         {% else %}
-                            No hay un acceso anterior registrado.
+                            No disponible todavía
                         {% endif %}
 
                     </span>
@@ -452,19 +464,6 @@
                     </select>
                 </div>
 
-                <!-- Idioma: debajo, con el mismo ancho de una columna -->
-                <div>
-                    <label for="idioma"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Idioma
-                    </label>
-                    <select id="idioma" name="idioma"
-                            class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white text-sm p-3">
-                        <option value="es" {% if preferencias.idioma == "es" %}selected{% endif %}>Español</option>
-                        <option value="en" {% if preferencias.idioma == "en" %}selected{% endif %}>English</option>
-                    </select>
-                </div>
-
             </div>
         </section>
 
@@ -488,46 +487,6 @@
             <div class="space-y-4">
 
 
-                <!-- Permitir comunicaciones -->
-                <div class="flex items-center justify-between gap-4 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-
-                    <div class="flex items-start gap-3">
-
-                        <div class="w-9 h-9 shrink-0 flex items-center justify-center rounded-lg bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
-                            <i class="fa-solid fa-envelope"></i>
-                        </div>
-
-                        <div>
-                            <p class="text-sm font-medium text-gray-800 dark:text-white">
-                                Permitir comunicaciones
-                            </p>
-
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Administra las comunicaciones que recibes de SpaDeseo.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
-
-                        <input
-                            type="checkbox"
-                            name="permitir_comunicaciones"
-                            value="on"
-                            {% if preferencias.permitir_comunicaciones %}checked{% endif %}
-                            class="sr-only peer"
-                        >
-
-                        <span class="relative w-11 h-6 rounded-full bg-gray-300 dark:bg-gray-700 peer-checked:bg-pink-600 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5">
-                        </span>
-
-                    </label>
-
-                </div>
-
-
                 <!-- Control de datos personales -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3">
 
@@ -546,9 +505,14 @@
                                 Consulta cómo se administra la información de tu cuenta.
                             </p>
 
-                            <span class="inline-block mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                La política de privacidad estará disponible aquí.
-                            </span>
+                            <a
+                                href="{% url 'agenda:politica_privacidad' %}"
+                                class="inline-flex items-center justify-center gap-2 mt-3 px-4 py-2 text-xs font-semibold rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100 dark:bg-pink-900/30 dark:text-pink-400 dark:hover:bg-pink-900/50 transition"
+                            >
+                                <i class="fa-solid fa-shield-halved"></i>
+                                Consultar política de privacidad
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
                         </div>
 
                     </div>
@@ -556,27 +520,31 @@
                 </div>
 
 
-                <!-- Eliminar cuenta -->
+
+                <!-- Eliminar o desactivar cuenta -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-red-100 dark:border-red-900/40">
 
                     <div>
                         <p class="text-sm font-semibold text-red-600 dark:text-red-400">
-                            Eliminar cuenta
+                            Desactivar cuenta
                         </p>
 
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Esta solicitud debe contar con confirmación y revisión antes de eliminar datos.
+                            Tu cuenta dejará de estar disponible para iniciar sesión.
+                            Tus registros se conservarán en la base de datos.
                         </p>
                     </div>
 
                     <button
                         type="button"
+                        id="btnAbrirDesactivacion"
                         class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 transition shrink-0"
                     >
-                        Solicitar eliminación
+                        Solicitar desactivación
                     </button>
 
                 </div>
+
 
             </div>
 
@@ -741,6 +709,470 @@
     </div>
 
 </form>
+
+<!-- MODAL: CONFIRMAR DESACTIVACIÓN DE CUENTA -->
+<div
+    id="modalDesactivarCuenta"
+    class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloDesactivarCuenta"
+>
+    <div class="w-full max-w-md bg-white dark:bg-darkCard rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+        <div class="flex justify-center pt-7 pb-3">
+            <div class="w-16 h-16 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <i class="fa-solid fa-user-slash text-2xl"></i>
+            </div>
+        </div>
+
+        <div class="px-6 pb-6 text-center">
+
+            <h2
+                id="tituloDesactivarCuenta"
+                class="text-xl font-bold text-gray-900 dark:text-white"
+            >
+                ¿Deseas desactivar tu cuenta?
+            </h2>
+
+            <p class="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Ya no podrás iniciar sesión mientras la cuenta esté desactivada.
+                Tus citas, pagos y demás registros relacionados no se borrarán
+                automáticamente.
+            </p>
+
+            <p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
+                Esta acción cerrará tu sesión actual.
+            </p>
+            <!-- Canal de atención para reactivar la cuenta -->
+            <p class="mt-3 text-sm text-gray-600">
+                Si deseas volver a activar tu cuenta, comunícate con nosotros al correo:
+                <a
+                    href="mailto:spadeso.oficial@gmail.com"
+                    class="font-semibold text-pink-600 hover:text-pink-800 underline"
+                >
+                    spadeso.oficial@gmail.com
+                </a>
+            </p>
+
+            <div class="mt-6 flex flex-col-reverse sm:flex-row justify-center gap-3">
+
+                <button
+                    type="button"
+                    id="btnCancelarDesactivacion"
+                    class="px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    id="btnConfirmarDesactivacion"
+                    class="px-5 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold shadow-sm transition"
+                >
+                    Sí, desactivar cuenta
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- FORMULARIO INDEPENDIENTE PARA DESACTIVAR LA CUENTA -->
+<form
+    id="formDesactivarCuenta"
+    method="POST"
+    action="{% url 'agenda:solicitar_desactivacion_cuenta' %}"
+    class="hidden"
+>
+    {% csrf_token %}
+    <input
+        type="hidden"
+        name="confirmar_desactivacion"
+        value="si"
+    >
+</form>
+
+
+<!-- MODAL: CONFIRMAR DESACTIVACIÓN DE CUENTA -->
+<div
+    id="modalDesactivarCuenta"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalDesactivar"
+>
+    <div
+        class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+    >
+        <!-- Encabezado -->
+        <div class="flex items-center gap-3 border-b border-pink-100 px-6 py-5">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-100">
+                <i class="fas fa-user-slash text-xl text-pink-600"></i>
+            </div>
+
+            <div class="flex-1">
+                <h3
+                    id="tituloModalDesactivar"
+                    class="text-lg font-bold text-gray-800"
+                >
+                    ¿Deseas desactivar tu cuenta?
+                </h3>
+
+                <p class="text-sm text-gray-500">
+                    Spa Deseo · Configuración de cuenta
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="btnCerrarModalDesactivacion"
+                class="rounded-lg p-2 text-gray-400 transition hover:bg-pink-50 hover:text-pink-600"
+                aria-label="Cerrar ventana"
+            >
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Contenido -->
+        <div class="space-y-4 px-6 py-5">
+
+            <!-- Advertencia -->
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle mt-1 text-lg text-amber-600"></i>
+
+                    <div>
+                        <h4 class="font-semibold text-amber-800">
+                            Antes de continuar
+                        </h4>
+
+                        <p class="mt-1 text-sm leading-relaxed text-amber-900">
+                            Al desactivar tu cuenta, se cerrará tu sesión y
+                            no podrás iniciar sesión mientras permanezca
+                            desactivada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conservación de datos -->
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-database mt-1 text-lg text-gray-500"></i>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-800">
+                            ¿Qué pasará con tus datos?
+                        </h4>
+
+                        <p class="mt-1 text-sm leading-relaxed text-gray-600">
+                            Tu cuenta quedará desactivada, pero el registro
+                            y los datos relacionados se conservarán en el
+                            sistema. Esta acción no elimina físicamente
+                            tu información.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información para recuperar la cuenta -->
+            <div class="rounded-xl border border-pink-200 bg-pink-50 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-envelope mt-1 text-xl text-pink-500"></i>
+
+                    <div class="min-w-0">
+                        <h4 class="font-semibold text-pink-800">
+                            ¿Deseas restablecer tu cuenta?
+                        </h4>
+
+                        <p class="mt-1 text-sm leading-relaxed text-gray-700">
+                            Si más adelante deseas recuperar el acceso,
+                            comunícate con el equipo de Spa Deseo mediante
+                            el siguiente correo electrónico:
+                        </p>
+
+                        <a
+                            href="mailto:spadeso.oficial@gmail.com"
+                            class="mt-3 inline-flex items-center gap-2 break-all font-semibold text-pink-600 underline hover:text-pink-800"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                            spadeso.oficial@gmail.com
+                        </a>
+
+                        <p class="mt-2 text-xs text-gray-500">
+                            El restablecimiento deberá ser gestionado por
+                            el equipo de soporte.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmación -->
+            <p class="text-sm text-gray-600">
+                Si estás segura de continuar, selecciona
+                <strong>“Sí, desactivar mi cuenta”</strong>.
+            </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex flex-col-reverse gap-3 border-t border-gray-100 px-6 py-5 sm:flex-row sm:justify-end">
+            <button
+                type="button"
+                id="btnCancelarDesactivacion"
+                class="rounded-xl border border-gray-300 px-5 py-3 font-medium text-gray-700 transition hover:bg-gray-100"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                id="btnConfirmarDesactivacion"
+                class="rounded-xl bg-pink-600 px-5 py-3 font-semibold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <i class="fas fa-user-slash mr-2"></i>
+                Sí, desactivar mi cuenta
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FORMULARIO INDEPENDIENTE PARA DESACTIVAR LA CUENTA -->
+<form
+    id="formDesactivarCuenta"
+    method="POST"
+    action="{% url 'agenda:solicitar_desactivacion_cuenta' %}"
+    class="hidden"
+>
+    {% csrf_token %}
+    <input
+        type="hidden"
+        name="confirmar_desactivacion"
+        value="si"
+    >
+</form>
+
+
+<!-- MODAL: CONFIRMAR DESACTIVACIÓN DE CUENTA -->
+<div
+    id="modalDesactivarCuenta"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="tituloModalDesactivar"
+>
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl">
+
+        <!-- Encabezado -->
+        <div class="flex items-center gap-3 border-b border-pink-100 px-6 py-5">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-pink-100">
+                <i class="fas fa-user-slash text-xl text-pink-600"></i>
+            </div>
+
+            <div class="flex-1">
+                <h3 id="tituloModalDesactivar" class="text-lg font-bold text-gray-800">
+                    ¿Deseas desactivar tu cuenta?
+                </h3>
+                <p class="text-sm text-gray-500">
+                    Spa Deseo · Configuración de cuenta
+                </p>
+            </div>
+
+            <button
+                type="button"
+                id="btnCerrarModalDesactivacion"
+                class="rounded-lg p-2 text-gray-400 transition hover:bg-pink-50 hover:text-pink-600"
+                aria-label="Cerrar ventana"
+            >
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Contenido -->
+        <div class="space-y-4 px-6 py-5">
+
+            <!-- Advertencia -->
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle mt-1 text-lg text-amber-600"></i>
+
+                    <div>
+                        <h4 class="font-semibold text-amber-800">
+                            Antes de continuar
+                        </h4>
+                        <p class="mt-1 text-sm leading-relaxed text-amber-900">
+                            Al desactivar tu cuenta, se cerrará tu sesión
+                            y no podrás volver a iniciar sesión mientras
+                            permanezca desactivada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información sobre los datos -->
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-database mt-1 text-lg text-gray-500"></i>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-800">
+                            ¿Qué pasará con tus datos?
+                        </h4>
+                        <p class="mt-1 text-sm leading-relaxed text-gray-600">
+                            Tu cuenta quedará desactivada, pero su registro
+                            y los datos relacionados se conservarán en el
+                            sistema. Esta acción no elimina físicamente
+                            tu información.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTRUCCIONES PARA REACTIVAR LA CUENTA -->
+            <div class="rounded-xl border-2 border-pink-200 bg-pink-50 p-4">
+                <div class="flex items-start gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-100">
+                        <i class="fas fa-envelope-open-text text-lg text-pink-600"></i>
+                    </div>
+
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-pink-800">
+                            ¿Cómo puedes volver a activar tu cuenta?
+                        </h4>
+
+                        <p class="mt-2 text-sm leading-relaxed text-gray-700">
+                            Si después de desactivar tu cuenta deseas volver
+                            a utilizar Spa Deseo, debes comunicarte con
+                            nuestro equipo de soporte y solicitar la
+                            <strong>reactivación de tu cuenta</strong>.
+                        </p>
+
+                        <p class="mt-3 text-sm font-semibold text-gray-800">
+                            Debes escribir al siguiente correo electrónico:
+                        </p>
+
+                        <a
+                            href="mailto:spadeso.oficial@gmail.com?subject=Solicitud%20de%20reactivaci%C3%B3n%20de%20cuenta%20-%20Spa%20Deseo"
+                            class="mt-2 flex items-center gap-2 break-all rounded-lg border border-pink-200 bg-white p-3 font-semibold text-pink-600 underline transition hover:bg-pink-100 hover:text-pink-800"
+                        >
+                            <i class="fas fa-paper-plane shrink-0"></i>
+                            spadeso.oficial@gmail.com
+                        </a>
+
+                        <p class="mt-3 text-xs leading-relaxed text-gray-600">
+                            El equipo de Spa Deseo deberá gestionar tu
+                            solicitud para que puedas recuperar el acceso.
+                            La cuenta no se reactiva automáticamente al
+                            enviar el correo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmación final -->
+            <p class="text-sm leading-relaxed text-gray-600">
+                Si estás de acuerdo con estas condiciones, puedes continuar
+                con la desactivación de tu cuenta.
+            </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex flex-col-reverse gap-3 border-t border-gray-100 px-6 py-5 sm:flex-row sm:justify-end">
+            <button
+                type="button"
+                id="btnCancelarDesactivacion"
+                class="rounded-xl border border-gray-300 px-5 py-3 font-medium text-gray-700 transition hover:bg-gray-100"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="button"
+                id="btnConfirmarDesactivacion"
+                class="rounded-xl bg-pink-600 px-5 py-3 font-semibold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <i class="fas fa-user-slash mr-2"></i>
+                Sí, desactivar mi cuenta
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FORMULARIO INDEPENDIENTE -->
+<form
+    id="formDesactivarCuenta"
+    method="POST"
+    action="{% url 'agenda:solicitar_desactivacion_cuenta' %}"
+    class="hidden"
+>
+    {% csrf_token %}
+    <input
+        type="hidden"
+        name="confirmar_desactivacion"
+        value="si"
+    >
+</form>
+
+<!-- JAVASCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modalDesactivarCuenta");
+    const btnAbrir = document.getElementById("btnAbrirDesactivacion");
+    const btnCancelar = document.getElementById("btnCancelarDesactivacion");
+    const btnCerrar = document.getElementById("btnCerrarModalDesactivacion");
+    const btnConfirmar = document.getElementById("btnConfirmarDesactivacion");
+    const formulario = document.getElementById("formDesactivarCuenta");
+
+    if (!modal || !btnAbrir || !btnCancelar || !btnCerrar ||
+        !btnConfirmar || !formulario) {
+        console.error(
+            "Spa Deseo: no se encontraron todos los elementos de desactivación."
+        );
+        return;
+    }
+
+    function abrirModal() {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.classList.add("overflow-hidden");
+        btnCancelar.focus();
+    }
+
+    function cerrarModal() {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        document.body.classList.remove("overflow-hidden");
+        btnAbrir.focus();
+    }
+
+    btnAbrir.addEventListener("click", abrirModal);
+    btnCancelar.addEventListener("click", cerrarModal);
+    btnCerrar.addEventListener("click", cerrarModal);
+
+    btnConfirmar.addEventListener("click", function () {
+        btnConfirmar.disabled = true;
+        btnConfirmar.innerHTML =
+            '<i class="fas fa-spinner fa-spin mr-2"></i>Desactivando...';
+
+        formulario.requestSubmit();
+    });
+
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            cerrarModal();
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+            cerrarModal();
+        }
+    });
+});
+</script>
+
+
 
 
 

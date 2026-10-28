@@ -1,6 +1,7 @@
 import os
 import re
 import json
+from django.contrib.auth import logout as auth_logout
 import logging
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from datetime import datetime, date, time, timedelta
@@ -382,6 +383,47 @@ class ResenaViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+
+@login_required(login_url="agenda:login")
+@require_POST
+def solicitar_desactivacion_cuenta(request):
+    """
+    Desactiva la cuenta del usuario sin eliminar su registro
+    ni borrar físicamente sus datos relacionados.
+    """
+
+    usuario = request.user
+
+    # Solo se permite realizar la operación mediante POST.
+    # El usuario debe confirmar la solicitud en el modal.
+
+    if request.POST.get("confirmar_desactivacion") != "si":
+        messages.error(
+            request,
+            "Debes confirmar la solicitud para desactivar tu cuenta."
+        )
+        return redirect("agenda:ajustes")
+
+    # Desactivar la cuenta sin eliminar el registro de la base de datos.
+    usuario.is_active = False
+    usuario.save(update_fields=["is_active"])
+
+    # Cerrar la sesión actual.
+    auth_logout(request)
+
+    # Eliminar los datos auxiliares de sesión utilizados por Spa Deseo.
+    request.session.pop("logueado", None)
+    request.session.flush()
+
+    messages.success(
+        request,
+        "Tu cuenta ha sido desactivada. "
+        "No podrás iniciar sesión mientras permanezca desactivada. "
+        "Los registros relacionados no se han eliminado automáticamente."
+    )
+
+    return redirect("agenda:login")
+
 @login_required(login_url="agenda:login")
 def ajustes(request):
     preferencias, creada = PreferenciasUsuario.objects.get_or_create(
@@ -391,28 +433,21 @@ def ajustes(request):
     es_cliente = hasattr(request.user, "cliente")
 
     if request.method == "POST":
-        # Seguridad
         preferencias.verificacion_adicional = (
             request.POST.get("verificacion_adicional") == "on"
         )
 
-        # Notificaciones: solo clientes pueden cambiar WhatsApp
         if es_cliente:
             preferencias.recordatorios_whatsapp = (
-                "recordatorios_whatsapp" in request.POST
+                request.POST.get("recordatorios_whatsapp") == "on"
             )
 
-        # Privacidad
         preferencias.permitir_comunicaciones = (
-            "permitir_comunicaciones" in request.POST
+            request.POST.get("permitir_comunicaciones") == "on"
         )
 
-        # Preferencias generales
         formato_fecha = request.POST.get("formato_fecha", "DMY")
         formato_hora = request.POST.get("formato_hora", "12")
-        idioma = request.POST.get("idioma", "es")
-
-        # Accesibilidad
         tamano_texto = request.POST.get("tamano_texto", "normal")
         contraste = request.POST.get("contraste", "estandar")
         animaciones = request.POST.get("animaciones", "activadas")
@@ -421,7 +456,6 @@ def ajustes(request):
         opciones_validas = {
             "formato_fecha": {"DMY", "MDY"},
             "formato_hora": {"12", "24"},
-            "idioma": {"es", "en"},
             "tamano_texto": {"normal", "grande", "pequeno"},
             "contraste": {"estandar", "alto"},
             "animaciones": {"activadas", "reducidas"},
@@ -431,7 +465,6 @@ def ajustes(request):
         valores_recibidos = {
             "formato_fecha": formato_fecha,
             "formato_hora": formato_hora,
-            "idioma": idioma,
             "tamano_texto": tamano_texto,
             "contraste": contraste,
             "animaciones": animaciones,
@@ -452,28 +485,13 @@ def ajustes(request):
 
             preferencias.save()
 
-            # Activar el idioma elegido en Django.
-            translation.activate(idioma)
-
-            # Guardar la selección en la sesión de Django.
-            request.session["django_language"] = idioma
-
             messages.success(
                 request,
                 "Tus ajustes se guardaron correctamente."
             )
 
-            # Redirigir conservando el idioma seleccionado.
-            respuesta = redirect("agenda:ajustes")
-            respuesta.set_cookie(
-                key="django_language",
-                value=idioma,
-                max_age=365 * 24 * 60 * 60,
-                samesite="Lax",
-            )
-            return respuesta
+            return redirect("agenda:ajustes")
 
-    # Seguridad
     tiene_contrasena = request.user.has_usable_password()
     cuenta_activa = request.user.is_active
 
@@ -498,6 +516,7 @@ def ajustes(request):
     }
 
     return render(request, "ajustes.html", contexto)
+
 
 
 
@@ -1014,7 +1033,9 @@ def editar_perfil(request):
 
 
 
-
+@login_required(login_url="agenda:login")
+def politica_privacidad(request):
+    return render(request, "politica_privacidad.html")
 
 
 def login(request):

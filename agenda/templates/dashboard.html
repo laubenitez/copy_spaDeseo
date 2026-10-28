@@ -44,6 +44,242 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon-16x16.png' %}">
     <link rel="manifest" href="{% static 'img/site.webmanifest' %}">
+    <style>
+        /* Tamaño del texto */
+        body.accesibilidad-texto-pequeno {
+            font-size: 14px;
+        }
+
+        body.accesibilidad-texto-normal {
+            font-size: 16px;
+        }
+
+        body.accesibilidad-texto-grande {
+            font-size: 19px;
+        }
+
+        
+        /* ==========================================
+        CORRECCIONES DE ALTO CONTRASTE
+        SPA DESEO
+        ========================================== */
+
+        /* Menú del perfil y menú de notificaciones */
+        body.accesibilidad-contraste-alto #profile-dropdown,
+        body.accesibilidad-contraste-alto #notifications-dropdown {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border: 2px solid #ffff00 !important;
+        }
+
+        /* Todos los textos dentro de ambos menús */
+        body.accesibilidad-contraste-alto #profile-dropdown *,
+        body.accesibilidad-contraste-alto #notifications-dropdown * {
+            color: #ffffff !important;
+        }
+
+        /* Enlaces de los menús */
+        body.accesibilidad-contraste-alto #profile-dropdown a,
+        body.accesibilidad-contraste-alto #notifications-dropdown a {
+            color: #ffff00 !important;
+            background-color: #000000 !important;
+            text-decoration: underline !important;
+        }
+
+        /* Iconos de los enlaces */
+        body.accesibilidad-contraste-alto #profile-dropdown a i,
+        body.accesibilidad-contraste-alto #notifications-dropdown a i {
+            color: #ffff00 !important;
+        }
+
+        /* Separadores de los menús */
+        body.accesibilidad-contraste-alto #profile-dropdown hr {
+            border-color: #ffff00 !important;
+        }
+
+        /* Botones amarillos: texto negro */
+        body.accesibilidad-contraste-alto main button,
+        body.accesibilidad-contraste-alto main input[type="submit"],
+        body.accesibilidad-contraste-alto main input[type="button"],
+        body.accesibilidad-contraste-alto main a[class*="bg-pink"] {
+            background-color: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #ffffff !important;
+        }
+
+        /* Evitar que los elementos internos de esos botones
+        recuperen el texto blanco */
+        body.accesibilidad-contraste-alto main button *,
+        body.accesibilidad-contraste-alto main input[type="submit"] *,
+        body.accesibilidad-contraste-alto main input[type="button"] *,
+        body.accesibilidad-contraste-alto main a[class*="bg-pink"] * {
+            color: #000000 !important;
+        }
+
+        /* Botones de cabecera: conservar el fondo negro */
+        body.accesibilidad-contraste-alto header button {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
+            border: 2px solid #ffff00 !important;
+        }
+
+        /* Texto de la cabecera */
+        body.accesibilidad-contraste-alto header p,
+        body.accesibilidad-contraste-alto header h1,
+        body.accesibilidad-contraste-alto header h2,
+        body.accesibilidad-contraste-alto header h3,
+        body.accesibilidad-contraste-alto header span {
+            color: #ffffff !important;
+        }
+
+        /* Campos de formulario */
+        body.accesibilidad-contraste-alto input,
+        body.accesibilidad-contraste-alto select,
+        body.accesibilidad-contraste-alto textarea {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border: 2px solid #ffff00 !important;
+        }
+
+        body.accesibilidad-contraste-alto input::placeholder,
+        body.accesibilidad-contraste-alto textarea::placeholder {
+            color: #ffffff !important;
+            opacity: 1 !important;
+        }
+
+        /* Texto de las opciones desplegables */
+        body.accesibilidad-contraste-alto select option {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* Menús y tarjetas con fondo claro */
+        body.accesibilidad-contraste-alto #profile-dropdown .bg-white,
+        body.accesibilidad-contraste-alto #notifications-dropdown .bg-white,
+        body.accesibilidad-contraste-alto #notifications-dropdown [class*="bg-pink"] {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+
+
+        /* Reducir animaciones */
+        body.accesibilidad-animaciones-reducidas *,
+        body.accesibilidad-animaciones-reducidas *::before,
+        body.accesibilidad-animaciones-reducidas *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+
+        /* Modo de lectura */
+        body.accesibilidad-modo-lectura main {
+            line-height: 1.8;
+            letter-spacing: 0.02em;
+        }
+
+        body.accesibilidad-modo-lectura main p {
+            max-width: 85ch;
+        }
+
+        body.accesibilidad-modo-lectura main h1,
+        body.accesibilidad-modo-lectura main h2,
+        body.accesibilidad-modo-lectura main h3 {
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        body.accesibilidad-modo-lectura main p,
+        body.accesibilidad-modo-lectura main li {
+            margin-bottom: 0.5rem;
+        }
+                /* ==========================================
+        ALTO CONTRASTE GENERAL - SPA DESEO
+        ========================================== */
+
+        /* Fondo general */
+        body.accesibilidad-contraste-alto,
+        body.accesibilidad-contraste-alto main,
+        body.accesibilidad-contraste-alto aside,
+        body.accesibilidad-contraste-alto header {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* Textos generales */
+        body.accesibilidad-contraste-alto main p,
+        body.accesibilidad-contraste-alto main span,
+        body.accesibilidad-contraste-alto main label,
+        body.accesibilidad-contraste-alto main li,
+        body.accesibilidad-contraste-alto main h1,
+        body.accesibilidad-contraste-alto main h2,
+        body.accesibilidad-contraste-alto main h3,
+        body.accesibilidad-contraste-alto aside a,
+        body.accesibilidad-contraste-alto header p,
+        body.accesibilidad-contraste-alto header span {
+            color: #ffffff !important;
+        }
+
+        /* Tarjetas y contenedores */
+        body.accesibilidad-contraste-alto main [class*="bg-white"],
+        body.accesibilidad-contraste-alto main [class*="bg-gray-50"],
+        body.accesibilidad-contraste-alto main [class*="bg-gray-100"],
+        body.accesibilidad-contraste-alto main [class*="bg-gray-200"],
+        body.accesibilidad-contraste-alto main [class*="bg-pink-50"],
+        body.accesibilidad-contraste-alto main [class*="bg-pink-100"] {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border-color: #ffff00 !important;
+        }
+
+        /* Enlaces */
+        body.accesibilidad-contraste-alto main a {
+            color: #ffff00 !important;
+            text-decoration: underline !important;
+        }
+
+        /* Botones */
+        body.accesibilidad-contraste-alto main button,
+        body.accesibilidad-contraste-alto main input[type="submit"],
+        body.accesibilidad-contraste-alto main input[type="button"] {
+            background-color: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #ffffff !important;
+        }
+
+        /* Texto e iconos dentro de botones */
+        body.accesibilidad-contraste-alto main button *,
+        body.accesibilidad-contraste-alto main input[type="submit"] * {
+            color: #000000 !important;
+        }
+
+        /* Bordes y separadores */
+        body.accesibilidad-contraste-alto main hr,
+        body.accesibilidad-contraste-alto main [class*="border"] {
+            border-color: #ffff00 !important;
+        }
+
+        /* Tablas */
+        body.accesibilidad-contraste-alto main table,
+        body.accesibilidad-contraste-alto main thead,
+        body.accesibilidad-contraste-alto main tbody,
+        body.accesibilidad-contraste-alto main tr,
+        body.accesibilidad-contraste-alto main th,
+        body.accesibilidad-contraste-alto main td {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border-color: #ffff00 !important;
+        }
+
+        /* Texto secundario */
+        body.accesibilidad-contraste-alto main [class*="text-gray-"],
+        body.accesibilidad-contraste-alto aside [class*="text-gray-"] {
+            color: #ffffff !important;
+        }
+ 
+
+    </style>
 
 </head>
 
@@ -650,7 +886,17 @@
                                         </p>
 
                                         <p class="text-[11px] text-gray-400 mt-2">
-                                            {{ notificacion.fecha_creacion|date:"d/m/Y g:i a" }}
+                                            {% if preferencias.formato_fecha == "MDY" %}
+                                                {{ notificacion.fecha_creacion|date:"m/d/Y" }}
+                                            {% else %}
+                                                {{ notificacion.fecha_creacion|date:"d/m/Y" }}
+                                            {% endif %}
+
+                                            {% if preferencias.formato_hora == "24" %}
+                                                {{ notificacion.fecha_creacion|date:"H:i" }}
+                                            {% else %}
+                                                {{ notificacion.fecha_creacion|date:"g:i A" }}
+                                            {% endif %}
                                         </p>
 
                                     </div>

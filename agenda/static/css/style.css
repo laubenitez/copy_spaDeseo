@@ -521,3 +521,128 @@ body.accesibilidad-texto-grande main section {
     min-width: 0;
 }
 
+
+/* ==========================================
+   ACCESIBILIDAD - ALTO CONTRASTE
+   SPA DESEO
+========================================== */
+
+/* Fondo general y texto */
+body.accesibilidad-contraste-alto {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+/* Textos generales */
+body.accesibilidad-contraste-alto h1,
+body.accesibilidad-contraste-alto h2,
+body.accesibilidad-contraste-alto h3,
+body.accesibilidad-contraste-alto h4,
+body.accesibilidad-contraste-alto p,
+body.accesibilidad-contraste-alto label,
+body.accesibilidad-contraste-alto li,
+body.accesibilidad-contraste-alto span {
+    color: #FFFFFF;
+}
+
+/* Tarjetas y secciones */
+body.accesibilidad-contraste-alto main section,
+body.accesibilidad-contraste-alto main .bg-white,
+body.accesibilidad-contraste-alto main .bg-gray-50,
+body.accesibilidad-contraste-alto main .bg-gray-100,
+body.accesibilidad-contraste-alto main .bg-gray-800,
+body.accesibilidad-contraste-alto main .bg-darkCard {
+    background-color: #111111 !important;
+    color: #FFFFFF !important;
+    border-color: #FFFFFF !important;
+}
+
+/* Bordes más visibles */
+body.accesibilidad-contraste-alto main section,
+body.accesibilidad-contraste-alto main .rounded-xl,
+body.accesibilidad-contraste-alto main .rounded-2xl {
+    border-color: #FFFFFF !important;
+}
+
+/* Campos de formularios */
+body.accesibilidad-contraste-alto input:not([type="checkbox"]),
+body.accesibilidad-contraste-alto select,
+body.accesibilidad-contraste-alto textarea {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+}
+
+/* Texto de las opciones de los select */
+body.accesibilidad-contraste-alto select option {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+/* Botones */
+body.accesibilidad-contraste-alto main button,
+body.accesibilidad-contraste-alto main .btn {
+    background-color: #FFFF00 !important;
+    color: #000000 !important;
+    border: 2px solid #FFFF00 !important;
+}
+
+/* Enlaces */
+body.accesibilidad-contraste-alto main a {
+    color: #FFFF00 !important;
+    text-decoration: underline;
+}
+
+/* Iconos */
+body.accesibilidad-contraste-alto main i {
+    color: #FFFF00;
+}
+
+/* Tablas */
+body.accesibilidad-contraste-alto table,
+body.accesibilidad-contraste-alto th,
+body.accesibilidad-contraste-alto td {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #FFFFFF !important;
+}
+
+/* Filas al pasar el cursor */
+body.accesibilidad-contraste-alto tr:hover {
+    background-color: #333333 !important;
+}
+
+/* Elementos seleccionados o enfocados */
+body.accesibilidad-contraste-alto input:focus,
+body.accesibilidad-contraste-alto select:focus,
+body.accesibilidad-contraste-alto textarea:focus,
+body.accesibilidad-contraste-alto button:focus-visible,
+body.accesibilidad-contraste-alto a:focus-visible {
+    outline: 3px solid #FFFF00 !important;
+    outline-offset: 3px;
+}
+
+/* Modales */
+body.accesibilidad-contraste-alto [role="dialog"] {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #FFFFFF !important;
+}
+
+/* Textos secundarios */
+body.accesibilidad-contraste-alto .text-gray-400,
+body.accesibilidad-contraste-alto .text-gray-500,
+body.accesibilidad-contraste-alto .text-gray-600,
+body.accesibilidad-contraste-alto .text-gray-700,
+body.accesibilidad-contraste-alto .text-gray-800,
+body.accesibilidad-contraste-alto .text-gray-900 {
+    color: #FFFFFF !important;
+}
+
+/* Evitar que los botones deshabilitados pierdan legibilidad */
+body.accesibilidad-contraste-alto button:disabled {
+    opacity: 1 !important;
+    border-color: #FFFFFF !important;
+}
+
+

@@ -105,7 +105,8 @@ urlpatterns = [
     path('finanzas/registrar-gasto/', views.registrar_gasto_financiero, name='registrar_gasto_financiero'),
 
 
-
+    path("privacidad/",views.politica_privacidad,name="politica_privacidad"),
+    path("solicitar-desactivacion/",views.solicitar_desactivacion_cuenta,name="solicitar_desactivacion_cuenta"),
     #Servicio
     path('servicios/', views.ver_servicio, name="ver_servicio"),
     path('crear_servicio/', views.crear_servicio, name="crear_servicio"),

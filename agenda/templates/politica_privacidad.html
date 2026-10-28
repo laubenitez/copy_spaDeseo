@@ -1,0 +1,574 @@
+
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block title %}Política de Privacidad | Spa Deseo{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gray-50 px-4 py-6 dark:bg-gray-950 sm:px-6 lg:px-8">
+
+    <div class="mx-auto max-w-5xl">
+
+        <!-- Encabezado -->
+        <div class="mb-6">
+            <div class="mb-2 flex items-center gap-2 text-sm text-pink-600 dark:text-pink-400">
+                <i class="fas fa-shield-alt"></i>
+                <span>Spa Deseo / Privacidad</span>
+            </div>
+
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white sm:text-3xl">
+                Política de privacidad
+            </h1>
+
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Conoce cómo tratamos los datos personales, para qué los utilizamos
+                y cómo puedes ejercer tus derechos.
+            </p>
+        </div>
+
+        <!-- Aviso -->
+        <div class="mb-6 rounded-xl border border-pink-200 bg-pink-50 p-4 dark:border-pink-900/50 dark:bg-pink-950/20">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle mt-1 text-pink-600 dark:text-pink-400"></i>
+
+                <div>
+                    <h2 class="text-sm font-semibold text-gray-800 dark:text-white">
+                        Información importante
+                    </h2>
+
+                    <p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Esta política describe el tratamiento de datos personales
+                        en Spa Deseo, nuestra plataforma para la gestión de citas,
+                        servicios de manicura y atención a clientes. La información
+                        de identificación y contacto del responsable deberá
+                        corresponder al establecimiento o persona que opere el spa.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información general -->
+        <div class="mb-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+            <div class="grid gap-4 sm:grid-cols-3">
+
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                        Fecha de vigencia
+                    </p>
+                    <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">
+                        Versión preliminar para revisión
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                        Normativa principal
+                    </p>
+                    <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">
+                        Ley 1581 de 2012
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                        Aplicación
+                    </p>
+                    <p class="mt-1 text-sm font-semibold text-gray-800 dark:text-white">
+                        Clientes, manicuristas y administradores
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Contenido de la política -->
+        <div class="space-y-5">
+
+            <!-- 1. Responsable -->
+            <section id="responsable"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-building text-pink-500"></i>
+                    1. Responsable del tratamiento
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    El responsable del tratamiento es la persona natural o
+                    jurídica que determina las finalidades y los medios para
+                    utilizar los datos personales. En Spa Deseo, esta
+                    responsabilidad corresponde a quien opere legalmente el
+                    establecimiento y administre la plataforma de citas y servicios.
+                </p>
+
+                <div class="mt-4 divide-y divide-gray-100 rounded-lg bg-gray-50 px-4 dark:divide-gray-800 dark:bg-gray-800/60">
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Nombre comercial
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            Spa Deseo
+                        </p>
+                    </div>
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Persona natural o razón social responsable
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            Titular o entidad que opere legalmente el establecimiento Spa Deseo.
+                        </p>
+                    </div>
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Identificación tributaria
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            NIT o documento de identificación correspondiente al responsable, según aplique.
+                        </p>
+                    </div>
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Dirección de atención
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            Sede física del establecimiento que opere Spa Deseo.
+                        </p>
+                    </div>
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Correo de atención y protección de datos
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            Canal oficial de atención al cliente y recepción de solicitudes sobre datos personales.
+                        </p>
+                    </div>
+
+                    <div class="py-3 text-sm">
+                        <p class="font-medium text-gray-700 dark:text-gray-200">
+                            Teléfono de contacto
+                        </p>
+                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                            Línea oficial de atención del establecimiento Spa Deseo.
+                        </p>
+                    </div>
+
+                </div>
+
+                <p class="mt-3 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                    Antes de publicar esta política, deben incorporarse la
+                    identidad legal y los datos de contacto reales del responsable.
+                </p>
+            </section>
+
+            <!-- 2. Datos recopilados -->
+            <section id="datos"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-database text-pink-500"></i>
+                    2. Datos personales tratados
+                </h2>
+
+                <p class="mb-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Según el rol del usuario y las funciones habilitadas,
+                    Spa Deseo podrá tratar los siguientes datos:
+                </p>
+
+                <ul class="list-disc space-y-2 pl-5 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    <li>
+                        <strong>Identificación y contacto:</strong>
+                        nombre, apellidos, correo electrónico y teléfono.
+                    </li>
+                    <li>
+                        <strong>Cuenta y seguridad:</strong>
+                        credenciales protegidas, rol, estado de la cuenta y
+                        datos técnicos necesarios para gestionar el acceso.
+                    </li>
+                    <li>
+                        <strong>Citas y servicios:</strong>
+                        fechas, horarios, servicios solicitados, manicurista
+                        asignada e historial relacionado con la atención.
+                    </li>
+                    <li>
+                        <strong>Perfil:</strong>
+                        fotografía y demás información que el usuario decida
+                        proporcionar mediante las funciones disponibles.
+                    </li>
+                    <li>
+                        <strong>Soporte:</strong>
+                        solicitudes, mensajes, respuestas y datos necesarios
+                        para atender consultas o reclamos.
+                    </li>
+                    <li>
+                        <strong>Pagos y comprobantes:</strong>
+                        información de la transacción, importe y estado del pago,
+                        cuando estas funciones estén habilitadas.
+                    </li>
+                    <li>
+                        <strong>Preferencias:</strong>
+                        ajustes de accesibilidad, comunicaciones y preferencias
+                        de diseño, cuando se encuentren disponibles.
+                    </li>
+                </ul>
+
+                <p class="mt-4 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Si se habilitan recomendaciones de diseños según el tono de
+                    piel, se tratará únicamente la información necesaria para
+                    esa función y bajo las garantías que correspondan.
+                </p>
+            </section>
+
+            <!-- 3. Finalidades -->
+            <section id="finalidades"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-bullseye text-pink-500"></i>
+                    3. ¿Para qué utilizamos los datos?
+                </h2>
+
+                <p class="mb-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Los datos se tratarán para finalidades relacionadas con la
+                    administración del spa, la atención al cliente y el
+                    funcionamiento de la plataforma:
+                </p>
+
+                <ul class="list-disc space-y-2 pl-5 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    <li>Crear y administrar cuentas y perfiles.</li>
+                    <li>Gestionar los permisos según el rol de cliente, manicurista o administrador.</li>
+                    <li>Programar, confirmar, modificar y cancelar citas de manicura.</li>
+                    <li>Consultar servicios, precios e historial de atención.</li>
+                    <li>Enviar confirmaciones y recordatorios de citas por los canales habilitados.</li>
+                    <li>Atender solicitudes de soporte, preguntas y reclamos.</li>
+                    <li>Gestionar pagos y comprobantes cuando corresponda.</li>
+                    <li>Ofrecer recomendaciones de diseños si esta función está habilitada.</li>
+                    <li>Proteger las cuentas y prevenir accesos no autorizados.</li>
+                    <li>Administrar la operación del establecimiento y cumplir las obligaciones legales aplicables.</li>
+                </ul>
+
+                <div class="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/60">
+                    <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        <strong class="text-gray-800 dark:text-white">
+                            Comunicaciones promocionales:
+                        </strong>
+                        los mensajes sobre ofertas, descuentos, nuevos diseños
+                        o promociones se diferenciarán de los recordatorios
+                        necesarios para gestionar una cita. Su envío deberá
+                        respetar las autorizaciones, preferencias y normas aplicables.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 4. Autorización -->
+            <section id="autorizacion"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-file-signature text-pink-500"></i>
+                    4. Autorización para el tratamiento
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Cuando sea exigible, el tratamiento de datos personales
+                    requerirá autorización previa e informada del titular,
+                    obtenida mediante un mecanismo que permita conservar
+                    evidencia de ella. Se informarán las finalidades del
+                    tratamiento y los derechos que asisten al titular.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Los datos no deberán utilizarse para finalidades incompatibles
+                    con las informadas, salvo que exista una base jurídica válida
+                    para hacerlo.
+                </p>
+            </section>
+
+            <!-- 5. Datos sensibles -->
+            <section id="sensibles"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-user-shield text-pink-500"></i>
+                    5. Datos sensibles
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Spa Deseo procurará no solicitar datos sensibles que no sean
+                    necesarios para prestar sus servicios. Si una función requiere
+                    tratar información que tenga esa clasificación legal, se
+                    informará expresamente al titular y se aplicarán las garantías
+                    y autorizaciones exigidas por la normativa.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    La información sobre el tono de piel, si se utiliza para
+                    recomendar diseños de uñas, deberá evaluarse según su
+                    naturaleza y el contexto del tratamiento. No se utilizará
+                    para discriminar y no deberá exigirse si no es necesaria
+                    para prestar el servicio solicitado.
+                </p>
+            </section>
+
+            <!-- 6. Cookies y seguridad -->
+            <section id="cookies"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-lock text-pink-500"></i>
+                    6. Cookies, sesiones y seguridad
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    La plataforma podrá utilizar mecanismos técnicos de sesión
+                    necesarios para mantener el acceso y permitir el funcionamiento
+                    de las funciones autenticadas. Cualquier herramienta adicional
+                    de analítica o publicidad deberá evaluarse e informarse
+                    conforme a las normas aplicables.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Se deberán aplicar medidas técnicas, humanas y administrativas
+                    razonables para proteger los datos contra accesos, pérdidas,
+                    alteraciones o divulgaciones no autorizadas. Los permisos de
+                    acceso deberán corresponder al rol y a las funciones de cada
+                    usuario autorizado.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Ningún sistema puede garantizar seguridad absoluta. El
+                    responsable deberá gestionar los incidentes y cumplir las
+                    obligaciones de reporte que correspondan.
+                </p>
+            </section>
+
+            <!-- 7. Terceros -->
+            <section id="terceros"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-network-wired text-pink-500"></i>
+                    7. Proveedores y terceros
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Para operar, Spa Deseo podría utilizar proveedores de
+                    alojamiento, correo electrónico, mensajería, autenticación
+                    o pagos, según las funciones que finalmente se habiliten.
+                    Solo se utilizarán proveedores autorizados y necesarios
+                    para la operación del servicio.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Cuando un proveedor trate datos por cuenta del responsable,
+                    deberán establecerse las obligaciones correspondientes.
+                    Las transmisiones o transferencias internacionales de datos,
+                    si existen, deberán cumplir los requisitos legales aplicables.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Los datos no deberán venderse ni compartirse para finalidades
+                    ajenas a las informadas sin una base jurídica válida.
+                    También podrán comunicarse cuando exista un deber legal
+                    que lo permita o exija.
+                </p>
+            </section>
+
+            <!-- 8. Conservación -->
+            <section id="conservacion"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-archive text-pink-500"></i>
+                    8. Conservación de los datos
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Los datos se conservarán durante el tiempo necesario para
+                    gestionar las cuentas, atender las citas, mantener los
+                    registros de los servicios y cumplir las obligaciones legales
+                    o contractuales aplicables.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Los plazos pueden variar entre los datos del perfil, las
+                    citas, los comprobantes y las solicitudes de soporte. El
+                    responsable deberá establecer plazos de conservación y
+                    procedimientos seguros para eliminar los datos cuando
+                    corresponda.
+                </p>
+            </section>
+
+            <!-- 9. Derechos -->
+            <section id="derechos"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-hand-holding-heart text-pink-500"></i>
+                    9. Tus derechos
+                </h2>
+
+                <p class="mb-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Como titular de los datos personales, podrás ejercer los
+                    derechos reconocidos por la normativa aplicable, entre ellos:
+                </p>
+
+                <ul class="list-disc space-y-2 pl-5 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    <li>Conocer y consultar tus datos personales.</li>
+                    <li>Solicitar la actualización o corrección de información inexacta, incompleta o desactualizada.</li>
+                    <li>Solicitar prueba de la autorización cuando sea exigible.</li>
+                    <li>Conocer las finalidades y el uso dado a tus datos.</li>
+                    <li>Solicitar la revocación de la autorización o la supresión de los datos cuando legalmente proceda.</li>
+                    <li>Presentar quejas ante la Superintendencia de Industria y Comercio, una vez agotado el trámite previo exigible ante el responsable.</li>
+                </ul>
+
+                <p class="mt-4 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Estos derechos se ejercerán con las condiciones y excepciones
+                    previstas en la ley, incluidas las obligaciones válidas de
+                    conservación de información.
+                </p>
+            </section>
+
+            <!-- 10. Consultas y reclamos -->
+            <section id="solicitudes"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-envelope text-pink-500"></i>
+                    10. Consultas y reclamos
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Para ejercer tus derechos, podrás comunicarte con el área
+                    de atención al cliente o con la persona encargada de la
+                    protección de datos de Spa Deseo, utilizando los canales
+                    oficiales del establecimiento.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Describe tu solicitud, identifica los datos relacionados
+                    y proporciona un medio para recibir la respuesta. El
+                    responsable verificará razonablemente tu identidad y
+                    atenderá la petición dentro de los términos legales aplicables.
+                </p>
+
+                <div class="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800/60">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Canal de atención
+                    </p>
+                    <p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Servicio de atención al cliente y protección de datos
+                        personales de Spa Deseo.
+                    </p>
+
+                    <p class="mt-3 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Medios de contacto
+                    </p>
+                    <p class="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                        Correo electrónico, teléfono y dirección oficial del
+                        establecimiento responsable.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 11. Desactivación -->
+            <section id="desactivacion"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-user-slash text-pink-500"></i>
+                    11. Desactivación de la cuenta
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Cuando esta función esté habilitada, podrás solicitar la
+                    desactivación de tu cuenta desde los ajustes disponibles.
+                    La desactivación podrá impedir el acceso ordinario al sistema,
+                    pero no significa necesariamente que todos los datos hayan
+                    sido eliminados.
+                </p>
+
+                <p class="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Algunos registros podrán conservarse cuando exista una
+                    obligación legal o contractual válida, o cuando resulte
+                    necesario para atender reclamaciones, de acuerdo con la ley.
+                    Puedes presentar una solicitud independiente de supresión
+                    de datos, que será evaluada conforme a las condiciones legales.
+                </p>
+            </section>
+
+            <!-- 12. Cambios -->
+            <section id="cambios"
+                     class="scroll-mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+
+                <h2 class="mb-3 flex items-center gap-3 text-lg font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-file-alt text-pink-500"></i>
+                    12. Cambios en esta política
+                </h2>
+
+                <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
+                    Spa Deseo podrá actualizar esta política cuando cambien
+                    los servicios de manicura, las funciones de la plataforma,
+                    los proveedores o las normas aplicables. La versión vigente
+                    deberá indicar su fecha de entrada en vigor y permanecer
+                    disponible para consulta.
+                </p>
+            </section>
+
+        </div>
+
+        <!-- Normativa -->
+        <div class="mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
+            <h2 class="flex items-center gap-2 font-semibold text-gray-800 dark:text-white">
+                <i class="fas fa-book text-pink-500"></i>
+                Normativa de referencia
+            </h2>
+
+            <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                El tratamiento debe ajustarse a la normativa colombiana aplicable,
+                incluyendo la Ley 1581 de 2012 y sus normas reglamentarias.
+            </p>
+
+            <div class="mt-4 flex flex-wrap gap-3">
+                <a href="https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=49981"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 rounded-lg border border-pink-200 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50 dark:border-pink-900/50 dark:text-pink-400 dark:hover:bg-pink-950/30">
+                    Ley 1581 de 2012
+                    <i class="fas fa-external-link-alt text-xs"></i>
+                </a>
+
+                <a href="https://www.sic.gov.co/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    Superintendencia de Industria y Comercio
+                    <i class="fas fa-external-link-alt text-xs"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pie -->
+        <div class="mt-6 flex flex-col gap-3 border-t border-gray-200 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                Spa Deseo · Política de privacidad
+            </p>
+
+            <a href="{% url 'agenda:ajustes' %}"
+               class="inline-flex items-center justify-center gap-2 rounded-lg bg-pink-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-pink-700">
+                <i class="fas fa-arrow-left"></i>
+                Volver a Ajustes
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
