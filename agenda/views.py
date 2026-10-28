@@ -42,7 +42,7 @@ from PIL import Image, UnidentifiedImageError
 # Importaciones locales explícitas
 from .models import (
     Citas, Clientes, Manicurista, Administrador, Servicios, Inventario, MovimientoInventario, Pagos, Recibo,
-    Gastos, Resena, SolicitudSoporte, PortafolioManicurista,  PreferenciasUsuario, Descuentos, Notificacion, PerfilUsuario,
+    Gastos, Resena, SolicitudSoporte, PortafolioManicurista,  PreferenciasUsuario, Descuentos, Notificacion, PerfilUsuario, MensajeContacto
 )
 from .serializador import (
     ClientesSerializer, ManicuristaSerializer, ServiciosSerializer,
@@ -55,6 +55,7 @@ from .notificaciones_utils import (
     notificar_cita_cancelada,
     notificar_resena_pendiente,
     crear_recibo_y_notificar,
+    notificar_inventario_bajo
 )
 from .permissions import TieneRolDB, IsStaffOrReadOnly, EsAdministrador, PuedeGestionarSuPerfilCliente
 from .utils import validar_password, requiere_rol
@@ -732,13 +733,17 @@ def responder_solicitud_soporte(request, id):
 
     return redirect("agenda:soporte_administrador")
 
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
 def index(request):
-    # 1. Procesar el formulario de contacto si envían un POST
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        correo = request.POST.get('correo')
-        asunto = request.POST.get('asunto')
-        mensaje = request.POST.get('mensaje')
+    # Procesar el formulario de contacto
+    if request.method == "POST":
+        nombre = request.POST.get("nombre", "").strip()
+        correo = request.POST.get("correo", "").strip()
+        asunto = request.POST.get("asunto", "").strip()
+        mensaje = request.POST.get("mensaje", "").strip()
 
         if nombre and correo and asunto and mensaje:
             MensajeContacto.objects.create(
@@ -747,14 +752,28 @@ def index(request):
                 asunto=asunto,
                 mensaje=mensaje
             )
-            messages.success(request, '¡Tu mensaje ha sido enviado con éxito! Nos pondremos en contacto pronto.')
-            return redirect('index') # Cambia 'index' si tu url principal tiene otro nombre
-        else:
-            messages.error(request, 'Por favor, completa todos los campos obligatorios.')
 
-    # 2. Consultas para la página principal
-    servicios = Servicios.objects.filter(estado="Activo").order_by("nombre")
-    resenas = Resena.objects.select_related('cita__cliente').order_by('-fecha_creacion')[:6]
+            messages.success(
+                request,
+                "¡Tu mensaje ha sido enviado con éxito! "
+                "Nos pondremos en contacto pronto."
+            )
+
+            return redirect('/#contacto')
+
+        messages.error(
+            request,
+            "Por favor, completa todos los campos obligatorios."
+        )
+
+    # Consultar información de la página principal
+    servicios = Servicios.objects.filter(
+        estado="Activo"
+    ).order_by("nombre")
+
+    resenas = Resena.objects.select_related(
+        "cita__cliente"
+    ).order_by("-fecha_creacion")[:6]
 
     contexto = {
         "servicios": servicios,
@@ -762,6 +781,7 @@ def index(request):
     }
 
     return render(request, "index.html", contexto)
+
 
 def sobre_nosotros(request):
     return render(request, "sobre_nosotros.html")
@@ -2664,42 +2684,71 @@ def crear_citas(request):
 
 
 
+
 @login_required(login_url="agenda:login")
-@requiere_rol("CLIENTE", "ADMINISTRADOR") # <-- Asegúrate de incluir ADMINISTRADOR aquí
+@requiere_rol("CLIENTE", "ADMINISTRADOR")
 @require_http_methods(["GET", "POST"])
 @transaction.atomic
 def eliminar_citas(request, id):
+    es_admin = (
+        request.user.perfil.rol.nombre.upper() == "ADMINISTRADOR"
+    )
+
     try:
-        # Si es un administrador, puede ver y cancelar cualquier cita sin la restricción del cliente dueño
-        if request.user.perfil.rol.nombre.upper() == "ADMINISTRADOR":
+        # Obtener la cita según el rol
+        if es_admin:
             cita = get_object_or_404(Citas, pk=id)
         else:
-            # Si es un cliente, validamos que sea estrictamente el dueño de la cita
-            cliente = get_object_or_404(Clientes, user=request.user)
-            cita = get_object_or_404(Citas, pk=id, cliente=cliente)
+            cliente = get_object_or_404(
+                Clientes,
+                user=request.user
+            )
+            cita = get_object_or_404(
+                Citas,
+                pk=id,
+                cliente=cliente
+            )
 
-        # Validaciones de estado
-        if cita.estado == "Cancelada":
-            messages.warning(request, "Esta cita ya se encuentra cancelada.")
-            return redirect("agenda:citas_asignadas" if request.user.perfil.rol.nombre.upper() == "ADMINISTRADOR" else "agenda:mis_citas")
+        # Normalizar el estado actual
+        estado_actual = cita.estado.strip().lower()
 
-        if cita.estado == "Completada":
-            messages.error(request, "No puedes cancelar una cita que ya ha sido completada.")
-            return redirect("agenda:citas_asignadas" if request.user.perfil.rol.nombre.upper() == "ADMINISTRADOR" else "agenda:mis_citas")
+        if estado_actual == "cancelada":
+            messages.warning(
+                request,
+                "Esta cita ya se encuentra cancelada."
+            )
 
-        # Cancelación lógica
-        cita.estado = "Cancelada"
-        cita.save(update_fields=["estado"])
+        elif estado_actual == "completada":
+            messages.error(
+                request,
+                "No puedes cancelar una cita que ya ha sido completada."
+            )
 
-        messages.success(request, "La cita se ha cancelado correctamente y el horario ha sido liberado.")
+        else:
+            # Cancelar la cita sin eliminarla de la base de datos
+            cita.estado = "cancelada"
+            cita.save(update_fields=["estado"])
 
-    except Exception as e:
-        messages.error(request, "Ocurrió un error inesperado al procesar la cancelación.")
+            # Notificar al cliente, la manicurista y los administradores
+            notificar_cita_cancelada(cita)
 
-    # Redirección dinámica según quién realice la acción
-    if request.user.perfil.rol.nombre.upper() == "ADMINISTRADOR":
-        return redirect("agenda:dashboard") # O la lista de citas del admin
+            messages.success(
+                request,
+                "La cita se ha cancelado correctamente y el horario ha sido liberado."
+            )
+
+    except Exception:
+        messages.error(
+            request,
+            "Ocurrió un error inesperado al procesar la cancelación."
+        )
+
+    # Redirigir según el rol del usuario
+    if es_admin:
+        return redirect("agenda:ver_todas_citas")
+
     return redirect("agenda:mis_citas")
+
 
 # CONSTANTES DE NEGOCIO
 MAX_CITAS_DIARIAS_LOCAL = 50
@@ -3242,57 +3291,85 @@ def actualizar_manicurista(request, id):
     return render(request, "manicurista/formulario_manicuristas.html", contexto)
 
 
+@login_required(login_url="agenda:login")
 @require_http_methods(["GET", "POST"])
 @requiere_rol("MANICURISTA")
 def cambiar_estado_cita(request, cita_id, nuevo_estado):
-    # Control de seguridad: Validar que el ID sea válido o exista antes de procesar
-    if not cita_id:
-        messages.error(request, "Identificador de cita no válido.")
-        return redirect('agenda:citas_asignadas')
 
     try:
-        # Obtenemos la manicurista usando 'user=request.user' tal como indican las opciones del modelo
-        manicurista_actual = Manicurista.objects.get(user=request.user)
+        manicurista_actual = Manicurista.objects.get(
+            user=request.user
+        )
     except Manicurista.DoesNotExist:
-        messages.error(request, "No se encontró un perfil de manicurista asociado a tu usuario.")
-        return redirect('agenda:citas_asignadas')
+        messages.error(
+            request,
+            "No se encontró un perfil de manicurista asociado a tu usuario."
+        )
+        return redirect("agenda:citas_asignadas")
 
-    # Seguridad: Obtener la cita asegurando que pertenezca a la manicurista en sesión
-    cita = get_object_or_404(Citas, id=cita_id, manicurista=manicurista_actual)
+    cita = get_object_or_404(
+        Citas,
+        id=cita_id,
+        manicurista=manicurista_actual
+    )
 
-    # Validar que el nuevo estado sea válido dentro de las opciones del modelo
+    # Validar el estado normalizado
+    nuevo_estado = nuevo_estado.strip().lower()
     estados_validos = dict(Citas.ESTADOS_CITA)
 
     if nuevo_estado not in estados_validos:
-        messages.error(request, "El estado seleccionado no es válido.")
-        return redirect('agenda:citas_asignadas')
+        messages.error(
+            request,
+            "El estado seleccionado no es válido."
+        )
+        return redirect("agenda:citas_asignadas")
 
-    # Control de negocio adicional: Evitar reescribir el mismo estado innecesariamente
-    if cita.estado == nuevo_estado:
-        messages.warning(request, f"La cita ya se encuentra en estado '{estados_validos[nuevo_estado]}'.")
-        return redirect('agenda:citas_asignadas')
+    estado_anterior = cita.estado.strip().lower()
+
+    if estado_anterior == nuevo_estado:
+        messages.warning(
+            request,
+            f"La cita ya se encuentra en estado '{estados_validos[nuevo_estado]}'."
+        )
+        return redirect("agenda:citas_asignadas")
 
     try:
-        # Robustez: Usar transacción atómica para asegurar la integridad en base de datos
         with transaction.atomic():
-            estado_anterior = cita.estado
             cita.estado = nuevo_estado
-            cita.save()
+            cita.save(update_fields=["estado"])
 
+            # Notificar la cancelación
+            if (
+                estado_anterior != "cancelada"
+                and nuevo_estado == "cancelada"
+            ):
+                notificar_cita_cancelada(cita)
+
+            # Notificar cuando la cita se completa
             if (
                 estado_anterior != "completada"
-                and cita.estado == "completada"
+                and nuevo_estado == "completada"
             ):
                 notificar_resena_pendiente(cita)
                 crear_recibo_y_notificar(cita)
 
-            messages.success(request, f"Estado actualizado exitosamente a '{estados_validos[nuevo_estado]}'.")
+        messages.success(
+            request,
+            f"Estado actualizado exitosamente a '{estados_validos[nuevo_estado]}'."
+        )
 
     except Exception as e:
-        # Control de errores y excepciones inesperadas
-        messages.error(request, "Ocurrió un error interno al intentar actualizar el estado de la cita.")
+        # Registrar el error para facilitar la depuración
+        import logging
+        logging.getLogger(__name__).exception(
+            "Error al actualizar el estado de la cita %s", cita_id
+        )
+        messages.error(
+            request,
+            "Ocurrió un error interno al intentar actualizar el estado de la cita."
+        )
 
-    return redirect('agenda:citas_asignadas')
+    return redirect("agenda:citas_asignadas")
 
 
 @require_POST  # Seguridad: Evita accesos por URL GET, garantizando que solo se ejecute mediante envío de formulario
@@ -3628,46 +3705,70 @@ def eliminar_trabajo_portafolio(request, id):
 @require_POST
 @transaction.atomic
 def cambiar_estado_cita_admin(request, cita_id, nuevo_estado):
-    if not cita_id:
-        messages.error(request, "Identificador de cita no válido.")
-        return redirect('agenda:ver_todas_citas')
 
     cita = get_object_or_404(Citas, id=cita_id)
 
-    # Normalizamos el estado recibido (minúsculas y sin espacios) para evitar fallos de coincidencia
-    nuevo_estado_normalizado = nuevo_estado.strip().lower()
-
+    # Normalizar el estado recibido
+    nuevo_estado = nuevo_estado.strip().lower()
     estados_validos = dict(Citas.ESTADOS_CITA)
 
-    if nuevo_estado_normalizado not in estados_validos:
-        messages.error(request, f"El estado seleccionado '{nuevo_estado}' no es válido.")
-        return redirect('agenda:ver_todas_citas')
+    # Validar el estado
+    if nuevo_estado not in estados_validos:
+        messages.error(
+            request,
+            f"El estado seleccionado '{nuevo_estado}' no es válido."
+        )
+        return redirect("agenda:ver_todas_citas")
 
-    if cita.estado == nuevo_estado_normalizado:
-        messages.warning(request, f"La cita ya se encuentra en estado '{estados_validos[nuevo_estado_normalizado]}'.")
-        return redirect('agenda:ver_todas_citas')
+    estado_anterior = cita.estado.strip().lower()
+
+    # Evitar actualizar el mismo estado
+    if estado_anterior == nuevo_estado:
+        messages.warning(
+            request,
+            f"La cita ya se encuentra en estado '{estados_validos[nuevo_estado]}'."
+        )
+        return redirect("agenda:ver_todas_citas")
 
     try:
         with transaction.atomic():
-            estado_anterior = cita.estado
+            # Actualizar la cita
+            cita.estado = nuevo_estado
+            cita.save(update_fields=["estado"])
 
-            cita.estado = nuevo_estado_normalizado
-            cita.save()
+            # Notificar cuando se cancela la cita
+            if (
+                estado_anterior != "cancelada"
+                and nuevo_estado == "cancelada"
+            ):
+                notificar_cita_cancelada(cita)
 
+            # Notificar cuando se completa la cita
             if (
                 estado_anterior != "completada"
-                and cita.estado == "completada"
+                and nuevo_estado == "completada"
             ):
                 notificar_resena_pendiente(cita)
                 crear_recibo_y_notificar(cita)
 
-            messages.success(request, f"Estado actualizado a '{estados_validos[nuevo_estado_normalizado]}'.")
+        messages.success(
+            request,
+            f"Estado actualizado correctamente a '{estados_validos[nuevo_estado]}'."
+        )
 
-    except Exception as e:
-        messages.error(request, "Ocurrió un error interno al intentar actualizar el estado de la cita.")
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception(
+            "Error al actualizar el estado de la cita %s",
+            cita_id
+        )
 
-    return redirect('agenda:ver_todas_citas')
+        messages.error(
+            request,
+            "Ocurrió un error interno al intentar actualizar el estado de la cita."
+        )
 
+    return redirect("agenda:ver_todas_citas")
 
 
 
@@ -4155,6 +4256,7 @@ def actualizar_servicio(request, id):
     )
 
 #CRUD INVENTARIO
+@login_required(login_url="agenda:login")
 @requiere_rol("ADMINISTRADOR")
 def ver_inventario(request):
     try:
@@ -4222,6 +4324,13 @@ def crear_inventario(request):
                     imagen=imagen  # <--- ¡Aquí asignamos la imagen correctamente!
                 )
                 i.save()
+
+                transaction.on_commit(
+                    lambda producto_id=i.pk: notificar_inventario_bajo(
+                        Inventario.objects.get(pk=producto_id)
+                    )
+                )
+
                 messages.success(request, f"Producto '{nombre}' agregado correctamente.")
 
         except DatabaseError:
@@ -4264,11 +4373,14 @@ def eliminar_inventario(request, id):
 
     return redirect("agenda:ver_inventario")
 
+
+@login_required(login_url="agenda:login")
 def lista_movimientos(request):
     movimientos = MovimientoInventario.objects.select_related('producto').all().order_by('-fecha')
     return render(request, 'inventario/movimientos.html', {'movimientos': movimientos})
 
 
+@login_required(login_url="agenda:login")
 @transaction.atomic
 def registrar_movimiento(request):
     # --- SI LA PETICIÓN ES POST: PROCESAR EL FORMULARIO ---
@@ -4319,6 +4431,12 @@ def registrar_movimiento(request):
             tipo=tipo,
             cantidad=cantidad,
             motivo=motivo
+        )
+
+        transaction.on_commit(
+            lambda producto_id=producto.pk: notificar_inventario_bajo(
+                Inventario.objects.get(pk=producto_id)
+            )
         )
 
         messages.success(request, f"Movimiento de {tipo.lower()} registrado con éxito para '{producto.nombre}'.")
@@ -4377,6 +4495,12 @@ def actualizar_inventario(request, id):
                     i.imagen = imagen
 
                 i.save()
+
+                transaction.on_commit(
+                    lambda producto_id=i.pk: notificar_inventario_bajo(
+                        Inventario.objects.get(pk=producto_id)
+                    )
+                )
 
                 messages.success(request, f"Producto '{i.nombre}' actualizado correctamente.")
 
@@ -5769,3 +5893,451 @@ def eliminar_descuento(request, id):
         )
 
     return redirect("agenda:ver_descuentos")
+
+
+@login_required(login_url="agenda:login")
+def busqueda_global(request):
+    termino = request.GET.get("q", "").strip()
+
+    resultados = []
+    accesos = []
+
+    # Obtener el rol del usuario autenticado
+    try:
+        perfil = PerfilUsuario.objects.select_related("rol").get(
+            user=request.user
+        )
+        rol = perfil.rol.nombre.upper() if perfil.rol else ""
+    except PerfilUsuario.DoesNotExist:
+        rol = ""
+
+    # No realizar búsquedas vacías
+    if not termino:
+        return render(
+            request,
+            "busqueda_global.html",
+            {
+                "termino": termino,
+                "resultados": resultados,
+                "accesos": accesos,
+            },
+        )
+
+    # -----------------------------------------
+    # ACCESOS SEGÚN EL ROL DEL USUARIO
+    # -----------------------------------------
+
+    accesos_comunes = [
+        {
+            "nombre": "Servicios",
+            "url": reverse("agenda:lista_servicios"),
+            "descripcion": "Consultar servicios disponibles",
+        },
+        {
+            "nombre": "Ajustes",
+            "url": reverse("agenda:ajustes"),
+            "descripcion": "Configurar tu perfil y preferencias",
+        },
+        {
+            "nombre": "Soporte",
+            "url": reverse("agenda:soporte"),
+            "descripcion": "Consultar o solicitar ayuda",
+        },
+    ]
+
+    accesos_disponibles = []
+
+    if rol == "CLIENTE":
+        accesos_disponibles = accesos_comunes + [
+            {
+                "nombre": "Mis citas",
+                "url": reverse("agenda:mis_citas"),
+                "descripcion": "Consultar tus citas agendadas",
+            },
+            {
+                "nombre": "Mis reseñas",
+                "url": reverse("agenda:mis_resenas"),
+                "descripcion": "Consultar tus reseñas",
+            },
+        ]
+
+        # Buscar únicamente las citas del cliente autenticado
+        citas = Citas.objects.filter(
+            cliente__user=request.user
+        ).filter(
+            Q(servicios__nombre__icontains=termino)
+            | Q(manicurista__nombre__icontains=termino)
+            | Q(manicurista__apellido__icontains=termino)
+            | Q(estado__icontains=termino)
+        ).distinct()
+
+        for cita in citas:
+            resultados.append({
+                "tipo": "Cita",
+                "titulo": f"Cita de {cita.servicios.nombre}",
+                "descripcion": (
+                    f"Manicurista: {cita.manicurista.nombre} "
+                    f"{cita.manicurista.apellido} | "
+                    f"Fecha: {cita.fecha} | Estado: {cita.estado}"
+                ),
+                "url": reverse("agenda:mis_citas"),
+            })
+
+        # Buscar servicios que el cliente puede consultar
+        servicios = Servicios.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(descripcion__icontains=termino)
+        )
+
+        for servicio in servicios:
+            resultados.append({
+                "tipo": "Servicio",
+                "titulo": servicio.nombre,
+                "descripcion": servicio.descripcion,
+                "url": reverse("agenda:lista_servicios"),
+            })
+
+    elif rol == "MANICURISTA":
+        accesos_disponibles = accesos_comunes + [
+            {
+                "nombre": "Citas asignadas",
+                "url": reverse("agenda:citas_asignadas"),
+                "descripcion": "Consultar las citas asignadas",
+            },
+            {
+                "nombre": "Calendario",
+                "url": reverse("agenda:ver_calendario"),
+                "descripcion": "Consultar tu calendario",
+            },
+        ]
+
+        # Buscar únicamente las citas de la manicurista autenticada
+        citas = Citas.objects.filter(
+            manicurista__user=request.user
+        ).filter(
+            Q(cliente__nombre__icontains=termino)
+            | Q(cliente__apellido__icontains=termino)
+            | Q(servicios__nombre__icontains=termino)
+            | Q(estado__icontains=termino)
+        ).distinct()
+
+        for cita in citas:
+            resultados.append({
+                "tipo": "Cita asignada",
+                "titulo": f"Cita de {cita.cliente.nombre} {cita.cliente.apellido}",
+                "descripcion": (
+                    f"Servicio: {cita.servicios.nombre} | "
+                    f"Fecha: {cita.fecha} | Estado: {cita.estado}"
+                ),
+                "url": reverse("agenda:citas_asignadas"),
+            })
+
+        servicios = Servicios.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(descripcion__icontains=termino)
+        )
+
+        for servicio in servicios:
+            resultados.append({
+                "tipo": "Servicio",
+                "titulo": servicio.nombre,
+                "descripcion": servicio.descripcion,
+                "url": reverse("agenda:lista_servicios"),
+            })
+
+    elif rol == "ADMINISTRADOR":
+        accesos_disponibles = accesos_comunes + [
+            {
+                "nombre": "Clientes",
+                "url": reverse("agenda:ver_cliente"),
+                "descripcion": "Administrar clientes",
+            },
+            {
+                "nombre": "Manicuristas",
+                "url": reverse("agenda:ver_manicuristas"),
+                "descripcion": "Administrar manicuristas",
+            },
+            {
+                "nombre": "Todas las citas",
+                "url": reverse("agenda:ver_todas_citas"),
+                "descripcion": "Consultar y gestionar citas",
+            },
+            {
+                "nombre": "Inventario",
+                "url": reverse("agenda:ver_inventario"),
+                "descripcion": "Controlar los insumos del spa",
+            },
+            {
+                "nombre": "Pagos",
+                "url": reverse("agenda:ver_pagos"),
+                "descripcion": "Consultar pagos",
+            },
+            {
+                "nombre": "Gastos",
+                "url": reverse("agenda:ver_gasto"),
+                "descripcion": "Consultar gastos",
+            },
+            {
+                "nombre": "Soporte administrativo",
+                "url": reverse("agenda:soporte_administrador"),
+                "descripcion": "Gestionar solicitudes de soporte",
+            },
+            {
+                "nombre": "Mensajes de contacto",
+                "url": reverse("agenda:ver_mensajes_contacto"),
+                "descripcion": "Ver mensajes enviados desde la página principal",
+            },
+        ]
+
+        # Clientes
+        clientes = Clientes.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(apellido__icontains=termino)
+            | Q(telefono__icontains=termino)
+            | Q(email__icontains=termino)
+        )
+
+        for cliente in clientes:
+            resultados.append({
+                "tipo": "Cliente",
+                "titulo": f"{cliente.nombre} {cliente.apellido}",
+                "descripcion": (
+                    f"Teléfono: {cliente.telefono} | "
+                    f"Correo: {cliente.email}"
+                ),
+                "url": reverse("agenda:ver_cliente"),
+            })
+
+        # Manicuristas
+        manicuristas = Manicurista.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(apellido__icontains=termino)
+            | Q(especialidad__icontains=termino)
+            | Q(email__icontains=termino)
+        )
+
+        for manicurista in manicuristas:
+            resultados.append({
+                "tipo": "Manicurista",
+                "titulo": f"{manicurista.nombre} {manicurista.apellido}",
+                "descripcion": (
+                    f"Especialidad: {manicurista.especialidad}"
+                ),
+                "url": reverse("agenda:ver_manicuristas"),
+            })
+
+        # Todas las citas
+        citas = Citas.objects.filter(
+            Q(cliente__nombre__icontains=termino)
+            | Q(cliente__apellido__icontains=termino)
+            | Q(manicurista__nombre__icontains=termino)
+            | Q(manicurista__apellido__icontains=termino)
+            | Q(servicios__nombre__icontains=termino)
+            | Q(estado__icontains=termino)
+        ).distinct()
+
+        for cita in citas:
+            resultados.append({
+                "tipo": "Cita",
+                "titulo": (
+                    f"{cita.cliente.nombre} {cita.cliente.apellido}"
+                    f" — {cita.servicios.nombre}"
+                ),
+                "descripcion": (
+                    f"Manicurista: {cita.manicurista.nombre} "
+                    f"{cita.manicurista.apellido} | "
+                    f"Fecha: {cita.fecha} | Estado: {cita.estado}"
+                ),
+                "url": reverse("agenda:ver_todas_citas"),
+            })
+
+        # Servicios
+        servicios = Servicios.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(descripcion__icontains=termino)
+        )
+
+        for servicio in servicios:
+            resultados.append({
+                "tipo": "Servicio",
+                "titulo": servicio.nombre,
+                "descripcion": servicio.descripcion,
+                "url": reverse("agenda:ver_servicio"),
+            })
+
+        # Inventario
+        inventario = Inventario.objects.filter(
+            Q(nombre__icontains=termino)
+            | Q(categoria__icontains=termino)
+        )
+
+        for producto in inventario:
+            resultados.append({
+                "tipo": "Inventario",
+                "titulo": producto.nombre,
+                "descripcion": (
+                    f"Categoría: {producto.categoria} | "
+                    f"Cantidad: {producto.cantidad}"
+                ),
+                "url": reverse("agenda:ver_inventario"),
+            })
+
+        # Pagos
+        pagos = Pagos.objects.filter(
+            Q(estado__icontains=termino)
+            | Q(metodo_pago__icontains=termino)
+        ).distinct()
+
+        for pago in pagos:
+            resultados.append({
+                "tipo": "Pago",
+                "titulo": f"Pago #{pago.pk}",
+                "descripcion": (
+                    f"Estado: {pago.estado} | "
+                    f"Valor: {pago.valor}"
+                ),
+                "url": reverse("agenda:ver_pagos"),
+            })
+
+        # Gastos
+        gastos = Gastos.objects.filter(
+            Q(concepto__icontains=termino)
+        )
+
+        for gasto in gastos:
+            resultados.append({
+                "tipo": "Gasto",
+                "titulo": gasto.concepto,
+                "descripcion": f"Valor: {gasto.valor}",
+                "url": reverse("agenda:ver_gasto"),
+            })
+
+        # Solicitudes de soporte
+        solicitudes = SolicitudSoporte.objects.filter(
+            Q(nombre_solicitante__icontains=termino)
+            | Q(asunto__icontains=termino)
+            | Q(descripcion__icontains=termino)
+            | Q(estado__icontains=termino)
+        )
+
+        for solicitud in solicitudes:
+            resultados.append({
+                "tipo": "Soporte",
+                "titulo": solicitud.asunto,
+                "descripcion": (
+                    f"Solicitante: {solicitud.nombre_solicitante} | "
+                    f"Estado: {solicitud.estado}"
+                ),
+                "url": reverse("agenda:soporte_administrador"),
+            })
+
+    else:
+        accesos_disponibles = []
+
+    # Filtrar los accesos según el término de búsqueda para que solo aparezcan los relacionados
+    termino_lower = termino.lower()
+    accesos = [
+        acc for acc in accesos_disponibles 
+        if termino_lower in acc["nombre"].lower() or termino_lower in acc["descripcion"].lower()
+    ]
+
+    return render(
+        request,
+        "busqueda_global.html",
+        {
+            "termino": termino,
+            "resultados": resultados,
+            "accesos": accesos,
+        },
+    )
+
+@login_required(login_url="agenda:login")
+def ver_mensajes_contacto(request):
+    # Validar que sea administrador
+    try:
+        perfil = PerfilUsuario.objects.select_related("rol").get(user=request.user)
+        rol = perfil.rol.nombre.upper() if perfil.rol else ""
+    except PerfilUsuario.DoesNotExist:
+        rol = ""
+
+    if rol != "ADMINISTRADOR":
+        return redirect("agenda:dashboard")
+
+    mensajes = MensajeContacto.objects.all().order_by("-fecha")
+
+    return render(request, "mensajes_contacto.html", {
+        "mensajes": mensajes
+    })
+
+@login_required(login_url="agenda:login")
+def responder_mensaje_contacto(request, mensaje_id):
+    # Validar que sea administrador
+    try:
+        perfil = PerfilUsuario.objects.select_related("rol").get(
+            user=request.user
+        )
+        rol = perfil.rol.nombre.upper() if perfil.rol else ""
+    except PerfilUsuario.DoesNotExist:
+        rol = ""
+
+    if rol != "ADMINISTRADOR":
+        return redirect("agenda:dashboard")
+
+    mensaje = get_object_or_404(MensajeContacto, pk=mensaje_id)
+
+    if request.method == "POST":
+        respuesta = request.POST.get("respuesta", "").strip()
+
+        if not respuesta:
+            messages.error(request, "Escribe una respuesta antes de enviarla.")
+            return render(
+                request,
+                "responder_mensaje_contacto.html",
+                {"mensaje": mensaje}
+            )
+
+        try:
+            enviados = send_mail(
+                subject=f"Respuesta a tu consulta en Spa Deseo: {mensaje.asunto}",
+                message=(
+                    f"Hola {mensaje.nombre},\n\n"
+                    f"{respuesta}\n\n"
+                    "Cordialmente,\n"
+                    "Equipo Spa Deseo"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[mensaje.correo],
+                fail_silently=False,
+            )
+
+            if enviados == 1:
+                mensaje.respondido = True
+                mensaje.save(update_fields=["respondido"])
+
+                messages.success(
+                    request,
+                    f"La respuesta fue enviada a {mensaje.correo}."
+                )
+                return redirect("agenda:ver_mensajes_contacto")
+
+            messages.error(
+                request,
+                "No se pudo confirmar el envío del correo."
+            )
+
+        except Exception:
+            # Registrar el detalle en los logs del servidor.
+            import logging
+            logging.getLogger(__name__).exception(
+                "Error al enviar una respuesta de contacto"
+            )
+            messages.error(
+                request,
+                "No se pudo enviar el correo. Revisa la configuración SMTP."
+            )
+
+    return render(
+        request,
+        "responder_mensaje_contacto.html",
+        {"mensaje": mensaje}
+    )

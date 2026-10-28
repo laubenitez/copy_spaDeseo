@@ -319,3 +319,9 @@ class NotificacionAdmin(admin.ModelAdmin):
     # Paginación en el admin
     list_per_page = 25
 
+@admin.register(MensajeContacto)
+class MensajeContactoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'correo', 'asunto', 'fecha', 'leido')
+    list_filter = ('leido', 'fecha')
+    search_fields = ('nombre', 'correo', 'asunto', 'mensaje')
+    list_editable = ('leido',)

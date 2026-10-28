@@ -1,0 +1,94 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+
+    <div class="mb-6">
+        <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
+            Buzón de Entrada
+        </p>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+            Mensajes de Contacto
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Mensajes enviados por los usuarios desde el formulario de la página principal.
+        </p>
+    </div>
+
+    {% if mensajes %}
+        <div class="space-y-4">
+            {% for m in mensajes %}
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 transition {% if not m.leido %}border-l-4 border-pink-500{% endif %}">
+                
+                <!-- Cabecera del mensaje -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white text-base">
+                            {{ m.asunto }}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            De: <span class="font-medium text-gray-700 dark:text-gray-300">{{ m.nombre }}</span> 
+                            (<a href="mailto:{{ m.correo }}?subject=Respuesta a tu consulta: {{ m.asunto }}" class="text-pink-600 hover:underline">{{ m.correo }}</a>)
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-gray-400">
+                            {{ m.fecha|date:"d M Y, H:i" }}
+                        </span>
+                        {% if m.leido %}
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                                Leído
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-pink-100 text-pink-700">
+                                Nuevo
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Cuerpo del mensaje -->
+                <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300 mb-4">
+                    {{ m.mensaje|linebreaksbr }}
+                </div>
+
+                <!-- Botón de acción para responder por correo -->
+                
+                <div class="flex justify-end">
+                    {% if m.respondido %}
+                        <button type="button"
+                                disabled
+                                aria-disabled="true"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm font-medium rounded-xl cursor-not-allowed border border-gray-200 dark:border-gray-600">
+                            <i class="fa-solid fa-check-circle"></i>
+                            Respondido
+                        </button>
+                    {% else %}
+                        <a href="{% url 'agenda:responder_mensaje_contacto' m.id %}"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium rounded-xl transition shadow-sm">
+                            <i class="fa-solid fa-reply"></i>
+                            Responder por correo
+                        </a>
+                    {% endif %}
+                </div>
+
+
+
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center bg-white dark:bg-gray-800">
+            <i class="fa-solid fa-inbox text-3xl text-gray-300 dark:text-gray-600 mb-3"></i>
+            <p class="font-medium text-gray-900 dark:text-white">
+                No hay mensajes de contacto por ahora.
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Los mensajes que envíen los clientes desde la página principal aparecerán aquí.
+            </p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

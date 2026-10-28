@@ -688,6 +688,22 @@
 
                             </a>
 
+                            <li>
+
+                            <a href="{% url 'agenda:ver_mensajes_contacto' %}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 transition font-medium
+                                {% if request.path == '/mensajes_contacto/' %}
+                                    border-l-4 border-pink-600 bg-pink-50 text-pink-600 dark:bg-pink-950/30 dark:text-pink-400 font-semibold
+                                {% else %}
+                                    hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400
+                                {% endif %}">
+
+                                <i class="fa-solid fa-envelope"></i>
+
+                                <span>Mensajes</span>
+
+                            </a>
+
                          
 
                         {% endif %}
@@ -737,19 +753,34 @@
 
                     </button>
 
-                    <div class="relative w-full hidden sm:block">
-
-                        <span
-                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-
+                    <form action="{% url 'agenda:busqueda_global' %}"
+                        method="get"
+                        class="relative w-full max-w-md hidden sm:block"
+                        role="search">
+                        
+                        <!-- Lupa a la izquierda -->
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                             <i class="fa-solid fa-magnifying-glass"></i>
-
                         </span>
 
-                        <input type="text" placeholder="Buscar..."
-                            class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white">
+                        <!-- Input tipo text (para evitar los controles nativos del navegador) con padding pr-10 a la derecha -->
+                        <input type="text"
+                            name="q"
+                            id="navbar-input-busqueda"
+                            value="{{ request.GET.q|default:'' }}"
+                            placeholder="Buscar citas, servicios, clientes..."
+                            aria-label="Buscar en Spa Deseo"
+                            autocomplete="off"
+                            class="w-full pl-10 pr-10 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white">
 
-                    </div>
+                        <!-- Botón X para limpiar (bien ubicado dentro del form) -->
+                        <button type="button"
+                                id="navbar-btn-limpiar"
+                                onclick="limpiarNavbarBusqueda()"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 {% if not request.GET.q %}hidden{% endif %}">
+                            <i class="fa-solid fa-xmark text-base"></i>
+                        </button>
+                    </form>
 
                 </div>
 
@@ -1294,6 +1325,26 @@
         }
 
 
+        const navInput = document.getElementById('navbar-input-busqueda');
+    const navBtnLimpiar = document.getElementById('navbar-btn-limpiar');
+
+    if (navInput) {
+        navInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                navBtnLimpiar.classList.remove('hidden');
+            } else {
+                navBtnLimpiar.classList.add('hidden');
+            }
+        });
+    }
+
+    function limpiarNavbarBusqueda() {
+        if (navInput) {
+            navInput.value = '';
+            navBtnLimpiar.classList.add('hidden');
+            navInput.focus();
+        }
+    }
 
 
     </script>

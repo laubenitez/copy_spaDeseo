@@ -1,0 +1,149 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+
+
+    <!-- BARRA DE BÚSQUEDA / ENCABEZADO -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Resultados de búsqueda
+        </h1>
+
+        <!-- Formulario de búsqueda limpio con input, icono y botón X -->
+        <form method="GET" action="{% url 'agenda:busqueda_global' %}" class="relative max-w-2xl">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            
+            <input type="text" 
+                   name="q" 
+                   id="input-busqueda"
+                   value="{{ termino }}" 
+                   placeholder="Buscar en el sistema..." 
+                   class="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-pink-500 dark:focus:border-pink-500 transition"
+                   autocomplete="off">
+
+            <!-- Botón X para limpiar (aparece solo si hay texto) -->
+            <button type="button" 
+                    id="btn-limpiar" 
+                    onclick="limpiarBusqueda()"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 {% if not termino %}hidden{% endif %}">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </form>
+
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            {% if termino %}
+                Resultados para: <strong>{{ termino }}</strong>
+            {% else %}
+                Escribe algo en el buscador y presiona Enter para comenzar.
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- SECCIONES RELACIONADAS (Solo aparecen si 'accesos' tiene elementos) -->
+    {% if accesos %}
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            Secciones relacionadas
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for acceso in accesos %}
+            <a href="{{ acceso.url }}"
+               class="block rounded-xl border border-gray-200 dark:border-gray-700
+                      bg-white dark:bg-gray-800 p-4 hover:border-pink-500
+                      hover:shadow-sm transition">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-10 h-10
+                                 rounded-lg bg-pink-50 text-pink-600">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </span>
+                    <div>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">
+                            {{ acceso.nombre }}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ acceso.descripcion }}
+                        </p>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- REGISTROS ENCONTRADOS -->
+    <section>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            Registros encontrados
+        </h2>
+
+        {% if resultados %}
+            <div class="space-y-3">
+                {% for resultado in resultados %}
+                <a href="{{ resultado.url }}"
+                   class="flex items-center justify-between gap-4 rounded-xl
+                          border border-gray-200 dark:border-gray-700
+                          bg-white dark:bg-gray-800 p-4
+                          hover:border-pink-500 transition">
+                    <div>
+                        <h3 class="font-medium text-gray-900 dark:text-white">
+                            {{ resultado.titulo }}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {{ resultado.descripcion }}
+                        </p>
+                    </div>
+
+                    <span class="shrink-0 text-xs rounded-full px-3 py-1
+                                 bg-pink-50 text-pink-700 font-medium">
+                        {{ resultado.tipo }}
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+        {% elif termino %}
+            <div class="rounded-xl border border-gray-200 dark:border-gray-700
+                        p-8 text-center bg-white dark:bg-gray-800">
+                <i class="fa-solid fa-magnifying-glass text-3xl
+                          text-gray-300 dark:text-gray-600 mb-3"></i>
+                <p class="font-medium text-gray-900 dark:text-white">
+                    No encontramos resultados.
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Intenta con otro nombre, palabra clave o número.
+                </p>
+            </div>
+        {% else %}
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                Puedes buscar nombres, servicios, citas o secciones disponibles para tu rol.
+            </p>
+        {% endif %}
+    </section>
+
+</div>
+
+<!-- Script sencillo para mostrar/ocultar la 'X' y limpiar el input -->
+<script>
+    const inputBusqueda = document.getElementById('input-busqueda');
+    const btnLimpiar = document.getElementById('btn-limpiar');
+
+    inputBusqueda.addEventListener('input', function() {
+        if (this.value.trim().length > 0) {
+            btnLimpiar.classList.remove('hidden');
+        } else {
+            btnLimpiar.classList.add('hidden');
+        }
+    });
+
+    function limpiarBusqueda() {
+        inputBusqueda.value = '';
+        btnLimpiar.classList.add('hidden');
+        inputBusqueda.focus();
+        // Opcional: si quieres que recargue la página al limpiar:
+        // window.location.href = "{% url 'agenda:busqueda_global' %}";
+    }
+</script>
+{% endblock %}

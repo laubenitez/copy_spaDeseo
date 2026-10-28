@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/citas/', views.obtener_citas_json, name='obtener_citas_json'),
     path('notificaciones/<int:notificacion_id>/abrir/', views.abrir_notificacion, name='abrir_notificacion'),
     path("verificar-codigo/",views.verificar_codigo,name="verificar_codigo"),
+    path('buscar/', views.busqueda_global, name="busqueda_global"),
 
 
 
@@ -103,10 +104,16 @@ urlpatterns = [
     path('inventario/movimientos/registrar/', views.registrar_movimiento, name='registrar_movimiento'),
     path('contabilidad/', views.modulo_contabilidad, name='modulo_contabilidad'),
     path('finanzas/registrar-gasto/', views.registrar_gasto_financiero, name='registrar_gasto_financiero'),
+<<<<<<< HEAD
 
 
     path("privacidad/",views.politica_privacidad,name="politica_privacidad"),
     path("solicitar-desactivacion/",views.solicitar_desactivacion_cuenta,name="solicitar_desactivacion_cuenta"),
+=======
+    path('mensajes_contacto/', views.ver_mensajes_contacto, name='ver_mensajes_contacto'),
+    path("mensajes_contacto/<int:mensaje_id>/responder/", views.responder_mensaje_contacto, name="responder_mensaje_contacto",),
+
+>>>>>>> 4d6aa89d3b9ba13cf6062094061d70d0e653b691
     #Servicio
     path('servicios/', views.ver_servicio, name="ver_servicio"),
     path('crear_servicio/', views.crear_servicio, name="crear_servicio"),
