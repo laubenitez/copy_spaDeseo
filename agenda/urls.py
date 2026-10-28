@@ -47,6 +47,7 @@ urlpatterns = [
     path('api/citas/', views.obtener_citas_json, name='obtener_citas_json'),
     path('notificaciones/<int:notificacion_id>/abrir/', views.abrir_notificacion, name='abrir_notificacion'),
     path("verificar-codigo/",views.verificar_codigo,name="verificar_codigo"),
+    path('buscar/', views.busqueda_global, name="busqueda_global"),
 
 
 
@@ -103,8 +104,8 @@ urlpatterns = [
     path('inventario/movimientos/registrar/', views.registrar_movimiento, name='registrar_movimiento'),
     path('contabilidad/', views.modulo_contabilidad, name='modulo_contabilidad'),
     path('finanzas/registrar-gasto/', views.registrar_gasto_financiero, name='registrar_gasto_financiero'),
-
-
+    path('mensajes_contacto/', views.ver_mensajes_contacto, name='ver_mensajes_contacto'),
+    path("mensajes_contacto/<int:mensaje_id>/responder/", views.responder_mensaje_contacto, name="responder_mensaje_contacto",),
 
     #Servicio
     path('servicios/', views.ver_servicio, name="ver_servicio"),

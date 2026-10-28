@@ -755,41 +755,76 @@
                 </div>
 
                 <div class="col-lg-7 mt-5 mt-lg-0">
-                    <form class="form-contacto" method="POST">
-                        {% csrf_token %}
-                        {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        {% endfor %}
-                        {% endif %}
+                    
+                <form class="form-contacto" method="POST">
+                {% csrf_token %}
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Nombre y Apellido</label>
-                                <input type="text" class="form-control" name="nombre" placeholder="Tu nombre" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Correo Electrónico</label>
-                                <input type="email" class="form-control" name="correo" placeholder="tu@correo.com" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small fw-bold">Asunto</label>
-                                <input type="text" class="form-control" name="asunto" placeholder="¿En qué podemos ayudarte?" required>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label small fw-bold">Mensaje</label>
-                                <textarea class="form-control" name="mensaje" placeholder="Escribe tu mensaje aquí..." rows="4" required></textarea>
-                            </div>
-                            <div class="col-12 text-center mt-4">
-                                <button type="submit" class="btn btn-contacto px-5">
-                                    Enviar mensaje <i class="fa-solid fa-paper-plane ms-2"></i>
+                
+                {% if messages %}
+                    <div id="mensaje-alerta" class="mb-4">
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'success' %}alert-light{% else %}alert-danger{% endif %} d-flex align-items-center justify-content-between gap-3 rounded-3 py-3 px-3 mb-2 shadow-sm"
+                                role="alert"
+                                style="
+                                    {% if message.tags == 'success' %}
+                                        background-color: #fff5f8;
+                                        border: 1px solid #f5d6e1;
+                                        color: #a82d58;
+                                    {% else %}
+                                        background-color: #fff5f5;
+                                        border: 1px solid #f3d0d0;
+                                        color: #a83232;
+                                    {% endif %}
+                                ">
+
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if message.tags == 'success' %}
+                                        <i class="fa-solid fa-circle-check"
+                                        style="color: #d23369;"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-exclamation"
+                                        style="color: #dc3545;"></i>
+                                    {% endif %}
+
+                                    <span class="small">{{ message }}</span>
+                                </div>
+
+                                <button type="button"
+                                        class="btn-close"
+                                        aria-label="Cerrar mensaje"
+                                        onclick="cerrarAlerta()">
                                 </button>
                             </div>
-                        </div>
-                    </form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Nombre y Apellido</label>
+                        <input type="text" class="form-control" name="nombre" placeholder="Tu nombre" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Correo Electrónico</label>
+                        <input type="email" class="form-control" name="correo" placeholder="tu@correo.com" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Asunto</label>
+                        <input type="text" class="form-control" name="asunto" placeholder="¿En qué podemos ayudarte?" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Mensaje</label>
+                        <textarea class="form-control" name="mensaje" placeholder="Escribe tu mensaje aquí..." rows="4" required></textarea>
+                    </div>
+                    <div class="col-12 text-center mt-4">
+                        <button type="submit" class="btn btn-contacto px-5">
+                            Enviar mensaje <i class="fa-solid fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
                 </div>
             </div>
         </div>
@@ -804,27 +839,86 @@
 </section>
 
 
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    // Configuración de los carruseles
     function configurarCarrusel(idCarrusel, btnAnt, btnSig, gapWidth) {
         const carrusel = document.getElementById(idCarrusel);
         const anterior = document.getElementById(btnAnt);
         const siguiente = document.getElementById(btnSig);
 
-        if (carrusel && anterior && siguiente) {
-            function desplazar(direccion) {
-                const tarjeta = carrusel.firstElementChild;
-                if (!tarjeta) return;
-                const distancia = tarjeta.getBoundingClientRect().width + gapWidth;
-                carrusel.scrollBy({ left: distancia * direccion, behavior: "smooth" });
-            }
-            anterior.addEventListener("click", () => desplazar(-1));
-            siguiente.addEventListener("click", () => desplazar(1));
+        if (!carrusel || !anterior || !siguiente) {
+            return;
         }
+
+        function desplazar(direccion) {
+            const tarjeta = carrusel.querySelector(".item-resena, .item-servicio")
+                || carrusel.firstElementChild;
+
+            if (!tarjeta) {
+                return;
+            }
+
+            const distancia = tarjeta.getBoundingClientRect().width + gapWidth;
+
+            carrusel.scrollBy({
+                left: distancia * direccion,
+                behavior: "smooth"
+            });
+        }
+
+        anterior.addEventListener("click", function () {
+            desplazar(-1);
+        });
+
+        siguiente.addEventListener("click", function () {
+            desplazar(1);
+        });
     }
 
-    configurarCarrusel("carruselServicios", "serviciosAnterior", "serviciosSiguiente", 30);
-    configurarCarrusel("carruselResenas", "resenasAnterior", "resenasSiguiente", 30);
+    configurarCarrusel(
+        "carruselServicios",
+        "serviciosAnterior",
+        "serviciosSiguiente",
+        30
+    );
+
+    configurarCarrusel(
+        "carruselResenas",
+        "resenasAnterior",
+        "resenasSiguiente",
+        30
+    );
+
+
+    // Cerrar las alertas de contacto
+    function cerrarAlerta() {
+        const alerta = document.getElementById("mensaje-alerta");
+
+        if (!alerta) return;
+
+        alerta.style.transition = "opacity 0.4s ease";
+        alerta.style.opacity = "0";
+
+        setTimeout(() => {
+            alerta.remove();
+        }, 400);
+    }
+
+    // Permite que el botón HTML invoque la función
+    window.cerrarAlerta = cerrarAlerta;
+
+    // Ocultar automáticamente el mensaje después de 5 segundos
+    const alerta = document.getElementById("mensaje-alerta");
+
+    if (alerta) {
+        setTimeout(cerrarAlerta, 5000);
+    }
+
 });
 </script>
+
 {% endblock %}
+

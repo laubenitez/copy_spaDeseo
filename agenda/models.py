@@ -638,6 +638,7 @@ class MensajeContacto(models.Model):
     mensaje = models.TextField()
     fecha = models.DateTimeField(auto_now_add=True)
     leido = models.BooleanField(default=False)
+    respondido = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.nombre} - {self.asunto}"
