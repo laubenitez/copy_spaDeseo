@@ -224,60 +224,200 @@
             fill: #ffffff; 
         }
 
+        /* Modal Estilo Spa Deseo */
+        .modal-faq-custom {
+        border-radius: 20px !important;
+        background-color: #ffffff;
+        }
+
+        .bg-pink-subtle {
+        background-color: #fde8ef;
+        }
+
+        .bg-light-pink {
+        background-color: #fff9fb;
+        }
+
+        .bg-pink-light-subtle {
+        background-color: #fff5f8;
+        }
+
+        .text-pink {
+        color: #e83e8c;
+        }
+
+        .text-pink-dark {
+        color: #c2185b;
+        }
+
+        /* Acordeón personalizado */
+        .custom-faq-accordion .accordion-item {
+        border: 1px solid #f3d2df !important;
+        transition: all 0.2s ease-in-out;
+        }
+
+        .custom-faq-accordion .accordion-button {
+        background-color: #ffffff;
+        box-shadow: none !important;
+        font-size: 0.95rem;
+        }
+
+        .custom-faq-accordion .accordion-button:not(.collapsed) {
+        background-color: #fde8ef;
+        color: #c2185b;
+        }
+
+        .custom-faq-accordion .accordion-button::after {
+        filter: hue-rotate(280deg);
+        }
+
+        /* Botón flotante WhatsApp */
+        .btn-pink-outline {
+        color: #d63384;
+        border: 1.5px solid #d63384;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        }
+
+        .btn-pink-outline:hover {
+        background-color: #d63384;
+        color: #ffffff;
+        }
+
     </style>
 </head>
 
 <body>
 
-    <header class="header-bg-wrapper">
-        <div class="container">
-            <div class="top-bar d-flex justify-content-between align-items-center">
-                <div>
-                    <a href="#">FAQs</a>
-                    <a href="#">Ayuda</a>
-                    <a href="#">Soporte</a>
-                </div>
-                <div class="social-icons">
-                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
-                </div>
+   <header class="header-bg-wrapper">
+    <div class="container">
+        <!-- Barra Superior (FAQs, Ayuda, Soporte y Redes Sociales) -->
+        <div class="top-bar d-flex justify-content-between align-items-center">
+            <div>
+                <!-- Abre el modal de FAQs de Bootstrap -->
+                <a href="#" data-bs-toggle="modal" data-bs-target="#modalFAQs" class="me-3 text-decoration-none">FAQs</a>
+                
+                <!-- Enlaces directos al correo corporativo -->
+                <a href="{% url 'agenda:index' %}#contacto" class="me-3 text-decoration-none">Ayuda</a>
+                <a href="{% url 'agenda:index' %}#contacto" class="text-decoration-none">Soporte</a>
             </div>
-
-            <nav class="navbar navbar-expand-lg navbar-light nav-custom">
-                <div class="container-fluid px-0">
-
-                    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navItems">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
-                    <div class="collapse navbar-collapse" id="navItems">
-                        <ul class="navbar-nav ms-auto align-items-center text-center">
-                            <li class="nav-item"><a href="{% url 'agenda:sobre_nosotros' %}" class="nav-link">Nosotros</a></li>
-                            <li class="nav-item"><a href="{% url 'agenda:lista_servicios' %}" class="nav-link">Servicios</a></li>
-                        </ul>
-
-                        <a href="{% url 'agenda:index' %}" class="navbar-brand mx-lg-5 text-center d-block">
-                            <h1 class="m-0 font-weight-bold" style="color: var(--primary);">
-                                SPA<span style="color: var(--rosa-banner); opacity: 0.9;"> DESEO</span>
-                            </h1>
-                        </a>
-
-                        <ul class="navbar-nav me-auto align-items-center text-center">
-                            <li class="nav-item"><a href="{% url 'agenda:index' %}#contacto"class="nav-link">Contacto</a></li>
-                            <li class="nav-item">
-                                <a href="{% url 'agenda:login' %}" class="nav-link" style="text-decoration: none;">
-                                    <span class="button_login">Iniciar Sesión</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                </div>
-            </nav>
+            <div class="social-icons">
+                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" class="me-2"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="me-2"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
         </div>
-    </header>
+
+        <!-- Barra de Navegación Principal -->
+        <nav class="navbar navbar-expand-lg navbar-light nav-custom">
+            <div class="container-fluid px-0">
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navItems">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navItems">
+                    <ul class="navbar-nav ms-auto align-items-center text-center">
+                        <li class="nav-item"><a href="{% url 'agenda:sobre_nosotros' %}" class="nav-link">Nosotros</a></li>
+                        <li class="nav-item"><a href="{% url 'agenda:lista_servicios' %}" class="nav-link">Servicios</a></li>
+                    </ul>
+
+                    <a href="{% url 'agenda:index' %}" class="navbar-brand mx-lg-5 text-center d-block">
+                        <h1 class="m-0 font-weight-bold" style="color: var(--primary);">
+                            SPA<span style="color: var(--rosa-banner); opacity: 0.9;"> DESEO</span>
+                        </h1>
+                    </a>
+
+                    <ul class="navbar-nav me-auto align-items-center text-center">
+                        <li class="nav-item"><a href="{% url 'agenda:index' %}#contacto" class="nav-link">Contacto</a></li>
+                        <li class="nav-item">
+                            <a href="{% url 'agenda:login' %}" class="nav-link" style="text-decoration: none;">
+                                <span class="button_login">Iniciar Sesión</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- Modal de Preguntas Frecuentes (FAQs) Estilizado -->
+<div class="modal fade" id="modalFAQs" tabindex="-1" aria-labelledby="modalFAQsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg modal-faq-custom">
+      
+      <!-- Cabecera -->
+      <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
+        <div class="w-100 text-center">
+          <h4 class="modal-title fw-bold font-title text-pink-dark mb-1" id="modalFAQsLabel">Preguntas Frecuentes</h4>
+          <p class="text-muted small mb-0">Resuelve tus dudas en un clic sobre nuestros servicios y citas</p>
+        </div>
+        <button type="button" class="btn-close btn-close-pink position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Cuerpo / Acordeón -->
+      <div class="modal-body p-4">
+        <div class="accordion accordion-flush custom-faq-accordion" id="accordionFAQs">
+          
+          <!-- Pregunta 1 -->
+          <div class="accordion-item mb-3 border-0 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="faqHeadingOne">
+              <button class="accordion-button collapsed fw-semibold text-pink-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="false" aria-controls="faqCollapseOne">
+                <i class="fa-regular fa-calendar-check me-2 text-pink"></i> ¿Cómo agendar una cita?
+              </button>
+            </h2>
+            <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne" data-bs-parent="#accordionFAQs">
+              <div class="accordion-body text-secondary small bg-light-pink">
+                Inicia sesión o regístrate en nuestra plataforma, selecciona el servicio que deseas, elige la manicurista de tu preferencia, la fecha y la hora disponible en el sistema para confirmar tu reserva al instante.
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 2 -->
+          <div class="accordion-item mb-3 border-0 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="faqHeadingTwo">
+              <button class="accordion-button collapsed fw-semibold text-pink-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+                <i class="fa-solid fa-wallet me-2 text-pink"></i> ¿Cuáles son los métodos de pago aceptados?
+              </button>
+            </h2>
+            <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#accordionFAQs">
+              <div class="accordion-body text-secondary small bg-light-pink">
+                Aceptamos transferencias bancarias directas (Bancolombia, Nequi, Daviplata) y pago en efectivo al momento de tu atención en nuestra sede en Bello.
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 3 -->
+          <div class="accordion-item mb-3 border-0 rounded-3 overflow-hidden shadow-sm">
+            <h2 class="accordion-header" id="faqHeadingThree">
+              <button class="accordion-button collapsed fw-semibold text-pink-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+                <i class="fa-solid fa-clock-rotate-left me-2 text-pink"></i> ¿Puedo cancelar o reprogramar mi cita?
+              </button>
+            </h2>
+            <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#accordionFAQs">
+              <div class="accordion-body text-secondary small bg-light-pink">
+                ¡Claro que sí! Puedes cancelar o reprogramar tu cita desde tu panel de usuario con al menos 2 horas de anticipación sin costo alguno.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Pie del Modal con llamada a la acción -->
+      <div class="modal-footer border-0 justify-content-center bg-pink-light-subtle rounded-bottom-4 py-3">
+        <span class="small text-muted me-2">¿Tienes alguna otra consulta?</span>
+        <a href="https://wa.me/573000000000" target="_blank" class="btn btn-pink-outline btn-sm rounded-pill px-3">
+          <i class="fa-brands fa-whatsapp me-1"></i> Escríbenos al WhatsApp
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
 
     <main>
         {% block content %}
