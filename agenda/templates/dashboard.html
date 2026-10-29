@@ -163,37 +163,241 @@
 
 
 
-        /* Reducir animaciones */
+        /* ==========================================
+        ACCESIBILIDAD: DESACTIVAR EFECTOS HOVER
+        ========================================== */
+
         body.accesibilidad-animaciones-reducidas *,
         body.accesibilidad-animaciones-reducidas *::before,
         body.accesibilidad-animaciones-reducidas *::after {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-            scroll-behavior: auto !important;
+            animation: none !important;
+            transition: none !important;
         }
 
-        /* Modo de lectura */
-        body.accesibilidad-modo-lectura main {
-            line-height: 1.8;
-            letter-spacing: 0.02em;
+        /* Forzar que los estilos hover no cambien la apariencia */
+        body.accesibilidad-animaciones-reducidas *:hover {
+            background-color: unset !important;
+            color: unset !important;
+            border-color: unset !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            filter: none !important;
+            opacity: unset !important;
+            transform: none !important;
         }
 
-        body.accesibilidad-modo-lectura main p {
-            max-width: 85ch;
+        /* Evitar efectos hover de Tailwind */
+        body.accesibilidad-animaciones-reducidas .hover\:scale-105:hover,
+        body.accesibilidad-animaciones-reducidas .hover\:scale-110:hover,
+        body.accesibilidad-animaciones-reducidas .hover\:-translate-y-1:hover,
+        body.accesibilidad-animaciones-reducidas .hover\:-translate-y-2:hover {
+            transform: none !important;
         }
 
-        body.accesibilidad-modo-lectura main h1,
-        body.accesibilidad-modo-lectura main h2,
-        body.accesibilidad-modo-lectura main h3 {
-            line-height: 1.5;
-            margin-bottom: 0.75rem;
+
+        /* =====================================================
+        SPA DESEO - MODO DE LECTURA ESTRICTO
+        Diseño monocromático: blanco, negro y gris
+        ===================================================== */
+
+        body.accesibilidad-modo-lectura,
+        body.accesibilidad-modo-lectura * {
+            font-family: Arial, Helvetica, sans-serif !important;
+            letter-spacing: 0.02em !important;
+            animation: none !important;
+            transition: none !important;
+            text-shadow: none !important;
+            box-shadow: none !important;
         }
 
-        body.accesibilidad-modo-lectura main p,
-        body.accesibilidad-modo-lectura main li {
-            margin-bottom: 0.5rem;
+        /* 1. Fondo general */
+        html:has(body.accesibilidad-modo-lectura),
+        body.accesibilidad-modo-lectura {
+            background: #ffffff !important;
+            background-image: none !important;
+            color: #222222 !important;
         }
+
+        /* 2. Eliminar colores, transparencias y degradados */
+        body.accesibilidad-modo-lectura * {
+            background-image: none !important;
+            text-shadow: none !important;
+        }
+
+        /* 3. Fondos blancos para paneles y tarjetas */
+        body.accesibilidad-modo-lectura main,
+        body.accesibilidad-modo-lectura section,
+        body.accesibilidad-modo-lectura article,
+        body.accesibilidad-modo-lectura aside,
+        body.accesibilidad-modo-lectura header,
+        body.accesibilidad-modo-lectura footer,
+        body.accesibilidad-modo-lectura nav,
+        body.accesibilidad-modo-lectura div,
+        body.accesibilidad-modo-lectura form,
+        body.accesibilidad-modo-lectura .bg-darkCard,
+        body.accesibilidad-modo-lectura [class*="bg-pink"],
+        body.accesibilidad-modo-lectura [class*="bg-purple"],
+        body.accesibilidad-modo-lectura [class*="bg-fuchsia"],
+        body.accesibilidad-modo-lectura [class*="bg-rose"],
+        body.accesibilidad-modo-lectura [class*="bg-gradient"],
+        body.accesibilidad-modo-lectura [class*="from-pink"],
+        body.accesibilidad-modo-lectura [class*="to-pink"] {
+            background-color: #ffffff !important;
+            background-image: none !important;
+            color: #222222 !important;
+            box-shadow: none !important;
+        }
+
+        /* 4. Todo el texto en negro o gris oscuro */
+        body.accesibilidad-modo-lectura h1,
+        body.accesibilidad-modo-lectura h2,
+        body.accesibilidad-modo-lectura h3,
+        body.accesibilidad-modo-lectura h4,
+        body.accesibilidad-modo-lectura h5,
+        body.accesibilidad-modo-lectura h6,
+        body.accesibilidad-modo-lectura p,
+        body.accesibilidad-modo-lectura span,
+        body.accesibilidad-modo-lectura label,
+        body.accesibilidad-modo-lectura strong,
+        body.accesibilidad-modo-lectura small,
+        body.accesibilidad-modo-lectura li,
+        body.accesibilidad-modo-lectura td,
+        body.accesibilidad-modo-lectura th,
+        body.accesibilidad-modo-lectura a,
+        body.accesibilidad-modo-lectura i,
+        body.accesibilidad-modo-lectura .text-white,
+        body.accesibilidad-modo-lectura [class*="text-pink"],
+        body.accesibilidad-modo-lectura [class*="text-purple"],
+        body.accesibilidad-modo-lectura [class*="text-fuchsia"],
+        body.accesibilidad-modo-lectura [class*="text-rose"],
+        body.accesibilidad-modo-lectura [class*="text-gray"],
+        body.accesibilidad-modo-lectura [class*="text-slate"] {
+            color: #222222 !important;
+            -webkit-text-fill-color: #222222 !important;
+        }
+
+        /* 5. Botones monocromáticos */
+        body.accesibilidad-modo-lectura button,
+        body.accesibilidad-modo-lectura input[type="button"],
+        body.accesibilidad-modo-lectura input[type="submit"],
+        body.accesibilidad-modo-lectura input[type="reset"],
+        body.accesibilidad-modo-lectura .btn,
+        body.accesibilidad-modo-lectura [class*="bg-pink-"][class*="rounded"],
+        body.accesibilidad-modo-lectura [class*="bg-purple-"][class*="rounded"] {
+            background: #eeeeee !important;
+            background-image: none !important;
+            color: #111111 !important;
+            border: 1px solid #777777 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        /* Botones oscuros para acciones principales */
+        body.accesibilidad-modo-lectura button[type="submit"],
+        body.accesibilidad-modo-lectura input[type="submit"] {
+            background: #222222 !important;
+            color: #ffffff !important;
+            border-color: #222222 !important;
+        }
+
+        /* 6. Campos de formulario */
+        body.accesibilidad-modo-lectura input,
+        body.accesibilidad-modo-lectura textarea,
+        body.accesibilidad-modo-lectura select {
+            background: #ffffff !important;
+            color: #222222 !important;
+            border: 1px solid #777777 !important;
+            box-shadow: none !important;
+            accent-color: #222222 !important;
+        }
+
+        body.accesibilidad-modo-lectura input::placeholder,
+        body.accesibilidad-modo-lectura textarea::placeholder {
+            color: #666666 !important;
+            -webkit-text-fill-color: #666666 !important;
+        }
+
+        /* 7. Tarjetas sin sombras ni decoraciones */
+        body.accesibilidad-modo-lectura [class*="rounded"],
+        body.accesibilidad-modo-lectura [class*="shadow"],
+        body.accesibilidad-modo-lectura [class*="ring"] {
+            box-shadow: none !important;
+            --tw-ring-color: #cccccc !important;
+        }
+
+        /* 8. Bordes grises */
+        body.accesibilidad-modo-lectura *,
+        body.accesibilidad-modo-lectura *::before,
+        body.accesibilidad-modo-lectura *::after {
+            border-color: #cccccc !important;
+        }
+
+        /* 9. Ocultar iconos decorativos y de Font Awesome */
+        body.accesibilidad-modo-lectura i.fa,
+        body.accesibilidad-modo-lectura i.fas,
+        body.accesibilidad-modo-lectura i.far,
+        body.accesibilidad-modo-lectura i.fab,
+        body.accesibilidad-modo-lectura .fa,
+        body.accesibilidad-modo-lectura .fas,
+        body.accesibilidad-modo-lectura .far,
+        body.accesibilidad-modo-lectura .fab,
+        body.accesibilidad-modo-lectura .icono-decorativo,
+        body.accesibilidad-modo-lectura .fa-decorativo {
+            display: none !important;
+        }
+
+        /* 10. Iconos SVG monocromáticos */
+        body.accesibilidad-modo-lectura svg {
+            color: #222222 !important;
+            filter: grayscale(1) !important;
+        }
+
+        body.accesibilidad-modo-lectura svg [fill]:not([fill="none"]) {
+            fill: #222222 !important;
+        }
+
+        body.accesibilidad-modo-lectura svg [stroke]:not([stroke="none"]) {
+            stroke: #222222 !important;
+        }
+
+        /* 11. Imágenes decorativas en escala de grises */
+        body.accesibilidad-modo-lectura img {
+            filter: grayscale(100%) !important;
+        }
+
+        /* 12. Tablas sencillas */
+        body.accesibilidad-modo-lectura table,
+        body.accesibilidad-modo-lectura thead,
+        body.accesibilidad-modo-lectura tbody,
+        body.accesibilidad-modo-lectura tr,
+        body.accesibilidad-modo-lectura th,
+        body.accesibilidad-modo-lectura td {
+            background: #ffffff !important;
+            color: #222222 !important;
+            border-color: #cccccc !important;
+        }
+
+        /* 13. Lectura cómoda */
+        body.accesibilidad-modo-lectura p,
+        body.accesibilidad-modo-lectura li {
+            line-height: 1.8 !important;
+        }
+
+        body.accesibilidad-modo-lectura h1,
+        body.accesibilidad-modo-lectura h2,
+        body.accesibilidad-modo-lectura h3 {
+            line-height: 1.5 !important;
+        }
+
+        /* 14. Evitar que el modo altere los diálogos abiertos */
+        body.accesibilidad-modo-lectura dialog,
+        body.accesibilidad-modo-lectura [role="dialog"] {
+            background: #ffffff !important;
+            color: #222222 !important;
+            border: 1px solid #777777 !important;
+        }
+
+
                 /* ==========================================
         ALTO CONTRASTE GENERAL - SPA DESEO
         ========================================== */

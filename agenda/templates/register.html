@@ -138,12 +138,24 @@
             </div>
         </div>
 
-        <!-- CHECKBOX DE TÉRMINOS Y CONDICIONES (Alineado al borde) -->
+        <!-- CHECKBOX DE TÉRMINOS Y PRIVACIDAD -->
         <div class="terminos-container">
-            <input type="checkbox" id="terminos" name="terminos" required style="accent-color: #ef3f7c; width: 15px; height: 15px; margin-right: 8px; cursor: pointer;">
-            <label for="terminos" style="margin-bottom: 0; font-weight: normal; color: #8d6879; display: inline;">
-                Acepto los <a href="#" target="_blank" style="color: #ef3f7c; text-decoration: underline;">Términos y la Política de Privacidad</a>
+
+            <input
+                type="checkbox"
+                id="terminos"
+                name="terminos"
+                required
+            >
+
+            <label for="terminos">
+                Acepto los
+                <a href="{% url 'agenda:terminos_condiciones' %}">
+                    Términos y condiciones
+                </a>
+                de Spa Deseo.
             </label>
+
         </div>
 
 
@@ -476,6 +488,45 @@ togglePassword.addEventListener("click", function () {
         grid-template-columns: 1fr;
         justify-content: start;
     }
+}
+
+.terminos-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+    margin: 10px 0;
+    font-size: 11.5px;
+    color: #8d6879;
+}
+
+.terminos-container input[type="checkbox"] {
+    flex: 0 0 15px;
+    width: 15px;
+    height: 15px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: #ef3f7c;
+    cursor: pointer;
+}
+
+.terminos-container label {
+    display: inline;
+    margin: 0;
+    font-size: 11.5px;
+    font-weight: normal;
+    line-height: 1.7;
+    color: #8d6879;
+}
+
+.terminos-container a {
+    color: #ef3f7c;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.terminos-container a:hover {
+    color: #d92f70;
 }
 
 </style>

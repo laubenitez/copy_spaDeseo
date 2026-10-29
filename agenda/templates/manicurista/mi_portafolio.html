@@ -168,9 +168,16 @@
 
                     <i class="fa-regular fa-calendar"></i>
 
+
                     <span>
-                        Publicado {{ trabajo.fecha_publicacion|date:"d/m/Y" }}
+                        Publicado
+                        {% if formato_fecha == "MDY" %}
+                            {{ trabajo.fecha_publicacion|date:"m/d/Y" }}
+                        {% else %}
+                            {{ trabajo.fecha_publicacion|date:"d/m/Y" }}
+                        {% endif %}
                     </span>
+
 
                 </div>
 

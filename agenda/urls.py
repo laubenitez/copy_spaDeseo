@@ -104,16 +104,30 @@ urlpatterns = [
     path('inventario/movimientos/registrar/', views.registrar_movimiento, name='registrar_movimiento'),
     path('contabilidad/', views.modulo_contabilidad, name='modulo_contabilidad'),
     path('finanzas/registrar-gasto/', views.registrar_gasto_financiero, name='registrar_gasto_financiero'),
-<<<<<<< HEAD
+
 
 
     path("privacidad/",views.politica_privacidad,name="politica_privacidad"),
     path("solicitar-desactivacion/",views.solicitar_desactivacion_cuenta,name="solicitar_desactivacion_cuenta"),
-=======
     path('mensajes_contacto/', views.ver_mensajes_contacto, name='ver_mensajes_contacto'),
     path("mensajes_contacto/<int:mensaje_id>/responder/", views.responder_mensaje_contacto, name="responder_mensaje_contacto",),
+    # Activar y desactivar cuentas de clientes (solo administrador)
+    path(
+    'clientes/<int:id>/desactivar/',
+    views.desactivar_cliente_admin,
+    name='desactivar_cliente_admin'
+    ),
+    path(
+    'clientes/<int:id>/activar/',
+    views.activar_cliente_admin,
+    name='activar_cliente_admin'
+    ),
+    path(
+    "terminos-condiciones/",
+    views.terminos_condiciones,
+    name="terminos_condiciones",
+    ),
 
->>>>>>> 4d6aa89d3b9ba13cf6062094061d70d0e653b691
     #Servicio
     path('servicios/', views.ver_servicio, name="ver_servicio"),
     path('crear_servicio/', views.crear_servicio, name="crear_servicio"),

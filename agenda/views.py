@@ -10,7 +10,7 @@ from django.contrib.sessions.models import Session
 import requests
 from django.core.validators import validate_email
 from django.utils import translation
-
+from django.db.models import Case, When, Value, IntegerField
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -389,15 +389,28 @@ class ResenaViewSet(viewsets.ModelViewSet):
 @require_POST
 def solicitar_desactivacion_cuenta(request):
     """
-    Desactiva la cuenta del usuario sin eliminar su registro
-    ni borrar físicamente sus datos relacionados.
+    Permite desactivar su cuenta a clientes y manicuristas,
+    pero impide que el administrador desactive la suya.
     """
 
     usuario = request.user
 
-    # Solo se permite realizar la operación mediante POST.
-    # El usuario debe confirmar la solicitud en el modal.
+    # Identificar el rol del usuario.
+    perfil = getattr(usuario, "perfil", None)
+    rol = ""
 
+    if perfil and perfil.rol:
+        rol = perfil.rol.nombre.strip().upper()
+
+    # Impedir que el administrador desactive su propia cuenta.
+    if rol == "ADMINISTRADOR":
+        messages.error(
+            request,
+            "El administrador no puede desactivar su propia cuenta."
+        )
+        return redirect("agenda:ajustes")
+
+    # Verificar que el usuario haya confirmado la operación.
     if request.POST.get("confirmar_desactivacion") != "si":
         messages.error(
             request,
@@ -405,25 +418,25 @@ def solicitar_desactivacion_cuenta(request):
         )
         return redirect("agenda:ajustes")
 
-    # Desactivar la cuenta sin eliminar el registro de la base de datos.
+    # Desactivar la cuenta sin eliminar sus datos.
     usuario.is_active = False
     usuario.save(update_fields=["is_active"])
 
     # Cerrar la sesión actual.
     auth_logout(request)
 
-    # Eliminar los datos auxiliares de sesión utilizados por Spa Deseo.
+    # Limpiar los datos auxiliares de sesión.
     request.session.pop("logueado", None)
     request.session.flush()
 
     messages.success(
         request,
         "Tu cuenta ha sido desactivada. "
-        "No podrás iniciar sesión mientras permanezca desactivada. "
-        "Los registros relacionados no se han eliminado automáticamente."
+        "Los registros relacionados no se han eliminado."
     )
 
     return redirect("agenda:login")
+
 
 @login_required(login_url="agenda:login")
 def ajustes(request):
@@ -432,6 +445,12 @@ def ajustes(request):
     )
 
     es_cliente = hasattr(request.user, "cliente")
+    perfil = getattr(request.user, "perfil", None)
+    es_administrador = (
+        perfil is not None
+        and perfil.rol is not None
+        and perfil.rol.nombre.strip().upper() == "ADMINISTRADOR"
+    )
 
     if request.method == "POST":
         preferencias.verificacion_adicional = (
@@ -514,12 +533,97 @@ def ajustes(request):
         "usa_google": usa_google,
         "estado_seguridad_correcto": estado_seguridad_correcto,
         "es_cliente": es_cliente,
+        "es_administrador": es_administrador,
     }
 
     return render(request, "ajustes.html", contexto)
 
+# ACTIVAR Y DESACTIVAR CUENTAS DE CLIENTES
+
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_POST
+def desactivar_cliente_admin(request, id):
+    try:
+        cliente = get_object_or_404(
+            Clientes.objects.select_related("user"),
+            pk=id
+        )
+
+        if not cliente.user:
+            messages.error(
+                request,
+                "Este cliente no tiene un usuario asociado."
+            )
+            return redirect("agenda:ver_cliente")
+
+        if not cliente.user.is_active:
+            messages.warning(
+                request,
+                f"La cuenta de {cliente.nombre} ya está desactivada."
+            )
+            return redirect("agenda:ver_cliente")
+
+        cliente.user.is_active = False
+        cliente.user.save(update_fields=["is_active"])
+
+        messages.success(
+            request,
+            f"La cuenta de {cliente.nombre} fue desactivada correctamente."
+        )
+
+    except Exception as e:
+        print(f"Error al desactivar cliente: {e}")
+        messages.error(
+            request,
+            "Ocurrió un error al desactivar la cuenta del cliente."
+        )
+
+    return redirect("agenda:ver_cliente")
 
 
+@login_required(login_url="agenda:login")
+@requiere_rol("ADMINISTRADOR")
+@require_POST
+def activar_cliente_admin(request, id):
+    try:
+        cliente = get_object_or_404(
+            Clientes.objects.select_related("user"),
+            pk=id
+        )
+
+        if not cliente.user:
+            messages.error(
+                request,
+                "Este cliente no tiene un usuario asociado."
+            )
+            return redirect("agenda:ver_cliente")
+
+        if cliente.user.is_active:
+            messages.warning(
+                request,
+                f"La cuenta de {cliente.nombre} ya está activa."
+            )
+            return redirect("agenda:ver_cliente")
+
+        cliente.user.is_active = True
+        cliente.user.save(update_fields=["is_active"])
+
+        messages.success(
+            request,
+            f"La cuenta de {cliente.nombre} fue reactivada correctamente."
+        )
+
+    except Exception as e:
+        print(f"Error al activar cliente: {e}")
+        messages.error(
+            request,
+            "Ocurrió un error al activar la cuenta del cliente."
+        )
+
+    return redirect("agenda:ver_cliente")
+def terminos_condiciones(request):
+    return render(request, "terminos_condiciones.html")
 
 @login_required(login_url="agenda:login")
 @require_POST
@@ -799,19 +903,37 @@ def lista_servicios(request):
 def citas_asignadas(request):
     """
     Muestra el listado de citas asignadas a la manicurista autenticada.
-    Incluye optimización de consultas SQL (Anti N+1) y control estricto de perfil.
+    Incluye optimización de consultas SQL (Anti N+1), control estricto
+    de perfil y ordenamiento por estado, fecha y hora.
     """
+
     # 1. Validación de perfil asignado
     try:
         manicurista = Manicurista.objects.get(user=request.user)
     except Manicurista.DoesNotExist:
-        messages.error(request, "Tu usuario no está vinculado a un perfil activo de manicurista.")
+        messages.error(
+            request,
+            "Tu usuario no está vinculado a un perfil activo de manicurista."
+        )
         return redirect("agenda:login")
 
-    # 2. Consulta optimizada con JOINs explícitos y ordenamiento cronológico
-    citas = Citas.objects.filter(manicurista=manicurista)\
-                         .select_related('cliente', 'servicios')\
-                         .order_by('-fecha', '-hora')
+    # 2. Consulta optimizada y ordenada por estado
+    citas = (
+        Citas.objects
+        .filter(manicurista=manicurista)
+        .select_related("cliente", "servicios")
+        .annotate(
+            orden_estado=Case(
+                When(estado="programada", then=Value(1)),
+                When(estado="en_proceso", then=Value(2)),
+                When(estado="completada", then=Value(3)),
+                When(estado="cancelada", then=Value(4)),
+                default=Value(5),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by("orden_estado", "fecha", "hora")
+    )
 
     # 3. Comprobar si cada cliente permite recordatorios por WhatsApp
     for cita in citas:
@@ -820,16 +942,24 @@ def citas_asignadas(request):
         if cita.cliente and cita.cliente.user:
             try:
                 preferencias = cita.cliente.user.preferencias_spa
-                cita.recordatorios_whatsapp_activos = preferencias.recordatorios_whatsapp
+                cita.recordatorios_whatsapp_activos = (
+                    preferencias.recordatorios_whatsapp
+                )
             except PreferenciasUsuario.DoesNotExist:
                 pass
 
+    # 4. Contexto para la plantilla
     contexto = {
         "manicurista": manicurista,
         "citas": citas,
     }
 
-    return render(request, "manicurista/citas_asignadas.html", contexto)
+    return render(
+        request,
+        "manicurista/citas_asignadas.html",
+        contexto
+    )
+
 
 
 
@@ -1053,7 +1183,7 @@ def editar_perfil(request):
 
 
 
-@login_required(login_url="agenda:login")
+
 def politica_privacidad(request):
     return render(request, "politica_privacidad.html")
 
@@ -1546,6 +1676,9 @@ def register(request):
 
 @login_required(login_url="agenda:login")
 def dashboard(request):
+    preferencias_accesibilidad, _ = PreferenciasUsuario.objects.get_or_create(
+        user=request.user
+    )
 
     # =========================================================
     # 1. OBTENER O CREAR EL PERFIL DEL USUARIO
@@ -1685,6 +1818,7 @@ def dashboard(request):
 
         contexto = {
             "rol": rol,
+            "preferencias_accesibilidad": preferencias_accesibilidad,
             "cliente": cliente,
             "perfil": perfil_usuario,
             "citas": citas,
@@ -1748,6 +1882,7 @@ def dashboard(request):
 
         contexto = {
             "rol": rol,
+            "preferencias_accesibilidad": preferencias_accesibilidad,
             "perfil": perfil_usuario,
             "citas": citas,
             "manicurista": manicurista_logueada,
@@ -1800,6 +1935,7 @@ def dashboard(request):
         contexto = {
             "usuario": request.user.get_full_name() or request.user.username,
             "rol": rol,
+            "preferencias_accesibilidad": preferencias_accesibilidad,
             "perfil": perfil_usuario,
             "citas": citas,
             "servicios": servicios_disponibles,
@@ -1833,6 +1969,7 @@ def dashboard(request):
     contexto = {
         "rol": rol,
         "cliente": cliente,
+        "preferencias_accesibilidad": preferencias_accesibilidad,
         "perfil": perfil_usuario,
         "citas": citas,
         "usuario": request.user,
@@ -1894,67 +2031,164 @@ def ver_cliente(request):
 @requiere_rol("ADMINISTRADOR")
 def crear_cliente(request):
     if request.method == "POST":
-        password = request.POST.get("password")
-        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        email = request.POST.get("email", "").strip().lower()
         nombre = request.POST.get("nombre", "").strip()
         apellido = request.POST.get("apellido", "").strip()
         telefono = request.POST.get("telefono", "").strip()
 
+        # 1. Validar que los campos obligatorios estén completos.
+        if not all([password, email, nombre, apellido, telefono]):
+            messages.error(
+                request,
+                "Todos los campos son obligatorios."
+            )
+            return redirect("agenda:crear_cliente")
+
+        # 2. Validar el formato del correo.
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(
+                request,
+                "El formato del correo electrónico no es válido."
+            )
+            return redirect("agenda:crear_cliente")
+
+        # 3. Validar la contraseña.
         error = validar_password(password)
 
         if error:
             messages.error(request, error)
             return redirect("agenda:crear_cliente")
 
-        # Verificar que el correo no esté registrado (insensible a mayúsculas)
-        if User.objects.filter(username__iexact=email).exists() or User.objects.filter(email__iexact=email).exists():
+        # 4. Verificar si el correo ya está registrado.
+        if (
+            User.objects.filter(username__iexact=email).exists()
+            or User.objects.filter(email__iexact=email).exists()
+        ):
             messages.error(
                 request,
                 "Ya existe un usuario registrado con ese correo."
             )
             return redirect("agenda:crear_cliente")
 
+        # 5. Consultar la API externa de validación.
+        api_key = os.environ.get("EMAIL_VALIDATION_API_KEY")
+
+        if not api_key:
+            messages.error(
+                request,
+                "La validación externa del correo no está configurada. "
+                "Contacta al administrador del sistema."
+            )
+            return redirect("agenda:crear_cliente")
+
+        try:
+            respuesta = requests.post(
+                "https://api.email-validation.org/v1/validate",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "email": email,
+                    "timeout": 6,
+                },
+                timeout=10,
+            )
+
+            respuesta.raise_for_status()
+            resultado = respuesta.json()
+            estado_correo = resultado.get("status", "").lower()
+
+        except requests.RequestException:
+            messages.error(
+                request,
+                "No fue posible verificar el correo en este momento. "
+                "Inténtalo nuevamente más tarde."
+            )
+            return redirect("agenda:crear_cliente")
+
+        except ValueError:
+            messages.error(
+                request,
+                "El servicio de validación devolvió una respuesta no válida."
+            )
+            return redirect("agenda:crear_cliente")
+
+        # 6. Aceptar solamente correos confirmados como válidos.
+        if estado_correo != "valid":
+            if estado_correo == "invalid":
+                mensaje = (
+                    "El correo no parece existir o no puede recibir mensajes. "
+                    "Verifica la dirección ingresada."
+                )
+            elif estado_correo == "catch_all":
+                mensaje = (
+                    "No se pudo confirmar que ese buzón específico exista. "
+                    "Utiliza un correo que pueda verificarse."
+                )
+            elif estado_correo in ("spamtrap", "abuse", "do_not_mail"):
+                mensaje = (
+                    "El correo no puede aceptarse por motivos de seguridad "
+                    "o entregabilidad."
+                )
+            else:
+                mensaje = (
+                    "No fue posible confirmar que el correo sea válido. "
+                    "Revisa la dirección e inténtalo nuevamente."
+                )
+
+            messages.error(request, mensaje)
+            return redirect("agenda:crear_cliente")
+
+        # 7. Crear el usuario y su ficha solo si pasó las validaciones.
         try:
             with transaction.atomic():
-
-                # 1. Buscar el rol CLIENTE
                 rol = Rol.objects.get(nombre="CLIENTE")
 
-                # 2. Crear usuario de Django
                 user = User(
                     username=email,
                     email=email,
                     first_name=nombre,
-                    last_name=apellido
+                    last_name=apellido,
                 )
-
-                # 3. Guardar contraseña de forma segura
                 user.set_password(password)
                 user.save()
 
-                # 4. Asignar rol al Perfil creado por la señal
-                perfil, _ = PerfilUsuario.objects.get_or_create(user=user)
+                perfil, _ = PerfilUsuario.objects.get_or_create(
+                    user=user
+                )
                 perfil.rol = rol
                 perfil.save()
 
-                # 5. Crear la ficha del cliente
                 Clientes.objects.create(
                     user=user,
                     nombre=nombre,
                     apellido=apellido,
                     telefono=telefono,
-                    email=email
+                    email=email,
                 )
 
-            messages.success(request, "Cliente creado correctamente.")
+            messages.success(
+                request,
+                "Cliente creado correctamente."
+            )
             return redirect("agenda:ver_cliente")
 
         except Rol.DoesNotExist:
-            messages.error(request, "El rol CLIENTE no existe. Créalo primero.")
+            messages.error(
+                request,
+                "El rol CLIENTE no existe. Créalo primero."
+            )
             return redirect("agenda:crear_cliente")
 
         except Exception:
-            messages.error(request, "Ocurrió un error al crear el cliente. Inténtalo de nuevo.")
+            messages.error(
+                request,
+                "Ocurrió un error al crear el cliente. Inténtalo de nuevo."
+            )
             return redirect("agenda:crear_cliente")
 
     return render(request, "cliente/crear_cliente.html")
@@ -2100,6 +2334,7 @@ def crear_resena(request, cita_id):
 
     return render(request, 'cliente/crear_resena.html', {'cita': cita})
 
+
 @login_required(login_url="agenda:login")
 @requiere_rol("CLIENTE")
 def mis_resenas(request):
@@ -2108,24 +2343,40 @@ def mis_resenas(request):
     try:
         cliente = Clientes.objects.get(user=request.user)
     except Clientes.DoesNotExist:
-        messages.error(request, "No existe información de cliente asociada a tu usuario.")
+        messages.error(
+            request,
+            "No existe información de cliente asociada a tu usuario."
+        )
         return redirect("agenda:login")
 
-    # 2. Consultar reseñas con JOINs optimizados para la plantilla
+    # 2. Consultar reseñas con JOINs optimizados
     resenas = Resena.objects.filter(
         cita__cliente=cliente
     ).select_related(
-        'cita',
-        'cita__manicurista',
-        'cita__servicios'
+        "cita",
+        "cita__manicurista",
+        "cita__servicios"
     ).order_by(
-        '-cita__fecha',
-        '-cita__hora'
+        "-cita__fecha",
+        "-cita__hora"
     )
 
-    return render(request, 'cliente/mis_resenas.html', {
-        'resenas': resenas
+    # 3. Obtener las preferencias de fecha y hora
+    try:
+        preferencias = request.user.preferencias_spa
+        formato_fecha = preferencias.formato_fecha
+        formato_hora = preferencias.formato_hora
+    except PreferenciasUsuario.DoesNotExist:
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
+    # 4. Enviar los datos a la plantilla
+    return render(request, "cliente/mis_resenas.html", {
+        "resenas": resenas,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     })
+
 
 @requiere_rol("ADMINISTRADOR")
 def ver_todas_resenas(request):
@@ -2146,7 +2397,8 @@ def ver_todas_resenas(request):
     }
     return render(request, "administrador/resenas.html", contexto)
 
-#CRUD CITAS
+
+# CRUD CITAS
 @login_required(login_url="agenda:login")
 @requiere_rol("CLIENTE")
 def mis_citas(request):
@@ -2169,8 +2421,19 @@ def mis_citas(request):
         'pagos'
     ).order_by('-fecha', '-hora')
 
+    # Obtener las preferencias de fecha y hora
+    try:
+        preferencias = request.user.preferencias_spa
+        formato_fecha = preferencias.formato_fecha
+        formato_hora = preferencias.formato_hora
+    except PreferenciasUsuario.DoesNotExist:
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
     return render(request, "cliente/mis_citas.html", {
-        "citas": citas
+        "citas": citas,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     })
 
 
@@ -2198,45 +2461,75 @@ def ver_citas(request):
 
 
 
+@login_required(login_url="agenda:login")
 @requiere_rol("ADMINISTRADOR")
 def ver_todas_citas(request):
     try:
-        # Consultar todas las citas, ordenadas de forma descendente por fecha y hora.
-        citas = Citas.objects.all().order_by('-fecha', '-hora')
+        # Ordenar las citas igual que en Citas asignadas.
+        citas = (
+            Citas.objects
+            .select_related("cliente", "servicios")
+            .annotate(
+                orden_estado=Case(
+                    When(estado="programada", then=Value(1)),
+                    When(estado="en_proceso", then=Value(2)),
+                    When(estado="completada", then=Value(3)),
+                    When(estado="cancelada", then=Value(4)),
+                    default=Value(5),
+                    output_field=IntegerField(),
+                )
+            )
+            .order_by("orden_estado", "fecha", "hora")
+        )
 
-        # Comprobar las preferencias de recordatorios de WhatsApp de cada cliente.
+        # Consultar las preferencias de recordatorios de cada cliente.
         for cita in citas:
-            # Por defecto, permitir los recordatorios si el cliente no tiene preferencias guardadas.
             cita.recordatorios_whatsapp_activos = True
 
             if cita.cliente and cita.cliente.user:
                 try:
-                    preferencias = cita.cliente.user.preferencias_spa
+                    preferencias_cliente = (
+                        cita.cliente.user.preferencias_spa
+                    )
                     cita.recordatorios_whatsapp_activos = (
-                        preferencias.recordatorios_whatsapp
+                        preferencias_cliente.recordatorios_whatsapp
                     )
                 except PreferenciasUsuario.DoesNotExist:
-                    # Si no existen preferencias guardadas, se conserva el valor predeterminado.
                     pass
 
+        # Preferencias de fecha y hora del administrador.
+        try:
+            preferencias_accesibilidad = request.user.preferencias_spa
+            formato_fecha = preferencias_accesibilidad.formato_fecha
+            formato_hora = preferencias_accesibilidad.formato_hora
+        except PreferenciasUsuario.DoesNotExist:
+            formato_fecha = "DMY"
+            formato_hora = "12"
+
     except DatabaseError:
-        # Manejar errores de base de datos.
         citas = []
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
         messages.error(
             request,
             "Ocurrió un error en la base de datos al intentar cargar las citas."
         )
 
     except Exception:
-        # Manejar otros errores inesperados.
         citas = []
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
         messages.error(
             request,
             "Ocurrió un error inesperado al cargar las citas."
         )
 
     contexto = {
-        "citas": citas
+        "citas": citas,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     }
 
     return render(
@@ -2244,6 +2537,7 @@ def ver_todas_citas(request):
         "administrador/todas_citas.html",
         contexto
     )
+
 
 
 def calcular_descuento_cita(cliente, servicio, fecha_cita):
@@ -2657,6 +2951,7 @@ def crear_citas(request):
             )
             return redirect("agenda:crear_citas")
 
+
     # GET
     manicurista = Manicurista.objects.filter(estado="Activa")
     servicios = Servicios.objects.filter(estado__iexact="Activo")
@@ -2675,12 +2970,24 @@ def crear_citas(request):
         if not descuento_pendiente:
             request.session.pop("descuento_pendiente_id", None)
 
+    # Obtener las preferencias de fecha y hora del usuario
+    try:
+        preferencias = request.user.preferencias_spa
+        formato_fecha = preferencias.formato_fecha
+        formato_hora = preferencias.formato_hora
+    except PreferenciasUsuario.DoesNotExist:
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
     return render(request, "cliente/crear_cita.html", {
         "cliente": cliente,
         "manicurista": manicurista,
         "servicios": servicios,
-        "descuento_pendiente": descuento_pendiente
+        "descuento_pendiente": descuento_pendiente,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     })
+
 
 
 
@@ -2903,11 +3210,22 @@ def actualizar_citas(request, id):
     manicurista = Manicurista.objects.filter(estado="Activa")
     servicios = Servicios.objects.filter(estado="Activo")
 
+    # Obtener las preferencias de fecha y hora del usuario
+    try:
+        preferencias = request.user.preferencias_spa
+        formato_fecha = preferencias.formato_fecha
+        formato_hora = preferencias.formato_hora
+    except PreferenciasUsuario.DoesNotExist:
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
     contexto = {
         "cita": cita,
         "cliente": cliente,
         "manicurista": manicurista,
-        "servicios": servicios
+        "servicios": servicios,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     }
 
     return render(request, "cliente/actualizar_citas.html", contexto)
@@ -3031,19 +3349,19 @@ def portafolio_manicurista_cliente(request, manicurista_id):
         return redirect("agenda:manicuristas_cliente")
 
 
-# 2. CREAR MANICURISTA
+
 @login_required(login_url="agenda:login")
 @requiere_rol("ADMINISTRADOR")
 @require_http_methods(["GET", "POST"])
 def crear_manicurista(request):
     if request.method == "POST":
-        password = request.POST.get("password")
+        password = request.POST.get("password", "")
         email = request.POST.get("email", "").strip().lower()
         nombre = request.POST.get("nombre", "").strip()
         apellido = request.POST.get("apellido", "").strip()
         telefono = request.POST.get("telefono", "").strip()
         especialidad = request.POST.get("especialidad", "").strip()
-        fecha_ingreso_raw = request.POST.get("fecha_ingreso")
+        fecha_ingreso_raw = request.POST.get("fecha_ingreso", "").strip()
         foto_perfil = request.FILES.get("foto_perfil")
 
         form_data = {
@@ -3052,63 +3370,169 @@ def crear_manicurista(request):
             "email": email,
             "telefono": telefono,
             "especialidad": especialidad,
-            "fecha_ingreso": fecha_ingreso_raw
+            "fecha_ingreso": fecha_ingreso_raw,
         }
 
-        # Validar campos obligatorios
-        if not all([nombre, apellido, email, password, telefono, especialidad, fecha_ingreso_raw]):
-            messages.error(request, "Todos los campos obligatorios deben diligenciarse.")
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
+        def mostrar_error(mensaje):
+            messages.error(request, mensaje)
+            return render(
+                request,
+                "manicurista/crear_manicurista.html",
+                {"form_data": form_data},
+            )
 
-        # Validar contraseña
+        # 1. Validar campos obligatorios.
+        if not all([
+            nombre,
+            apellido,
+            email,
+            password,
+            telefono,
+            especialidad,
+            fecha_ingreso_raw,
+        ]):
+            return mostrar_error(
+                "Todos los campos obligatorios deben diligenciarse."
+            )
+
+        # 2. Validar la contraseña.
         error_pass = validar_password(password)
+
         if error_pass:
-            messages.error(request, error_pass)
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
+            return mostrar_error(error_pass)
 
-        # Validar formato del correo
-        patron_email = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-        if not re.match(patron_email, email):
-            messages.error(request, "El correo electrónico no tiene un formato válido.")
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
-
-        # Validar Unicidad de Correo y Username
-        if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username__iexact=email).exists():
-            messages.error(request, "Ya existe un usuario o manicurista registrada con ese correo.")
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
-
-        # Validar teléfono
-        if not re.match(r"^\+?\d{7,15}$", telefono):
-            messages.error(request, "El número de teléfono ingresado no es válido.")
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
-
-        # Validar fecha de ingreso
+        # 3. Validar el formato del correo.
         try:
-            fecha_ingreso = datetime.strptime(fecha_ingreso_raw, "%Y-%m-%d").date()
-            if fecha_ingreso > date.today():
-                messages.error(request, "La fecha de ingreso no puede ser una fecha futura.")
-                return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
-        except ValueError:
-            messages.error(request, "La fecha de ingreso no tiene un formato válido.")
-            return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
+            validate_email(email)
+        except ValidationError:
+            return mostrar_error(
+                "El correo electrónico no tiene un formato válido."
+            )
 
-        # Persistencia Atómica
+        # 4. Comprobar que el correo no esté registrado.
+        if (
+            User.objects.filter(email__iexact=email).exists()
+            or User.objects.filter(username__iexact=email).exists()
+        ):
+            return mostrar_error(
+                "Ya existe un usuario registrado con ese correo."
+            )
+
+        # 5. Validar el teléfono.
+        # Se permiten espacios, paréntesis, guiones y el signo +.
+        digitos_telefono = re.sub(r"\D", "", telefono)
+
+        if (
+            not re.fullmatch(r"[+\d\s().-]+", telefono)
+            or not 7 <= len(digitos_telefono) <= 15
+        ):
+            return mostrar_error(
+                "El número de teléfono ingresado no es válido."
+            )
+
+        # 6. Validar la fecha en formato día/mes/año.
+        try:
+            fecha_ingreso = datetime.strptime(
+                fecha_ingreso_raw,
+                "%d/%m/%Y",
+            ).date()
+
+            # Evitar fechas escritas de manera ambigua o incorrecta.
+            if fecha_ingreso.strftime("%d/%m/%Y") != fecha_ingreso_raw:
+                raise ValueError
+
+            if fecha_ingreso > date.today():
+                return mostrar_error(
+                    "La fecha de ingreso no puede ser una fecha futura."
+                )
+
+        except ValueError:
+            return mostrar_error(
+                "Ingresa una fecha válida con el formato dd/mm/aaaa. "
+                "Por ejemplo: 05/03/2026."
+            )
+
+        # 7. Verificar el correo con el servicio externo.
+        api_key = os.environ.get("EMAIL_VALIDATION_API_KEY")
+
+        if not api_key:
+            return mostrar_error(
+                "La validación externa del correo no está configurada. "
+                "Contacta al administrador del sistema."
+            )
+
+        try:
+            respuesta = requests.post(
+                "https://api.email-validation.org/v1/validate",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "email": email,
+                    "timeout": 6,
+                },
+                timeout=10,
+            )
+
+            respuesta.raise_for_status()
+            resultado = respuesta.json()
+            estado_correo = str(
+                resultado.get("status", "")
+            ).strip().lower()
+
+        except requests.RequestException:
+            return mostrar_error(
+                "No fue posible verificar el correo en este momento. "
+                "Inténtalo nuevamente más tarde."
+            )
+
+        except ValueError:
+            return mostrar_error(
+                "El servicio de validación devolvió una respuesta no válida."
+            )
+
+        # Aceptar únicamente el estado valid.
+        if estado_correo != "valid":
+            if estado_correo == "invalid":
+                mensaje = (
+                    "El correo no parece existir o no puede recibir mensajes. "
+                    "Verifica la dirección ingresada."
+                )
+            elif estado_correo == "catch_all":
+                mensaje = (
+                    "No se pudo confirmar que el buzón exista. "
+                    "Utiliza un correo que pueda verificarse."
+                )
+            else:
+                mensaje = (
+                    "No fue posible confirmar que el correo sea válido. "
+                    "Verifica la dirección e inténtalo nuevamente."
+                )
+
+            return mostrar_error(mensaje)
+
+        # 8. Crear usuario, perfil y manicurista en una transacción.
         try:
             with transaction.atomic():
+                rol, _ = Rol.objects.get_or_create(
+                    nombre="MANICURISTA"
+                )
+
                 user = User.objects.create_user(
                     username=email,
                     email=email,
                     password=password,
                     first_name=nombre,
-                    last_name=apellido
+                    last_name=apellido,
                 )
 
-                rol, _ = Rol.objects.get_or_create(nombre="MANICURISTA")
-
-                PerfilUsuario.objects.create(
-                    user=user,
-                    rol=rol
+                # Si una señal ya creó el perfil, actualizarlo.
+                perfil, _ = PerfilUsuario.objects.get_or_create(
+                    user=user
                 )
+                perfil.rol = rol
+                perfil.save()
 
                 Manicurista.objects.create(
                     user=user,
@@ -3120,21 +3544,36 @@ def crear_manicurista(request):
                     especialidad=especialidad,
                     fecha_ingreso=fecha_ingreso,
                     estado="Activa",
-                    foto_perfil=foto_perfil
+                    foto_perfil=foto_perfil,
                 )
 
-            messages.success(request, f"Manicurista '{nombre} {apellido}' registrada correctamente.")
+            messages.success(
+                request,
+                f"Manicurista '{nombre} {apellido}' registrada correctamente.",
+            )
             return redirect("agenda:ver_manicuristas")
 
         except IntegrityError:
-            messages.error(request, "Ocurrió un conflicto de integridad al guardar la manicurista.")
-        except Exception as e:
-            print(f"Error inesperado al crear: {e}")
-            messages.error(request, "Ocurrió un error inesperado al crear la manicurista.")
+            return mostrar_error(
+                "Ocurrió un conflicto al guardar la manicurista. "
+                "Verifica que el correo no esté registrado."
+            )
 
-        return render(request, "manicurista/crear_manicurista.html", {"form_data": form_data})
+        except Exception:
+            # Registrar el detalle en los logs del servidor.
+            import logging
+            logging.getLogger(__name__).exception(
+                "Error inesperado al crear una manicurista."
+            )
+            return mostrar_error(
+                "Ocurrió un error inesperado al crear la manicurista."
+            )
 
-    return render(request, "manicurista/crear_manicurista.html")
+    return render(
+        request,
+        "manicurista/crear_manicurista.html",
+        {"form_data": {}},
+    )
 
 
 # 3. ELIMINAR / DESACTIVAR MANICURISTA
@@ -3150,11 +3589,14 @@ def eliminar_manicurista(request, id):
             return redirect("agenda:ver_manicuristas")
 
         ahora = datetime.now()
+
         tiene_citas_pendientes = Citas.objects.filter(
             manicurista=manicurista,
             fecha__gte=ahora.date()
         ).exclude(
-            estado__in=["Cancelada", "Completada"]
+            estado__iexact="cancelada"
+        ).exclude(
+            estado__iexact="completada"
         ).exists()
 
         if tiene_citas_pendientes:
@@ -3441,9 +3883,16 @@ def mi_portafolio(request):
             manicurista=manicurista
         ).order_by("-fecha_publicacion")
 
+        # Obtener el formato de fecha guardado en los ajustes del usuario
+        try:
+            formato_fecha = request.user.preferencias_spa.formato_fecha
+        except PreferenciasUsuario.DoesNotExist:
+            formato_fecha = "DMY"
+
         contexto = {
             "manicurista": manicurista,
             "trabajos": trabajos,
+            "formato_fecha": formato_fecha,
         }
 
         return render(
@@ -5287,9 +5736,20 @@ def mis_descuentos(request):
             if ya_utilizo:
                 descuento.estado_cliente = "utilizado"
 
+    # Obtener las preferencias de fecha y hora
+    try:
+        preferencias = request.user.preferencias_spa
+        formato_fecha = preferencias.formato_fecha
+        formato_hora = preferencias.formato_hora
+    except PreferenciasUsuario.DoesNotExist:
+        formato_fecha = "DMY"
+        formato_hora = "12"
+
     contexto = {
         "descuentos": descuentos,
         "hoy": hoy,
+        "formato_fecha": formato_fecha,
+        "formato_hora": formato_hora,
     }
 
     return render(
@@ -5297,6 +5757,7 @@ def mis_descuentos(request):
         "cliente/mis_descuentos.html",
         contexto
     )
+
 
 
 

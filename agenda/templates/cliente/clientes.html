@@ -2,8 +2,8 @@
 
 {% block content %}
 <div>
-   <!-- Encabezado -->
-   <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <!-- Encabezado -->
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <p class="text-xs font-semibold uppercase tracking-widest text-pink-600 dark:text-pink-400 mb-2">
                 Tu comunidad en Spa Deseo
@@ -14,32 +14,33 @@
             </p>
         </div>
 
-        <!-- Botón para registrar cliente -->
-         {% if request.session.logueado.rol == "Administrador" %}
+        {% if request.session.logueado.rol == "Administrador" %}
             <a href="{% url 'agenda:crear_cliente' %}"
-                class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
+               class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition">
                 <i class="fa-solid fa-plus"></i> Nuevo Cliente
             </a>
         {% endif %}
-   </div>
+    </div>
 
-   <!-- Grid de Clientes -->
-   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Grid de clientes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for i in datos %}
         <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition">
-             
+
             <div>
-               <!-- Encabezado de la Tarjeta -->
-               <div class="flex items-center justify-between mb-4">
+                <!-- Encabezado de la tarjeta -->
+                <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         {% if i.foto_perfil %}
-                            <img src="{{ i.foto_perfil.url }}" alt="{{ i.nombre }}" class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
+                            <img src="{{ i.foto_perfil.url }}"
+                                 alt="{{ i.nombre }}"
+                                 class="w-12 h-12 rounded-full object-cover border border-pink-200 dark:border-pink-900">
                         {% else %}
                             <div class="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 font-bold flex items-center justify-center text-base select-none">
                                 {{ i.nombre|slice:":1"|upper }}{{ i.apellido|slice:":1"|upper }}
                             </div>
                         {% endif %}
-                       
+
                         <div>
                             <h2 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
                                 {{ i.nombre }} {{ i.apellido }}
@@ -48,53 +49,72 @@
                         </div>
                     </div>
 
-                    <span class="text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
-                        ID: {{ i.id }}
-                    </span>
-               </div>
+                    <div class="flex flex-col items-end gap-1.5">
+                        <span class="text-xs font-semibold px-2.5 py-1 bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 rounded-md">
+                            ID: {{ i.id }}
+                        </span>
 
-               <!-- Detalle de Contacto -->
-               <div class="space-y-2.5 text-xs border-t border-b border-gray-100 dark:border-gray-700/60 py-3.5 my-3">
+                        {% if i.user %}
+                            {% if i.user.is_active %}
+                                <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-xs whitespace-nowrap">
+                                    
+                                    Cuenta activa
+                                </span>
+                            {% else %}
+                                <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400  text-xs whitespace-nowrap">
+                                    
+                                    Cuenta inactiva
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-[10px] font-semibold px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
+                                Sin usuario
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Detalle de contacto -->
+                <div class="space-y-2.5 text-xs border-t border-b border-gray-100 dark:border-gray-700/60 py-3.5 my-3">
                     <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
                         <span class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-phone text-pink-500 w-4"></i> Teléfono:
+                            <i class="fa-solid fa-phone text-pink-500 w-4"></i>
+                            Teléfono:
                         </span>
                         <strong class="text-gray-800 dark:text-gray-200">{{ i.telefono }}</strong>
                     </div>
 
                     <div class="flex items-center justify-between text-gray-600 dark:text-gray-300">
                         <span class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-envelope text-pink-500 w-4"></i> Correo:
+                            <i class="fa-solid fa-envelope text-pink-500 w-4"></i>
+                            Correo:
                         </span>
                         <strong class="text-gray-800 dark:text-gray-200 truncate max-w-[160px]">{{ i.email }}</strong>
                     </div>
-               </div>
+                </div>
             </div>
 
-            <!-- Botones de Acción -->
+            <!-- Botones de acción -->
             <div class="flex items-center gap-2 pt-1">
-                <!-- Botón WhatsApp -->
-
-                <!-- Botón WhatsApp según las preferencias del cliente -->
+                <!-- WhatsApp según las preferencias del cliente -->
                 {% if i.recordatorios_whatsapp_activos %}
                     <a href="https://wa.me/57{{ i.telefono }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="flex-1 py-2 px-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
                         <i class="fa-brands fa-whatsapp text-sm"></i>
                         WhatsApp
                     </a>
                 {% else %}
                     <span title="Este cliente desactivó los recordatorios por WhatsApp."
-                        aria-disabled="true"
-                        class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed">
+                          aria-disabled="true"
+                          class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed">
                         <i class="fa-brands fa-whatsapp text-sm"></i>
                         Recordatorios desactivados
                     </span>
                 {% endif %}
 
-
-                <!-- Botón Historial -->
+                <!-- Historial -->
                 <button type="button"
                         data-id="{{ i.id }}"
                         data-nombre="{{ i.nombre }} {{ i.apellido }}"
@@ -102,6 +122,44 @@
                         class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 hover:text-pink-600 dark:hover:bg-pink-950/30 dark:hover:text-pink-400 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition">
                     <i class="fa-regular fa-eye"></i> Historial
                 </button>
+                <!-- Activar/desactivar: solo administrador -->
+                {% if request.session.logueado.rol == "Administrador" and i.user %}
+                    {% if i.user.is_active %}
+                        <form method="post"
+                            action="{% url 'agenda:desactivar_cliente_admin' i.id %}"
+                            onsubmit="return prepararConfirmacionCuenta(
+                                event,
+                                this,
+                                'desactivar',
+                                '{{ i.nombre|escapejs }} {{ i.apellido|escapejs }}'
+                            );">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    title="Desactivar cuenta"
+                                    aria-label="Desactivar cuenta"
+                                    class="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 rounded-lg flex items-center justify-center transition">
+                                <i class="fa-solid fa-user-check text-base"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="post"
+                            action="{% url 'agenda:activar_cliente_admin' i.id %}"
+                            onsubmit="return prepararConfirmacionCuenta(
+                                event,
+                                this,
+                                'reactivar',
+                                '{{ i.nombre|escapejs }} {{ i.apellido|escapejs }}'
+                            );">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    title="Reactivar cuenta"
+                                    aria-label="Reactivar cuenta"
+                                    class="w-10 h-10 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-lg flex items-center justify-center transition">
+                                <i class="fa-solid fa-user text-base"></i>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
         {% empty %}
@@ -110,33 +168,86 @@
                 <i class="fa-solid fa-users"></i>
             </div>
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">No hay clientes registrados</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cuando se registre un nuevo cliente aparecerá en este listado.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Cuando se registre un nuevo cliente aparecerá en este listado.
+            </p>
         </div>
         {% endfor %}
-   </div>
+    </div>
 </div>
 
-<!-- Modal global de Historial de Citas -->
-<div id="modalHistorial" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important;" class="flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+<!-- Modal de confirmación para activar/desactivar cuentas -->
+<div id="modalConfirmacionCuenta"
+     class="fixed inset-0 z-[2147483646] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="w-full max-w-md rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-darkCard shadow-2xl overflow-hidden">
+        <div class="px-6 py-5 flex items-start gap-4">
+            <div id="confirmacionCuentaIcono"
+                 class="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+
+            <div class="flex-1">
+                <h3 id="confirmacionCuentaTitulo" class="text-lg font-bold text-gray-900 dark:text-white">
+                    Confirmar acción
+                </h3>
+                <p id="confirmacionCuentaMensaje" class="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                    ¿Deseas continuar?
+                </p>
+            </div>
+
+            <button type="button"
+                    onclick="cerrarConfirmacionCuenta()"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+                    aria-label="Cerrar ventana">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
+            <button type="button"
+                    onclick="cerrarConfirmacionCuenta()"
+                    class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-semibold transition">
+                Cancelar
+            </button>
+            <button type="button"
+                    id="confirmarAccionCuenta"
+                    onclick="confirmarAccionCuenta()"
+                    class="px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold transition">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal global de historial de citas -->
+<div id="modalHistorial"
+     style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important;"
+     class="flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+
     <div class="bg-white dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-gray-700 w-full max-w-2xl mx-4 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
-        <!-- Header del Modal con el ícono principal -->
+
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-darkCard">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 flex items-center justify-center text-lg">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modalHistorialTitulo">Historial de Citas</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Servicios programados y realizados</p>
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white" id="modalHistorialTitulo">
+                        Historial de Citas
+                    </h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Servicios programados y realizados
+                    </p>
                 </div>
             </div>
-            <button onclick="cerrarHistorial()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 transition cursor-pointer text-lg">
+
+            <button type="button"
+                    onclick="cerrarHistorial()"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 transition cursor-pointer text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        <!-- Contenido / Lista de Citas -->
         <div class="p-6 overflow-y-auto space-y-3" id="modalHistorialContenido">
             <div class="text-center py-8 text-gray-400">
                 <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
@@ -147,6 +258,59 @@
 </div>
 
 <script>
+    var formularioCuentaPendiente = null;
+
+    function prepararConfirmacionCuenta(evento, formulario, accion, nombre) {
+        evento.preventDefault();
+        formularioCuentaPendiente = formulario;
+
+        var modal = document.getElementById('modalConfirmacionCuenta');
+        var titulo = document.getElementById('confirmacionCuentaTitulo');
+        var mensaje = document.getElementById('confirmacionCuentaMensaje');
+        var boton = document.getElementById('confirmarAccionCuenta');
+        var icono = document.getElementById('confirmacionCuentaIcono');
+
+        if (accion === 'reactivar') {
+            titulo.textContent = 'Reactivar cuenta';
+            mensaje.textContent = '¿Seguro que deseas reactivar la cuenta de ' + nombre + '?';
+            boton.textContent = 'Sí, reactivar';
+            boton.className = 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition';
+            icono.className = 'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400';
+            icono.innerHTML = '<i class="fa-solid fa-user-check"></i>';
+        } else {
+            titulo.textContent = 'Desactivar cuenta';
+            mensaje.textContent = '¿Seguro que deseas desactivar la cuenta de ' + nombre + '?';
+            boton.textContent = 'Sí, desactivar';
+            boton.className = 'px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition';
+            icono.className = 'w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400';
+            icono.innerHTML = '<i class="fa-solid fa-user"></i>';
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        return false;
+    }
+
+    function confirmarAccionCuenta() {
+        if (formularioCuentaPendiente) {
+            formularioCuentaPendiente.submit();
+        }
+    }
+
+    function cerrarConfirmacionCuenta() {
+        var modal = document.getElementById('modalConfirmacionCuenta');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        formularioCuentaPendiente = null;
+    }
+
+    document.addEventListener('keydown', function(evento) {
+        if (evento.key === 'Escape') {
+            cerrarConfirmacionCuenta();
+        }
+    });
+
     function abrirHistorialDesdeBoton(btn) {
         var clienteId = btn.getAttribute('data-id');
         var clienteNombre = btn.getAttribute('data-nombre');
@@ -155,11 +319,11 @@
 
     function abrirHistorial(clienteId, clienteNombre) {
         document.getElementById('modalHistorialTitulo').innerText = "Historial de: " + clienteNombre;
-        
+
         var modal = document.getElementById('modalHistorial');
         modal.classList.remove('hidden');
         document.body.appendChild(modal);
-        
+
         var contenedor = document.getElementById('modalHistorialContenido');
         contenedor.innerHTML = `
             <div class="text-center py-8 text-gray-400">
@@ -176,6 +340,7 @@
             .then(data => {
                 if (data.citas && data.citas.length > 0) {
                     let html = '';
+
                     data.citas.forEach(cita => {
                         let estadoLower = (cita.estado || '').toLowerCase();
                         let badgeClass = '';
@@ -193,7 +358,9 @@
                         } else {
                             badgeClass = 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/50';
                             dotClass = 'bg-pink-500';
-                            estadoTexto = cita.estado ? (cita.estado.charAt(0).toUpperCase() + cita.estado.slice(1).toLowerCase()) : 'Programada';
+                            estadoTexto = cita.estado
+                                ? (cita.estado.charAt(0).toUpperCase() + cita.estado.slice(1).toLowerCase())
+                                : 'Programada';
                         }
 
                         let valorNumerico = parseFloat(cita.total) || 0;
@@ -208,33 +375,37 @@
                         html += `
                             <div class="p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 flex items-center justify-between gap-4">
                                 <div class="flex items-start gap-3">
-                                    <!-- Icono de agenda para cada tarjeta -->
                                     <div class="w-9 h-9 rounded-lg bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center shrink-0 mt-0.5">
                                         <i class="fa-solid fa-calendar-days text-sm"></i>
                                     </div>
+
                                     <div class="space-y-1">
-                                        <!-- Nombre del servicio en negrita -->
                                         <h4 class="text-sm font-bold text-gray-900 dark:text-white">
                                             ${cita.servicio || 'Servicio'}
                                         </h4>
-                                        <!-- Fecha y hora acompañadas del icono de reloj -->
+
                                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                                            <i class="fa-regular fa-clock text-pink-500 mr-1"></i> ${cita.fecha || ''} - ${cita.hora || ''}
+                                            <i class="fa-regular fa-clock text-pink-500 mr-1"></i>
+                                            ${cita.fecha || ''} - ${cita.hora || ''}
                                         </p>
                                     </div>
                                 </div>
+
                                 <div class="flex flex-col items-end gap-2 shrink-0 pl-2">
                                     <span class="text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 ${badgeClass}">
                                         <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
                                         ${estadoTexto}
                                     </span>
+
                                     <span class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                                        <i class="fa-solid fa-coins text-pink-500 text-[10px]"></i> ${precioFormateado}
+                                        <i class="fa-solid fa-coins text-pink-500 text-[10px]"></i>
+                                        ${precioFormateado}
                                     </span>
                                 </div>
                             </div>
                         `;
                     });
+
                     contenedor.innerHTML = html;
                 } else {
                     contenedor.innerHTML = `

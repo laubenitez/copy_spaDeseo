@@ -82,7 +82,11 @@
                             Fecha
                         </p>
                         <p class="mt-1 font-semibold text-gray-800 dark:text-white">
-                            {{ cita.fecha }}
+                            {% if formato_fecha == "MDY" %}
+                                {{ cita.fecha|date:"m/d/Y" }}
+                            {% else %}
+                                {{ cita.fecha|date:"d/m/Y" }}
+                            {% endif %}
                         </p>
                     </div>
                 </div>
@@ -100,7 +104,11 @@
                             Hora
                         </p>
                         <p class="mt-1 font-semibold text-gray-800 dark:text-white">
-                            {{ cita.hora }}
+                            {% if formato_hora == "12" %}
+                                {{ cita.hora|time:"g:i A" }}
+                            {% else %}
+                                {{ cita.hora|time:"H:i" }}
+                            {% endif %}
                         </p>
                     </div>
                 </div>

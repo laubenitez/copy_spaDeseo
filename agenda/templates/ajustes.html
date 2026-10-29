@@ -54,7 +54,7 @@
 
 
                 <!-- CAMBIAR CONTRASEÑA -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-900 transition">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
 
                     <div class="flex items-start gap-3">
 
@@ -520,8 +520,8 @@
                 </div>
 
 
-
-                <!-- Eliminar o desactivar cuenta -->
+                {% if not es_administrador %}
+                <!-- Desactivar cuenta: solo clientes y manicuristas -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-red-100 dark:border-red-900/40">
 
                     <div>
@@ -544,6 +544,8 @@
                     </button>
 
                 </div>
+                {% endif %}
+
 
 
             </div>
@@ -751,7 +753,7 @@
                     href="mailto:spadeso.oficial@gmail.com"
                     class="font-semibold text-pink-600 hover:text-pink-800 underline"
                 >
-                    spadeso.oficial@gmail.com
+                    spadeseo.oficial@gmail.com
                 </a>
             </p>
 

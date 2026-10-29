@@ -197,8 +197,20 @@
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
                                     <i class="fa-regular fa-calendar-days"></i>
                                 </span>
-                                <input type="date" id="fecha_ingreso" name="fecha_ingreso" value="{{ form_data.fecha_ingreso|default:'' }}" required
-                                       class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition">
+                                <input
+                                    type="text"
+                                    id="fecha_ingreso"
+                                    name="fecha_ingreso"
+                                    value="{{ form_data.fecha_ingreso|default:'' }}"
+                                    required
+                                    placeholder="dd/mm/aaaa"
+                                    inputmode="numeric"
+                                    pattern="(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}"
+                                    maxlength="10"
+                                    autocomplete="off"
+                                    title="Escribe la fecha en formato día/mes/año, por ejemplo 05/03/2026."
+                                    class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition"
+                                >
                             </div>
                         </div>
 

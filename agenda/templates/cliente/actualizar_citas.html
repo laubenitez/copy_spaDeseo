@@ -1,3 +1,4 @@
+
 {% extends "dashboard.html" %}
 
 {% block content %}
@@ -16,7 +17,7 @@
 
     <!-- Formulario -->
     <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
-        <form method="POST" class="space-y-6">
+        <form method="POST" class="space-y-6" id="formActualizarCita">
             {% csrf_token %}
 
             <!-- Cliente -->
@@ -31,14 +32,16 @@
 
             <!-- Manicurista -->
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label for="manicurista" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Manicurista
                 </label>
-                <select name="manicurista"
-                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white appearance-none bg-no-repeat bg-[right_0.5rem_center] focus:ring-2 focus:ring-pink-500 outline-none"
-                    style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;20&quot; height=&quot;20&quot; fill=&quot;gray&quot; viewBox=&quot;0 0 20 20&quot;><path d=&quot;M5 7l5 5 5-5H5z&quot;/></svg>');">
+
+                <select name="manicurista" id="manicurista" required
+                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
                     {% for m in manicurista %}
-                    <option value="{{ m.id }}" {% if cita.manicurista.id == m.id %}selected{% endif %}>
+                    <option value="{{ m.id }}"
+                        {% if cita.manicurista.id == m.id %}selected{% endif %}>
                         {{ m.nombre }} {{ m.apellido }}
                     </option>
                     {% endfor %}
@@ -47,42 +50,119 @@
 
             <!-- Servicio -->
             <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label for="servicios" class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     Servicio
                 </label>
-                <select name="servicios"
-                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white appearance-none bg-no-repeat bg-[right_0.5rem_center] focus:ring-2 focus:ring-pink-500 outline-none"
-                    style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;20&quot; height=&quot;20&quot; fill=&quot;gray&quot; viewBox=&quot;0 0 20 20&quot;><path d=&quot;M5 7l5 5 5-5H5z&quot;/></svg>');">
+
+                <select name="servicios" id="servicios" required
+                    class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 pl-4 pr-10 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
                     {% for s in servicios %}
-                    <option value="{{ s.id }}" {% if cita.servicios.id == s.id %}selected{% endif %}>
+                    <option value="{{ s.id }}"
+                        {% if cita.servicios.id == s.id %}selected{% endif %}>
                         {{ s.nombre }} - ${{ s.precio }}
                     </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Fecha y Hora en la misma fila -->
+            <!-- Fecha y hora -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 <!-- Fecha -->
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label for="fecha_visible"
+                        class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Fecha
                     </label>
-                    <input type="date" name="fecha" value="{{ cita.fecha|date:'Y-m-d' }}"
-                        class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
+                    <!-- Este es el valor que recibe Django -->
+                    <input type="hidden"
+                        name="fecha"
+                        id="fecha_real"
+                        value="{{ cita.fecha|date:'Y-m-d' }}">
+
+                    <!-- Campo visible según la preferencia -->
+                    <div class="relative">
+                        <input type="text"
+                            id="fecha_visible"
+                            autocomplete="off"
+                            placeholder="{% if formato_fecha == 'MDY' %}MM/DD/AAAA{% else %}DD/MM/AAAA{% endif %}"
+                            value="{% if formato_fecha == 'MDY' %}{{ cita.fecha|date:'m/d/Y' }}{% else %}{{ cita.fecha|date:'d/m/Y' }}{% endif %}"
+                            required
+                            class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 pr-12 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
+                        <button type="button"
+                            id="abrirCalendario"
+                            aria-label="Abrir calendario"
+                            class="absolute inset-y-0 right-0 px-4 text-pink-600 hover:text-pink-700">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </button>
+
+                        <!-- Selector nativo del calendario -->
+                        <input type="date"
+                            id="fecha_selector"
+                            value="{{ cita.fecha|date:'Y-m-d' }}"
+                            aria-label="Seleccionar fecha"
+                            class="absolute right-0 bottom-0 w-1 h-1 opacity-0 pointer-events-none">
+                    </div>
+
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {% if formato_fecha == "MDY" %}
+                            Formato: mes/día/año
+                        {% else %}
+                            Formato: día/mes/año
+                        {% endif %}
+                    </p>
                 </div>
 
                 <!-- Hora -->
                 <div>
-                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label for="hora_visible"
+                        class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                         Hora
                     </label>
-                    <input type="time" name="hora" value="{{ cita.hora|time:'H:i' }}"
-                        class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
+                    <!-- Este es el valor que recibe Django -->
+                    <input type="hidden"
+                        name="hora"
+                        id="hora_real"
+                        value="{{ cita.hora|time:'H:i' }}">
+
+                    <!-- Campo visible según la preferencia -->
+                    <div class="relative">
+                        <input type="text"
+                            id="hora_visible"
+                            autocomplete="off"
+                            placeholder="{% if formato_hora == '12' %}03:30 PM{% else %}15:30{% endif %}"
+                            value="{% if formato_hora == '12' %}{{ cita.hora|time:'g:i A' }}{% else %}{{ cita.hora|time:'H:i' }}{% endif %}"
+                            required
+                            class="w-full h-12 rounded-lg border border-gray-300 dark:border-gray-600 px-4 pr-12 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-pink-500 outline-none">
+
+                        <button type="button"
+                            id="abrirHora"
+                            aria-label="Seleccionar hora"
+                            class="absolute inset-y-0 right-0 px-4 text-pink-600 hover:text-pink-700">
+                            <i class="fa-solid fa-clock"></i>
+                        </button>
+
+                        <!-- Selector nativo de hora -->
+                        <input type="time"
+                            id="hora_selector"
+                            value="{{ cita.hora|time:'H:i' }}"
+                            aria-label="Seleccionar hora"
+                            class="absolute right-0 bottom-0 w-1 h-1 opacity-0 pointer-events-none">
+                    </div>
+
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {% if formato_hora == "12" %}
+                            Formato de 12 horas (AM/PM)
+                        {% else %}
+                            Formato de 24 horas
+                        {% endif %}
+                    </p>
                 </div>
 
-                  
             </div>
 
             <!-- Botón -->
@@ -98,5 +178,235 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formatoFecha = "{{ formato_fecha|default:'DMY' }}";
+    const formatoHora = "{{ formato_hora|default:'12' }}";
+
+    const fechaVisible = document.getElementById("fecha_visible");
+    const fechaReal = document.getElementById("fecha_real");
+    const fechaSelector = document.getElementById("fecha_selector");
+    const abrirCalendario = document.getElementById("abrirCalendario");
+
+    const horaVisible = document.getElementById("hora_visible");
+    const horaReal = document.getElementById("hora_real");
+    const horaSelector = document.getElementById("hora_selector");
+    const abrirHora = document.getElementById("abrirHora");
+
+    function abrirSelector(selector) {
+        try {
+            if (typeof selector.showPicker === "function") {
+                selector.showPicker();
+            } else {
+                selector.focus();
+                selector.click();
+            }
+        } catch (error) {
+            selector.focus();
+            selector.click();
+        }
+    }
+
+    // FECHA: formato visible y valor interno YYYY-MM-DD.
+    function mostrarFecha(valorISO) {
+        if (!valorISO) return "";
+
+        const partes = valorISO.split("-");
+        if (partes.length !== 3) return "";
+
+        const [anio, mes, dia] = partes;
+
+        return formatoFecha === "MDY"
+            ? `${mes}/${dia}/${anio}`
+            : `${dia}/${mes}/${anio}`;
+    }
+
+    function convertirFecha(valorVisible) {
+        const valor = valorVisible.trim();
+        const partes = valor.split(/[\/\-\.]/);
+
+        if (partes.length !== 3) return null;
+
+        let dia, mes, anio;
+
+        if (formatoFecha === "MDY") {
+            [mes, dia, anio] = partes;
+        } else {
+            [dia, mes, anio] = partes;
+        }
+
+        if (!/^\d{1,2}$/.test(dia) ||
+            !/^\d{1,2}$/.test(mes) ||
+            !/^\d{4}$/.test(anio)) {
+            return null;
+        }
+
+        dia = Number(dia);
+        mes = Number(mes);
+        anio = Number(anio);
+
+        const fechaComprobacion = new Date(anio, mes - 1, dia);
+
+        if (
+            fechaComprobacion.getFullYear() !== anio ||
+            fechaComprobacion.getMonth() !== mes - 1 ||
+            fechaComprobacion.getDate() !== dia
+        ) {
+            return null;
+        }
+
+        return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+    }
+
+    function sincronizarFechaDesdeVisible() {
+        const fechaISO = convertirFecha(fechaVisible.value);
+
+        if (fechaISO) {
+            fechaReal.value = fechaISO;
+            fechaSelector.value = fechaISO;
+            fechaVisible.setCustomValidity("");
+        } else {
+            fechaReal.value = "";
+            fechaVisible.setCustomValidity(
+                formatoFecha === "MDY"
+                    ? "Escribe una fecha válida en formato MM/DD/AAAA."
+                    : "Escribe una fecha válida en formato DD/MM/AAAA."
+            );
+        }
+    }
+
+    fechaVisible.addEventListener("input", sincronizarFechaDesdeVisible);
+
+    fechaVisible.addEventListener("change", function () {
+        sincronizarFechaDesdeVisible();
+
+        if (fechaReal.value) {
+            fechaVisible.value = mostrarFecha(fechaReal.value);
+        }
+    });
+
+    abrirCalendario.addEventListener("click", function () {
+        abrirSelector(fechaSelector);
+    });
+
+    fechaSelector.addEventListener("change", function () {
+        fechaReal.value = fechaSelector.value;
+        fechaVisible.value = mostrarFecha(fechaSelector.value);
+        fechaVisible.setCustomValidity("");
+    });
+
+    // HORA: el servidor siempre recibe HH:MM.
+    function convertirHora(valorVisible) {
+        let valor = valorVisible.trim().toUpperCase();
+        valor = valor.replace(/\./g, "").replace(/\s+/g, " ");
+
+        if (formatoHora === "12") {
+            const coincidencia = valor.match(
+                /^(\d{1,2}):(\d{2})\s*(AM|PM)$/
+            );
+
+            if (!coincidencia) return null;
+
+            let hora = Number(coincidencia[1]);
+            const minutos = Number(coincidencia[2]);
+            const periodo = coincidencia[3];
+
+            if (hora < 1 || hora > 12 || minutos > 59) {
+                return null;
+            }
+
+            if (periodo === "AM") {
+                hora = hora === 12 ? 0 : hora;
+            } else {
+                hora = hora === 12 ? 12 : hora + 12;
+            }
+
+            return `${String(hora).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
+        }
+
+        const coincidencia = valor.match(/^(\d{1,2}):(\d{2})$/);
+
+        if (!coincidencia) return null;
+
+        const hora = Number(coincidencia[1]);
+        const minutos = Number(coincidencia[2]);
+
+        if (hora > 23 || minutos > 59) return null;
+
+        return `${String(hora).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
+    }
+
+    function mostrarHora(valor24) {
+        if (!valor24) return "";
+
+        const partes = valor24.split(":");
+        let hora = Number(partes[0]);
+        const minutos = partes[1];
+
+        if (formatoHora !== "12") {
+            return `${String(hora).padStart(2, "0")}:${minutos}`;
+        }
+
+        const periodo = hora >= 12 ? "PM" : "AM";
+        hora = hora % 12 || 12;
+
+        return `${hora}:${minutos} ${periodo}`;
+    }
+
+    function sincronizarHoraDesdeVisible() {
+        const hora24 = convertirHora(horaVisible.value);
+
+        if (hora24) {
+            horaReal.value = hora24;
+            horaSelector.value = hora24;
+            horaVisible.setCustomValidity("");
+        } else {
+            horaReal.value = "";
+            horaVisible.setCustomValidity(
+                formatoHora === "12"
+                    ? "Escribe una hora válida, por ejemplo 03:30 PM."
+                    : "Escribe una hora válida, por ejemplo 15:30."
+            );
+        }
+    }
+
+    horaVisible.addEventListener("input", sincronizarHoraDesdeVisible);
+
+    horaVisible.addEventListener("change", function () {
+        sincronizarHoraDesdeVisible();
+
+        if (horaReal.value) {
+            horaVisible.value = mostrarHora(horaReal.value);
+        }
+    });
+
+    abrirHora.addEventListener("click", function () {
+        abrirSelector(horaSelector);
+    });
+
+    horaSelector.addEventListener("change", function () {
+        horaReal.value = horaSelector.value;
+        horaVisible.value = mostrarHora(horaSelector.value);
+        horaVisible.setCustomValidity("");
+    });
+
+    // Validar y sincronizar antes de enviar el formulario.
+    document.getElementById("formActualizarCita").addEventListener("submit", function (evento) {
+        sincronizarFechaDesdeVisible();
+        sincronizarHoraDesdeVisible();
+
+        if (!fechaReal.value || !horaReal.value) {
+            evento.preventDefault();
+
+            if (!fechaReal.value) {
+                fechaVisible.reportValidity();
+            } else {
+                horaVisible.reportValidity();
+            }
+        }
+    });
+});
+</script>
 
 {% endblock %}

@@ -149,11 +149,17 @@
             <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <i class="fa-regular fa-calendar"></i>
 
-                {% if resena.fecha_creacion %}
-                    {{ resena.fecha_creacion|date:"d \d\e F \d\e Y" }}
-                {% else %}
-                    Reseña realizada
-                {% endif %}
+
+                    {% if resena.fecha_creacion %}
+                        {% if formato_fecha == "MDY" %}
+                            {{ resena.fecha_creacion|date:"m/d/Y" }}
+                        {% else %}
+                            {{ resena.fecha_creacion|date:"d/m/Y" }}
+                        {% endif %}
+                    {% else %}
+                        Reseña realizada
+                    {% endif %}
+
             </div>
 
             <div class="flex items-center gap-2 text-sm text-pink-600 dark:text-pink-400 font-medium">
